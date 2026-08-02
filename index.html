@@ -394,18 +394,22 @@
     .compact-right { display: flex; align-items: center; gap: 8px; }
     .compact-date { font-size: 11px; color: var(--text-muted); font-weight: 600; }
     
-    .shift-badge-main {
-      font-size: 10px;
+    .shift-badge-main,
+    .shift-badge-siang, .shift-badge-malam, .shift-badge-free, .shift-badge-halfday {
+      font-size: 11px;
       font-weight: 900;
-      padding: 3px 7px;
-      border-radius: 6px;
-      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      line-height: 1.4;
     }
     .shift-badge-siang { background: rgba(245, 158, 11, 0.15); color: var(--shift-siang); border: 1px solid rgba(245, 158, 11, 0.3); }
     .shift-badge-malam { background: rgba(20, 184, 166, 0.15); color: var(--shift-malam); border: 1px solid rgba(20, 184, 166, 0.3); }
     .shift-badge-free { background: rgba(100, 116, 139, 0.15); color: var(--shift-free); border: 1px solid rgba(100, 116, 139, 0.3); }
     
-    .shift-badge-halfday { background: rgba(236, 72, 153, 0.15); color: var(--pink); border: 1px solid rgba(236, 72, 153, 0.3); font-size: 10px; font-weight: 900; padding: 3px 7px; border-radius: 6px; display: inline-block; }
+    .shift-badge-halfday { background: rgba(236, 72, 153, 0.15); color: var(--pink); border: 1px solid rgba(236, 72, 153, 0.3); }
 
     .warning-badge { 
       background: var(--orange); 
@@ -456,6 +460,49 @@
     .modal-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; font-weight: 800; letter-spacing: 0.5px; }
     .modal-val { font-size: 14px; color: var(--text); font-weight: 700; }
 
+    .today-shift-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.1), rgba(17, 24, 39, 0.9));
+      border: 1px solid var(--border-focus);
+      position: relative;
+      overflow: hidden;
+    }
+    .today-shift-card::before {
+      content: "";
+      position: absolute;
+      top: -40%; right: -20%;
+      width: 220px; height: 220px;
+      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .today-shift-eyebrow { font-size: 10px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
+    .today-shift-label { font-size: 22px; font-weight: 900; color: var(--text); margin-bottom: 4px; letter-spacing: -0.3px; }
+    .today-shift-sub { font-size: 12px; color: var(--accent); font-weight: 700; }
+    .today-shift-ring {
+      flex-shrink: 0;
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      background: rgba(56, 189, 248, 0.12);
+      border: 2px solid var(--accent);
+      box-shadow: 0 0 25px var(--accent-glow);
+      animation: ringPulse 2.4s ease-in-out infinite;
+      z-index: 1;
+    }
+    .today-shift-ring.ring-siang { border-color: var(--shift-siang); background: rgba(245, 158, 11, 0.12); box-shadow: 0 0 25px rgba(245, 158, 11, 0.25); }
+    .today-shift-ring.ring-malam { border-color: var(--shift-malam); background: rgba(20, 184, 166, 0.12); box-shadow: 0 0 25px rgba(20, 184, 166, 0.25); }
+    .today-shift-ring.ring-free { border-color: var(--shift-free); background: rgba(100, 116, 139, 0.12); box-shadow: 0 0 25px rgba(100, 116, 139, 0.2); }
+    @keyframes ringPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.06); }
+    }
+
     .badge { padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 900; display: inline-block; }
     .badge-AL { background: rgba(56,189,248,0.15); color: var(--accent); border: 1px solid rgba(56,189,248,0.3); }
     .badge-MC { background: rgba(236,72,153,0.15); color: var(--pink); border: 1px solid rgba(236,72,153,0.3); }
@@ -488,7 +535,18 @@
   </div>
 
   <div id="homePage" class="sub-page active animate-fade">
-    
+
+    <div class="card today-shift-card" id="todayShiftCard">
+      <div class="today-shift-left">
+        <div class="today-shift-eyebrow">Status Shift Hari Ini</div>
+        <div class="today-shift-label" id="todayShiftLabel">-</div>
+        <div class="today-shift-sub" id="todayShiftSub">Memuatkan...</div>
+      </div>
+      <div class="today-shift-ring" id="todayShiftRing">
+        <span id="todayShiftEmoji">⏳</span>
+      </div>
+    </div>
+
     <div class="card">
       <h2>
          Pengumuman Terkini & Info Kilang
@@ -726,14 +784,45 @@
     const dayInCycle = diffDays % cycleLength;
 
     if (dayInCycle >= 0 && dayInCycle <= 3) {
-      return { type: 'siang', label: 'Shift Siang' };
+      return { type: 'siang', label: '☀️ Shift Siang' };
     } else if (dayInCycle >= 4 && dayInCycle <= 5) {
-      return { type: 'free', label: 'Free Shift' };
+      return { type: 'free', label: '💤 Free Shift' };
     } else if (dayInCycle >= 6 && dayInCycle <= 9) {
-      return { type: 'malam', label: 'Shift Malam' };
+      return { type: 'malam', label: '🌙 Shift Malam' };
     } else {
-      return { type: 'free', label: 'Free Shift' };
+      return { type: 'free', label: '💤 Free Shift' };
     }
+  }
+
+  const shiftCycleSegments = [
+    { type: 'siang', start: 0, end: 3, label: '☀️ Shift Siang', emoji: '☀️' },
+    { type: 'free', start: 4, end: 5, label: '💤 Free Shift', emoji: '💤' },
+    { type: 'malam', start: 6, end: 9, label: '🌙 Shift Malam', emoji: '🌙' },
+    { type: 'free', start: 10, end: 11, label: '💤 Free Shift', emoji: '💤' }
+  ];
+
+  function renderTodayShiftWidget() {
+    const todayStr = new Date().toISOString().split('T')[0];
+    const baseDate = new Date("2026-01-01"); baseDate.setHours(0,0,0,0);
+    const targetDate = new Date(todayStr); targetDate.setHours(0,0,0,0);
+    const diffDays = Math.round((targetDate - baseDate) / (1000 * 60 * 60 * 24));
+    const dayInCycle = ((diffDays % 12) + 12) % 12;
+
+    const segIndex = shiftCycleSegments.findIndex(s => dayInCycle >= s.start && dayInCycle <= s.end);
+    const seg = shiftCycleSegments[segIndex];
+    const daysLeft = seg.end - dayInCycle + 1;
+    const nextSeg = shiftCycleSegments[(segIndex + 1) % shiftCycleSegments.length];
+    const holidayToday = publicHolidaysKedah2026[todayStr];
+
+    document.getElementById("todayShiftLabel").innerText = seg.label;
+    document.getElementById("todayShiftEmoji").innerText = seg.emoji;
+    document.getElementById("todayShiftSub").innerText = holidayToday
+      ? `🎉 ${holidayToday}`
+      : `${daysLeft} hari lagi → bertukar ke ${nextSeg.label}`;
+
+    const ring = document.getElementById("todayShiftRing");
+    ring.classList.remove('ring-siang', 'ring-malam', 'ring-free');
+    ring.classList.add(`ring-${seg.type}`);
   }
 
   window.switchSubPage = function(pageId, btnElement) {
@@ -1130,13 +1219,16 @@
       groups[key].push(log);
     });
 
+    let globalIndex = 0;
     container.innerHTML = Object.keys(groups).sort().map(key => {
       const [year, monthIdx] = key.split('-').map(Number);
       const rows = groups[key].map(log => {
         const shiftInfo = getShiftStatusForDate(log.name, log.startDate);
         const shiftBadgeClass = shiftInfo.type === 'siang' ? 'shift-badge-siang' : shiftInfo.type === 'malam' ? 'shift-badge-malam' : 'shift-badge-free';
+        const delay = Math.min(globalIndex * 0.04, 0.6);
+        globalIndex++;
         return `
-          <div class="compact-item ${log.isOverlap ? 'is-overlap' : ''}" onclick="showLeaveDetail('${log.id}')">
+          <div class="compact-item animate-fade ${log.isOverlap ? 'is-overlap' : ''}" style="animation-delay:${delay}s; opacity:0;" onclick="showLeaveDetail('${log.id}')">
             <div class="compact-name-wrap">
               <span class="compact-name">${log.name}</span>
               <span class="badge badge-${log.type}">${log.type}</span>
@@ -1285,6 +1377,7 @@
   // ============================================================
 
   function renderAll() {
+    renderTodayShiftWidget();
     renderLeaveCards();
     renderMCRanking();
     renderStats();
@@ -1312,6 +1405,7 @@
     currentCalMonth = now.getMonth();
   })();
   updateDayCountBadge();
+  renderTodayShiftWidget();
 </script>
 </body>
 </html>
