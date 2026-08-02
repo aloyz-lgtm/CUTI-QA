@@ -1251,7 +1251,6 @@
       let dStr = d.toString().padStart(2, '0');
       let dateString = `${currentCalYear}-${mStr}-${dStr}`;
 
-      // Sample shift status using first tech as reference for calendar cell background color
       const shiftInfo = getShiftStatusForDate(technicianList[0], dateString);
       let cellShiftClass = '';
       if (shiftInfo.type === 'siang') cellShiftClass = 'shift-siang';
@@ -1304,8 +1303,6 @@
     } else {
       contentHtml += `<div class="modal-row"><div class="modal-label">Senarai Staf Cuti</div><div class="modal-val">Tiada staf cuti pada tarikh ini.</div></div>`;
     }
-
-    // Nota penting: Mengikut arahan, status shift semua staf DIKECUALIKAN dan TIDAK DIMASUKKAN di sini.
 
     modalBody.innerHTML = contentHtml;
     document.getElementById("detailModal").classList.add("active");
