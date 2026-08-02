@@ -22,9 +22,8 @@
       --teal: #14b8a6;
       --pink: #ec4899;
       --shift-siang: #f59e0b;
-      --shift-malam: #6366f1;
-      --shift-off: #334155;
-      --shift-rest: #475569;
+      --shift-malam: #14b8a6;
+      --shift-free: #94a3b8;
     }
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -42,7 +41,6 @@
       min-height: 100vh;
     }
 
-    /* Animasi Halus (Smooth Transitions & Fade In) */
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(8px); }
       to { opacity: 1; transform: translateY(0); }
@@ -52,7 +50,6 @@
       animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
-    /* Skrin Log Masuk */
     .login-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -108,16 +105,13 @@
       font-weight: 700;
       font-size: 14px;
       cursor: pointer;
-      transition: transform 0.1s, opacity 0.2s;
     }
     .login-btn:active { transform: scale(0.98); }
 
     .login-error { color: var(--red); font-size: 12px; margin-top: 12px; display: none; font-weight: 600; }
 
-    /* Kontena Utama */
     .container { max-width: 1100px; margin: 0 auto; padding-bottom: 40px; }
     
-    /* Header & Navigasi Tab */
     .header { 
       text-align: center; 
       padding: 15px 0 10px 0;
@@ -127,28 +121,14 @@
       font-size: 20px; 
       color: var(--text); 
       margin: 0; 
-      letter-spacing: 0.5px;
       font-weight: 800;
     }
     .header p { 
       font-size: 11px; 
       color: var(--text-muted); 
-      margin: 4px 0 10px 0; 
+      margin: 4px 0 6px 0; 
     }
 
-    .shift-badge {
-      display: inline-block;
-      background: rgba(56, 189, 248, 0.1);
-      color: var(--accent);
-      border: 1px solid rgba(56, 189, 248, 0.3);
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-weight: 700;
-      font-size: 10px;
-      letter-spacing: 1px;
-    }
-
-    /* Bar Navigasi Sub-Laman */
     .nav-tabs {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -169,11 +149,11 @@
       font-weight: 700;
       border-radius: 10px;
       cursor: pointer;
-      transition: all 0.25s ease;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
+      transition: all 0.25s ease;
     }
 
     .nav-tab-btn.active {
@@ -186,7 +166,6 @@
     .sub-page { display: none; }
     .sub-page.active { display: block; }
 
-    /* Kad (Cards) Estetik */
     .card {
       background: var(--card);
       border: 1px solid var(--border);
@@ -194,9 +173,7 @@
       padding: 16px;
       margin-bottom: 16px;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-      transition: border-color 0.2s;
     }
-    .card:hover { border-color: rgba(56, 189, 248, 0.2); }
 
     .card h2 { 
       font-size: 14px; 
@@ -212,13 +189,11 @@
 
     .sub-text { font-size: 11px; color: var(--text-muted); margin-top: -8px; margin-bottom: 12px; line-height: 1.4; }
 
-    /* Pengumuman (Announcement Board) */
     .announcement-box {
       background: linear-gradient(145deg, #131c2e, #1a2640);
       border-left: 4px solid var(--accent);
-      border-top: 1px solid var(--border);
-      border-right: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
+      border: 1px solid var(--border);
+      border-left-width: 4px;
       border-radius: 12px;
       padding: 14px;
       margin-bottom: 14px;
@@ -237,7 +212,6 @@
       margin-bottom: 16px;
     }
 
-    /* Borang & Input */
     .form-group { margin-bottom: 12px; }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     
@@ -259,7 +233,6 @@
       background-position: right 12px center;
       background-size: 14px;
       padding-right: 32px;
-      transition: border-color 0.2s, box-shadow 0.2s;
     }
     input:focus, select:focus, textarea:focus {
       border-color: var(--accent);
@@ -291,7 +264,6 @@
       font-weight: 700;
       font-size: 13px;
       cursor: pointer;
-      transition: transform 0.1s, opacity 0.2s;
       box-shadow: 0 4px 14px rgba(34, 197, 94, 0.3);
     }
     .btn-submit:active { transform: scale(0.98); }
@@ -305,9 +277,7 @@
       font-weight: 700;
       font-size: 12px;
       cursor: pointer;
-      transition: transform 0.1s;
     }
-    .btn-action:active { transform: scale(0.98); }
 
     .btn-delete {
       width: 100%;
@@ -333,7 +303,6 @@
       font-weight: 700;
     }
 
-    /* Kalendar Interaktif Besar */
     .calendar-container { background: #090d16; border: 1px solid var(--border); border-radius: 12px; padding: 12px; }
     .cal-header-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
     .cal-title { font-size: 14px; font-weight: 800; color: var(--accent); text-transform: uppercase; }
@@ -354,29 +323,24 @@
       align-items: center;
       cursor: pointer;
       position: relative;
-      transition: transform 0.1s, border-color 0.2s;
     }
     .cal-day-cell:active { transform: scale(0.96); }
     .cal-day-num { font-size: 11px; font-weight: 700; color: var(--text); }
     .cal-day-cell.other-month { opacity: 0.3; }
     
-    /* Petunjuk Warna Shift pada Kalendar */
-    .cal-day-cell.shift-siang { border-bottom: 3px solid var(--shift-siang); }
-    .cal-day-cell.shift-malam { border-bottom: 3px solid var(--shift-malam); }
-    .cal-day-cell.shift-off { border-bottom: 3px solid var(--shift-off); background: rgba(51, 65, 85, 0.15); }
-    .cal-day-cell.shift-rest { border-bottom: 3px solid var(--shift-rest); background: rgba(71, 85, 105, 0.15); }
+    .cal-day-cell.shift-siang { border-bottom: 3px solid var(--shift-siang); background: rgba(245, 158, 11, 0.05); }
+    .cal-day-cell.shift-malam { border-bottom: 3px solid var(--shift-malam); background: rgba(20, 184, 166, 0.05); }
+    .cal-day-cell.shift-free { border-bottom: 3px solid var(--shift-free); background: rgba(148, 163, 184, 0.08); }
 
-    .cal-indicators { display: flex; gap: 2px; flex-wrap: wrap; justify-content: center; max-width: 100%; margin-top: 2px; }
+    .cal-indicators { display: flex; gap: 2px; flex-wrap: wrap; justify-content: center; margin-top: 2px; }
     .cal-dot { width: 5px; height: 5px; border-radius: 50%; }
     .dot-leave { background: var(--accent); }
     .dot-ph { background: var(--pink); }
 
-    /* Petunjuk Warna (Legend) Kalendar */
     .cal-legend { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; font-size: 10px; justify-content: center; border-top: 1px solid var(--border); padding-top: 10px; color: var(--text-muted); }
     .legend-item { display: flex; align-items: center; gap: 4px; }
     .legend-box { width: 10px; height: 10px; border-radius: 3px; }
 
-    /* Stat Boxes & Senarai Cuti */
     .stat-boxes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
     .s-box { background: #090d16; border: 1px solid var(--border); padding: 10px; border-radius: 10px; text-align: center; }
     .s-label { display: block; font-size: 10px; color: var(--text-muted); font-weight: 600; }
@@ -405,7 +369,6 @@
       justify-content: space-between;
       align-items: center;
       cursor: pointer;
-      transition: border-color 0.2s;
     }
     .compact-item:hover { border-color: var(--accent); }
     .compact-name-wrap { display: flex; align-items: center; gap: 8px; }
@@ -414,11 +377,9 @@
     .compact-date { font-size: 11px; color: var(--text-muted); }
 
     .shift-tag-s { background: rgba(245, 158, 11, 0.15); color: var(--shift-siang); font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--shift-siang); }
-    .shift-tag-m { background: rgba(99, 102, 241, 0.15); color: var(--shift-malam); font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--shift-malam); }
+    .shift-tag-m { background: rgba(20, 184, 166, 0.15); color: var(--shift-malam); font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--shift-malam); }
     .halfday-tag { background: rgba(20, 184, 166, 0.15); color: var(--teal); font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--teal); }
-    .ph-tag { background: rgba(236, 72, 153, 0.15); color: var(--pink); font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--pink); }
 
-    /* Modal Popup */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -453,7 +414,6 @@
 </head>
 <body>
 
-<!-- Skrin Kata Laluan -->
 <div class="login-overlay" id="loginOverlay">
   <div class="login-card">
     <h2>🔒 Akses Terhad</h2>
@@ -468,19 +428,15 @@
   <header class="header">
     <h1>PORTAL QA SHIFT C</h1>
     <p>Sistem Pengurusan Kehadiran, Kitaran Shift & Cuti Pintar</p>
-    <div class="shift-badge">SHIFT C | 4-2 ROTATION SYSTEM</div>
   </header>
 
-  <!-- Bar Navigasi Sub-Laman (Dashboard / Permohonan / Kalendar) -->
   <div class="nav-tabs">
     <button type="button" class="nav-tab-btn active" onclick="switchSubPage('homePage', this)">🏠 Dashboard Utama</button>
     <button type="button" class="nav-tab-btn" onclick="switchSubPage('calendarPage', this)">📅 Kalendar & Shift</button>
   </div>
 
-  <!-- SUB-LAMAN 1: DASHBOARD UTAMA & PERMOHONAN CUTI -->
   <div id="homePage" class="sub-page active animate-fade">
     
-    <!-- Ruang Pengumuman Penyelia -->
     <div class="card">
       <h2>
         📢 Pengumuman Terkini & Info Kilang
@@ -499,17 +455,14 @@
           <button type="submit" class="btn-action" style="width:100%;">🚀 Siarkan Pengumuman</button>
         </form>
       </div>
-      <div id="announcementContainer">
-        <!-- Dipaparkan secara dinamik -->
-      </div>
+      <div id="announcementContainer"></div>
     </div>
 
     <div style="display: grid; grid-template-columns: 1fr; gap: 16px;">
       
-      <!-- Borang Permohonan Cuti -->
       <div class="card">
         <h2>📋 Borang Permohonan Cuti Pintar</h2>
-        <p class="sub-text">Sistem akan menyemak kitaran shift 4-2 secara automatik. Permohonan pada hari Offday/Restday akan ditolak.</p>
+        <p class="sub-text">Sistem mengesan jenis shift (Siang/Malam) dan status Free secara automatik berdasarkan tarikh yang dipilih.</p>
         <form id="leaveForm">
           <div class="form-group">
             <label>Pilih Nama Juruteknik:</label>
@@ -525,25 +478,16 @@
             </select>
           </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label>Jenis Cuti:</label>
-              <select id="leaveType" required>
-                <option value="AL">Cuti Tahunan (AL)</option>
-                <option value="EL">Cuti Kecemasan (EL - Potong AL)</option>
-                <option value="MC">Sijil Sakit (MC)</option>
-                <option value="PL">Cuti Paternity (PL)</option>
-                <option value="UL">Cuti Tanpa Gaji (UL)</option>
-                <option value="PH">Cuti Umum (Public Holiday)</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Pilihan Shift:</label>
-              <select id="shiftType" required>
-                <option value="Siang">☀️ Siang</option>
-                <option value="Malam">🌙 Malam</option>
-              </select>
-            </div>
+          <div class="form-group">
+            <label>Jenis Cuti:</label>
+            <select id="leaveType" required>
+              <option value="AL">Cuti Tahunan (AL)</option>
+              <option value="EL">Cuti Kecemasan (EL - Potong AL)</option>
+              <option value="MC">Sijil Sakit (MC)</option>
+              <option value="PL">Cuti Paternity (PL)</option>
+              <option value="UL">Cuti Tanpa Gaji (UL)</option>
+              <option value="PH">Cuti Umum (Public Holiday)</option>
+            </select>
           </div>
 
           <div class="form-row">
@@ -577,7 +521,6 @@
         </form>
       </div>
 
-      <!-- Carta Ranking MC & Ringkasan Peribadi -->
       <div style="display: grid; grid-template-columns: 1fr; gap: 16px;">
         <div class="card">
           <h2>📊 Carta Ranking MC (Shift C)</h2>
@@ -598,7 +541,6 @@
 
     </div>
 
-    <!-- Senarai Plan Cuti -->
     <div class="card" style="margin-top: 16px;">
       <h2>📅 Senarai Plan Cuti Mengikut Bulan</h2>
       <p class="sub-text">Tekan pada mana-mana senarai cuti untuk perincian atau pemadaman.</p>
@@ -606,11 +548,10 @@
     </div>
   </div>
 
-  <!-- SUB-LAMAN 2: KALENDAR INTERAKTIF BESAR & KITARAN SHIFT -->
   <div id="calendarPage" class="sub-page animate-fade">
     <div class="card">
-      <h2>🗓️ Kalendar Interaktif & Kitaran Shift 4-2</h2>
-      <p class="sub-text">Paparan lengkap shift kerja, cuti am Kedah/Malaysia, dan permohonan cuti staff. Tekan mana-mana tarikh untuk lihat perincian.</p>
+      <h2>🗓️ Kalendar Interaktif & Kitaran Shift Betul</h2>
+      <p class="sub-text">Paparan lengkap shift kerja berdasarkan jadual rasmi (Malam / Mor. / Free), cuti am, dan cuti staff.</p>
       
       <div class="calendar-container">
         <div class="cal-header-nav">
@@ -625,10 +566,9 @@
         <div class="cal-grid-days" id="calGridDaysContainer"></div>
 
         <div class="cal-legend">
-          <div class="legend-item"><div class="legend-box" style="background: var(--shift-siang);"></div> Siang</div>
-          <div class="legend-item"><div class="legend-box" style="background: var(--shift-malam);"></div> Malam</div>
-          <div class="legend-item"><div class="legend-box" style="background: var(--shift-off);"></div> Offday</div>
-          <div class="legend-item"><div class="legend-box" style="background: var(--shift-rest);"></div> Restday</div>
+          <div class="legend-item"><div class="legend-box" style="background: var(--shift-malam);"></div> Malam (N)</div>
+          <div class="legend-item"><div class="legend-box" style="background: var(--shift-siang);"></div> Mor. (Siang)</div>
+          <div class="legend-item"><div class="legend-box" style="background: var(--shift-free);"></div> Free</div>
           <div class="legend-item"><div class="legend-box" style="background: var(--pink);"></div> Cuti Am</div>
           <div class="legend-item"><div class="legend-box" style="background: var(--accent);"></div> Cuti Staff</div>
         </div>
@@ -638,20 +578,16 @@
 
 </div>
 
-<!-- MODAL PERINCIAN / POPUP TARIKH & CUTI -->
 <div class="modal-overlay" id="detailModal">
   <div class="modal-card">
     <div class="modal-header">
       <h3 id="modalHeaderTitle">🔍 Maklumat Tarikh & Cuti</h3>
       <button type="button" class="close-btn" id="closeModalBtn">✕</button>
     </div>
-    <div id="modalBodyContent">
-      <!-- Diisi secara dinamik -->
-    </div>
+    <div id="modalBodyContent"></div>
   </div>
 </div>
 
-<!-- SCRIPTS FIREBASE MODULAR (ESM) -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
   import { getFirestore, collection, addDoc, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
@@ -672,7 +608,6 @@
   const SUPERVISOR_PIN = "9988";
   let activeLeaveId = null;
 
-  // Navigasi Sub-Laman
   window.switchSubPage = function(pageId, btnElement) {
     document.querySelectorAll('.sub-page').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.nav-tab-btn').forEach(b => b.classList.remove('active'));
@@ -683,7 +618,6 @@
     }
   };
 
-  // Log Masuk Keselamatan Portal
   function checkPassword() {
     const inputEl = document.getElementById("passInput");
     const errorEl = document.getElementById("loginError");
@@ -705,7 +639,6 @@
     document.getElementById("loginOverlay").style.display = "none";
   }
 
-  // Toggle Panel Pengumuman Penyelia
   document.getElementById("toggleSupAnnounceBtn").addEventListener("click", () => {
     const panel = document.getElementById("supervisorAnnouncePanel");
     if (panel.style.display === "none") {
@@ -721,9 +654,8 @@
     }
   });
 
-  // Logik Kitaran Shift 4-2 Rotation
   function getShiftStatusForDate(dateObj) {
-    const anchorDate = new Date(2026, 7, 2); // 2 Ogos 2026
+    const anchorDate = new Date(2026, 7, 1); // 1 Ogos 2026 (Sabtu)
     anchorDate.setHours(0,0,0,0);
     
     const target = new Date(dateObj);
@@ -736,17 +668,24 @@
     let mod = diffDays % cycleLength;
     if (mod < 0) mod += cycleLength;
     
-    if (mod >= 0 && mod <= 3) return { type: 'siang', label: 'Shift Siang (4-2)' };
-    if (mod === 4) return { type: 'off', label: 'Offday' };
-    if (mod === 5) return { type: 'rest', label: 'Restday' };
-    if (mod >= 6 && mod <= 9) return { type: 'malam', label: 'Shift Malam (4-2)' };
-    if (mod === 10) return { type: 'off', label: 'Offday' };
-    if (mod === 11) return { type: 'rest', label: 'Restday' };
-    
-    return { type: 'siang', label: 'Shift Siang' };
+    const pattern = [
+      { type: 'malam', label: 'Malam (N)' },   // 0 (Sat 1)
+      { type: 'malam', label: 'Malam (N)' },   // 1 (Sun 2)
+      { type: 'free', label: 'Free' },         // 2 (Mon 3)
+      { type: 'free', label: 'Free' },         // 3 (Tue 4)
+      { type: 'siang', label: 'Mor. (Siang)' },// 4 (Wed 5)
+      { type: 'siang', label: 'Mor. (Siang)' },// 5 (Thu 6)
+      { type: 'siang', label: 'Mor. (Siang)' },// 6 (Fri 7)
+      { type: 'siang', label: 'Mor. (Siang)' },// 7 (Sat 8)
+      { type: 'free', label: 'Free' },         // 8 (Sun 9)
+      { type: 'free', label: 'Free' },         // 9 (Mon 10)
+      { type: 'malam', label: 'Malam (N)' },   // 10 (Tue 11)
+      { type: 'malam', label: 'Malam (N)' }    // 11 (Wed 12)
+    ];
+
+    return pattern[mod];
   }
 
-  // Senarai Cuti Am Malaysia & Kedah 2026
   const publicHolidays2026 = {
     "2026-01-01": "Tahun Baru 2026",
     "2026-02-01": "Hari Wilayah / Thaipusam",
@@ -788,7 +727,6 @@
     return `${parts[2]}/${parts[1]}/${parts[0]}`;
   }
 
-  // Firebase Realtime Listeners
   onSnapshot(collection(db, "leaves"), (snapshot) => {
     leaveLogs = [];
     snapshot.forEach(docSnap => leaveLogs.push({ id: docSnap.id, ...docSnap.data() }));
@@ -911,7 +849,6 @@
   }
   document.getElementById("techName").addEventListener("change", updatePersonalStats);
 
-  // Render Pengumuman & Gambar
   function renderAnnouncements() {
     const container = document.getElementById("announcementContainer");
     if (!container) return;
@@ -935,7 +872,6 @@
     });
   }
 
-  // Hantar Pengumuman (Penyelia Sahaja) dengan Auto-Compress Imej
   const annForm = document.getElementById("announcementForm");
   if (annForm) {
     annForm.addEventListener("submit", async function(e) {
@@ -1004,7 +940,6 @@
     }
   }
 
-  // Kalendar Interaktif Besar State
   let calCurrentYear = new Date().getFullYear();
   let calCurrentMonth = new Date().getMonth();
 
@@ -1021,13 +956,11 @@
     const totalDays = new Date(calCurrentYear, calCurrentMonth + 1, 0).getDate();
     const prevTotalDays = new Date(calCurrentYear, calCurrentMonth, 0).getDate();
 
-    // Render Hari Bulan Sebelumnya
     for (let i = firstDayIndex; i > 0; i--) {
       const dayNum = prevTotalDays - i + 1;
       container.innerHTML += `<div class="cal-day-cell other-month"><div class="cal-day-num">${dayNum}</div></div>`;
     }
 
-    // Render Bulan Semasa
     for (let d = 1; d <= totalDays; d++) {
       const dateStr = `${calCurrentYear}-${String(calCurrentMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
       const dObj = new Date(calCurrentYear, calCurrentMonth, d);
@@ -1067,7 +1000,6 @@
     renderInteractiveCalendar();
   });
 
-  // Modal Perincian Tarikh / Cuti
   window.openDateDetailModal = function(dateStr) {
     const modal = document.getElementById("detailModal");
     const titleEl = document.getElementById("modalHeaderTitle");
@@ -1081,7 +1013,7 @@
     titleEl.innerText = `📅 Maklumat: ${formatDateDDMMYY(dateStr)}`;
 
     let contentHTML = `
-      <div class="modal-row"><div class="modal-label">Kitaran Shift 4-2</div><div class="modal-val" style="color:var(--accent);">${shiftInfo.label}</div></div>`;
+      <div class="modal-row"><div class="modal-label">Status Shift Semasa</div><div class="modal-val" style="color:var(--accent);">${shiftInfo.label}</div></div>`;
     
     if (phName) {
       contentHTML += `<div class="modal-row"><div class="modal-label">Cuti Am / Public Holiday</div><div class="modal-val" style="color:var(--pink); font-weight:bold;">🎉 ${phName}</div></div>`;
@@ -1119,7 +1051,7 @@
       <div class="modal-row"><div class="modal-label">Nama Juruteknik</div><div class="modal-val">${log.name}</div></div>
       <div style="display: flex; gap: 15px;" class="modal-row">
         <div><div class="modal-label">Jenis Cuti</div><div style="margin-top:2px;"><span class="badge badge-${log.type}">${log.type}</span></div></div>
-        <div><div class="modal-label">Shift</div><div class="modal-val" style="color: var(--yellow);">${log.shift}</div></div>
+        <div><div class="modal-label">Shift Asal</div><div class="modal-val" style="color: var(--yellow);">${log.shift}</div></div>
         <div><div class="modal-label">Tempoh</div><div class="modal-val" style="color: var(--accent);">${log.days} Hari</div></div>
       </div>
       <div class="modal-row"><div class="modal-label">Tarikh Cuti</div><div class="modal-val">${formatDateDDMMYY(log.startDate)} hingga ${formatDateDDMMYY(log.endDate)}</div></div>
@@ -1139,14 +1071,12 @@
     document.getElementById("detailModal").classList.remove("active");
   });
 
-  // Hantar Permohonan Cuti dengan Sekatan Pintar Shift 4-2 (Reject jika Off/Restday)
   const leaveFormEl = document.getElementById("leaveForm");
   if (leaveFormEl) {
     leaveFormEl.addEventListener("submit", async function(e) {
       e.preventDefault();
       const name = document.getElementById("techName").value;
       const type = document.getElementById("leaveType").value;
-      const shift = document.getElementById("shiftType").value;
       const startDate = document.getElementById("startDate").value;
       const endDate = document.getElementById("endDate").value;
       const durationOption = document.getElementById("durationOption").value;
@@ -1162,12 +1092,14 @@
       const dEnd = new Date(endDate);
       let currCheck = new Date(dStart);
       
+      let detectedShift = "";
       while (currCheck <= dEnd) {
         const shiftStatus = getShiftStatusForDate(currCheck);
-        if (shiftStatus.type === 'off' || shiftStatus.type === 'rest') {
-          alert(`❌ PERMOHONAN DITOLAK (REJECTED)!\n\nTarikh ${currCheck.toISOString().split('T')[0]} adalah hari ${shiftStatus.label.toUpperCase()}. Anda tidak dibenarkan memohon cuti pada hari offday atau restday.`);
+        if (shiftStatus.type === 'free') {
+          alert(`❌ PERMOHONAN DITOLAK (REJECTED)!\n\nTarikh ${currCheck.toISOString().split('T')[0]} adalah hari FREE. Anda tidak dibenarkan memohon cuti pada hari Free.`);
           return;
         }
+        detectedShift = shiftStatus.label;
         currCheck.setDate(currCheck.getDate() + 1);
       }
 
@@ -1180,7 +1112,17 @@
       }
 
       try {
-        await addDoc(collection(db, "leaves"), { name, type, shift, startDate, endDate, durationOption, days, reason });
+        await addDoc(collection(db, "leaves"), { 
+          name, 
+          type, 
+          shift: detectedShift, 
+          startDate, 
+          endDate, 
+          durationOption, 
+          days, 
+          reason 
+        });
+
         const currentYear = new Date().getFullYear();
         const startYear = new Date(startDate).getFullYear();
 
@@ -1278,7 +1220,7 @@
       groupedByMonth[monthKey].forEach(log => {
         const formattedStart = formatDateDDMMYY(log.startDate);
         const formattedEnd = formatDateDDMMYY(log.endDate);
-        const shiftTag = log.shift === "Malam" ? '<span class="shift-tag-m">[M]</span>' : '<span class="shift-tag-s">[S]</span>';
+        const shiftTag = log.shift && log.shift.includes("Malam") ? '<span class="shift-tag-m">[N]</span>' : '<span class="shift-tag-s">[Mor]</span>';
         
         let extraTag = '';
         if (log.durationOption === '1stHalf') extraTag = '<span class="halfday-tag">0.5H</span>';
