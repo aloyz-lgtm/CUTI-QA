@@ -459,7 +459,6 @@
         <button type="button" class="btn-toggle-supervisor" id="toggleSupAnnounceBtn">🔑 Mod Penyelia</button>
       </h2>
       
-      <!-- Butang Pantas Tambah Cuti Lepas / Awal Tahun -->
       <div style="margin-bottom: 12px;">
         <button type="button" class="btn-action" style="width:100%; background:linear-gradient(135deg, #10b981, #059669); color:#fff;" onclick="promptAddPastLeave()">➕ Tambah Rekod Cuti Lepas / Awal Tahun (Penyelia)</button>
       </div>
@@ -565,7 +564,7 @@
 
     <div class="card" style="margin-top: 16px;">
       <h2>📋 Senarai Plan Cuti Mengikut Bulan</h2>
-      <p class="sub-text">Tekan pada mana-mana senarai cuti untuk perincian, pengeditan atau pemadaman.</p>
+      <p class="sub-text">Tekan pada mana-mana senarai cuti untuk perincian atau pengurusan oleh penyelia.</p>
       <div id="leaveCardsContainer"></div>
     </div>
   </div>
@@ -685,7 +684,6 @@
     }
   });
 
-  // Fungsi Khas Penyelia untuk Masuk Num Cuti Lepas / Awal Tahun Terus
   window.promptAddPastLeave = function() {
     const pin = prompt("🔐 Sila masukkan PIN Penyelia untuk menambah rekod cuti lepas:");
     if (pin !== SUPERVISOR_PIN) {
@@ -741,7 +739,6 @@
         return;
       }
 
-      // Guna tarikh rujukan semasa untuk simpan rekod dalam pangkalan data
       const todayStr = new Date().toISOString().split('T')[0];
 
       try {
@@ -968,7 +965,7 @@
       <div class="modal-row"><div class="modal-label">Jumlah Hari Cuti</div><div class="modal-val">${log.days} Hari</div></div>
       <div class="modal-row"><div class="modal-label">Sebab / Catatan</div><div class="modal-val">${log.reason || '-'}</div></div>
       <button type="button" class="btn-edit" onclick="promptEditLeave('${log.id}')">🔑 Edit Cuti (Mod Penyelia)</button>
-      <button type="button" class="btn-delete" onclick="deleteLeave('${log.id}')">🗑️ Padam Permohonan Cuti</button>
+      <button type="button" class="btn-delete" onclick="promptDeleteLeave('${log.id}')">🔑 Padam Permohonan Cuti (Mod Penyelia)</button>
     `;
     document.getElementById("detailModal").classList.add("active");
   };
@@ -1041,7 +1038,13 @@
     });
   };
 
-  window.deleteLeave = async function(id) {
+  window.promptDeleteLeave = async function(id) {
+    const pin = prompt("🔐 Sila masukkan PIN Penyelia untuk memadam permohonan cuti:");
+    if (pin !== SUPERVISOR_PIN) {
+      if (pin !== null) alert("❌ PIN Penyelia Salah!");
+      return;
+    }
+
     if (confirm("Adakah anda pasti mahu memadam permohonan cuti ini?")) {
       try {
         await deleteDoc(doc(db, "leaves", id));
