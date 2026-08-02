@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PORTAL KEHADIRAN KENDIRI QA (SHIFT C)</title>
+  
+  <style>
+    :root {
+      --bg: #0d1117;
+      --card: #161b22;
+      --border: #30363d;
+      --text: #c9d1d9;
+      --accent: #58a6ff;
+      --green: #2ea043;
+      --yellow: #d29922;
+      --red: #f85149;
+      --orange: #f0883e;
+      --purple: #a371f7;
+      --teal: #39d353;
+      --pink: #ff7b72;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+      padding: 16px;
+    }
+
+    .login-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      padding: 20px;
+    }
+
+    .login-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 25px 20px;
+      width: 100%;
+      max-width: 360px;
+      text-align: center;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+    }
+
+    .login-card h2 { font-size: 16px; color: var(--accent); margin-top: 0; margin-bottom: 6px; }
+    .login-card p { font-size: 11px; color: #8b949e; margin-bottom: 18px; }
+
+    .login-input {
+      width: 100%;
+      padding: 12px;
+      background: #0d1117;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 14px;
+      text-align: center;
+      letter-spacing: 2px;
+      margin-bottom: 12px;
+    }
+
+    .login-btn {
+      width: 100%;
+      background: var(--accent);
+      color: #000;
+      border: none;
+      padding: 12px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .login-error { color: var(--red); font-size: 11px; margin-top: 10px; display: none; }
+
+    .container { max-width: 1200px; margin: 0 auto; }
+    
+    /* PENGESAHAN DESIGN TAJUK DI TENGAH & EKSKLUSIF */
+    .header { 
+      border-bottom: 1px solid var(--border); 
+      padding-bottom: 18px; 
+      margin-bottom: 20px; 
+      text-align: center; 
+    }
+    .header h1 { 
+      font-size: 24px; 
+      color: var(--accent); 
+      margin: 0; 
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      font-weight: 800;
+    }
+    .header p { 
+      font-size: 12px; 
+      color: #8b949e; 
+      margin: 6px 0 12px 0; 
+    }
+
+    .shift-badge {
+      display: inline-block;
+      background: rgba(88, 166, 255, 0.12);
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      padding: 5px 14px;
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 11px;
+      letter-spacing: 0.5px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 18px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    .card h2 { font-size: 15px; margin-top: 0; margin-bottom: 14px; color: #f0f6fc; border-bottom: 1px solid var(--border); padding-bottom: 8px;}
+
+    .grid-top, .grid-middle { display: grid; grid-template-columns: 1fr; gap: 18px; }
+    @media (min-width: 768px) {
+      .grid-top { grid-template-columns: 1fr 1fr; }
+      .grid-middle { grid-template-columns: 2fr 1fr; }
+    }
+
+    .form-group { margin-bottom: 14px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .form-row-mini { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 12px; }
+    .form-row-mini input { padding: 8px 4px; text-align: center; font-size: 12px; }
+
+    .day-count-badge {
+      background: rgba(88, 166, 255, 0.15);
+      color: var(--accent);
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: bold;
+      text-align: center;
+      border: 1px dashed var(--accent);
+      margin-bottom: 14px;
+    }
+
+    label { display: block; font-size: 11px; margin-bottom: 5px; color: #8b949e; font-weight: 600; }
+    
+    /* MENYELESAIKAN ISU TINDANAN DROPDOWN */
+    input, select {
+      width: 100%;
+      padding: 11px 12px;
+      background: #0d1117;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 13px;
+      outline: none;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238b949e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      background-size: 14px;
+      padding-right: 32px;
+    }
+
+    input[type="date"] {
+      background-image: none;
+      padding-right: 12px;
+    }
+
+    select option {
+      background-color: #161b22;
+      color: var(--text);
+      padding: 10px;
+    }
+
+    .btn-submit {
+      width: 100%;
+      background: var(--green);
+      color: #fff;
+      border: none;
+      padding: 12px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 13px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn-submit:hover { opacity: 0.9; }
+
+    .btn-update {
+      width: 100%;
+      background: var(--accent);
+      color: #000;
+      border: none;
+      padding: 10px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .btn-delete {
+      width: 100%;
+      background: var(--red);
+      color: #fff;
+      border: none;
+      padding: 10px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 12px;
+      cursor: pointer;
+      margin-top: 15px;
+    }
+
+    .btn-toggle-supervisor {
+      background: #21262d;
+      color: var(--accent);
+      border: 1px dashed var(--border);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      cursor: pointer;
+      font-weight: 600;
+      float: right;
+    }
+    .btn-toggle-supervisor:hover { background: #30363d; }
+
+    .sub-text { font-size: 11px; color: #8b949e; margin-top: -10px; margin-bottom: 14px; }
+
+    .rank-item { display: flex; align-items: center; margin-bottom: 10px; font-size: 11px; }
+    .rank-num { width: 24px; font-weight: bold; color: var(--accent); }
+    .rank-name { width: 115px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .rank-bar-bg { flex-grow: 1; background: #21262d; height: 8px; border-radius: 4px; overflow: hidden; margin: 0 8px; }
+    .rank-bar-fill { height: 100%; background: var(--red); border-radius: 4px; }
+    .rank-val { font-weight: bold; width: 42px; text-align: right; }
+
+    .stat-boxes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .s-box { background: #0d1117; border: 1px solid var(--border); padding: 10px; border-radius: 8px; text-align: center; }
+    .s-label { display: block; font-size: 10px; color: #8b949e; }
+    .s-count { display: block; font-size: 14px; font-weight: bold; margin-top: 4px; }
+
+    .al-box .s-count { color: var(--accent); }
+    .mc-box .s-count { color: var(--red); }
+    .el-box .s-count { color: var(--yellow); }
+    .pl-box .s-count { color: var(--purple); }
+
+    .month-group-title {
+      font-size: 11px;
+      font-weight: bold;
+      color: var(--accent);
+      margin: 12px 0 8px 0;
+      text-transform: uppercase;
+      border-bottom: 1px dashed var(--border);
+      padding-bottom: 4px;
+    }
+
+    .compact-leave-list { display: flex; flex-direction: column; gap: 8px; }
+    .compact-item {
+      background: #0d1117;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .compact-item:hover { border-color: var(--accent); }
+
+    .compact-item.is-clash {
+      border: 1px solid var(--orange) !important;
+      background: rgba(240, 136, 62, 0.08) !important;
+    }
+
+    .compact-name-wrap { display: flex; align-items: center; gap: 8px; }
+    .compact-name { font-size: 12px; font-weight: 600; color: #f0f6fc; }
+    
+    .shift-tag-s {
+      background: rgba(210, 153, 34, 0.2);
+      color: var(--yellow);
+      font-size: 9px;
+      font-weight: bold;
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid var(--yellow);
+    }
+    .shift-tag-m {
+      background: rgba(163, 113, 247, 0.2);
+      color: var(--purple);
+      font-size: 9px;
+      font-weight: bold;
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid var(--purple);
+    }
+
+    .compact-right { display: flex; align-items: center; gap: 6px; }
+    .compact-date { font-size: 11px; color: #8b949e; }
+
+    .clash-tag {
+      background: rgba(240, 136, 62, 0.2);
+      color: var(--orange);
+      font-size: 9px;
+      font-weight: bold;
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid var(--orange);
+    }
+
+    .halfday-tag {
+      background: rgba(57, 211, 83, 0.15);
+      color: var(--teal);
+      font-size: 9px;
+      font-weight: bold;
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid var(--teal);
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.75);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      padding: 15px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .modal-overlay.active { opacity: 1; pointer-events: auto; }
+    .modal-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; width: 100%; max-width: 400px; padding: 20px; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 14px; }
+    .modal-header h3 { font-size: 14px; margin: 0; color: var(--accent); }
+    .close-btn { background: none; border: none; color: #8b949e; font-size: 18px; cursor: pointer; }
+    .modal-row { margin-bottom: 12px; font-size: 12px; }
+    .modal-label { font-size: 10px; color: #8b949e; text-transform: uppercase; margin-bottom: 2px; }
+    .modal-val { font-size: 13px; color: #f0f6fc; font-weight: 500; }
+
+    .clash-alert-box {
+      background: rgba(240, 136, 62, 0.12);
+      border: 1px solid var(--orange);
+      border-radius: 6px;
+      padding: 8px;
+      margin-bottom: 10px;
+      font-size: 11px;
+      color: var(--orange);
+    }
+
+    .badge { padding: 3px 8px; border-radius: 12px; font-size: 10px; font-weight: bold; display: inline-block; }
+    .badge-AL { background: rgba(88,166,255,0.15); color: var(--accent); }
+    .badge-MC { background: rgba(248,81,73,0.15); color: var(--red); }
+    .badge-EL { background: rgba(210,153,34,0.15); color: var(--yellow); }
+    .badge-PL { background: rgba(163,113,247,0.15); color: var(--purple); }
+    .badge-UL { background: rgba(139,148,158,0.2); color: #8b949e; }
+    .badge-PH { background: rgba(255, 123, 114, 0.15); color: var(--pink); border: 1px solid var(--pink); }
+  </style>
+</head>
+<body>
+
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <h2> Akses Terhad</h2>
+    <p>Sila masukkan Kata Laluan Portal QA (Shift C) untuk teruskan.</p>
+    <input type="password" id="passInput" class="login-input" placeholder="••••••••">
+    <button type="button" id="loginBtn" class="login-btn">Masuk Portal</button>
+    <div class="login-error" id="loginError">❌ Kata Laluan Salah! Sila cuba lagi.</div>
+  </div>
+</div>
+
+<div class="container">
+  <header class="header">
+    <h1>PORTAL KEHADIRAN QA</h1>
+    <p>Sistem Perekodan Cuti & Pemantauan Shift C (Real-Time Database)</p>
+    <div class="shift-badge">SHIFT C | QA DEPT</div>
+  </header>
+
+  <div class="grid-top">
+    <div class="card">
+      <h2> Borang Permohonan / Rekod Cuti</h2>
+      <form id="leaveForm">
+        <div class="form-group">
+          <label>Pilih Nama Technician:</label>
+          <select id="techName" required>
+            <option value="" disabled selected>-- Pilih Nama Anda --</option>
+            <option value="Muhammad Adib Bin Noordin">Muhammad Adib Bin Noordin (#00071)</option>
+            <option value="Abu Hanifah Bin Muhamdhazir">Abu Hanifah Bin Muhamdhazir (#00072)</option>
+            <option value="Muhamad Fadli Bin Zolkifli">Muhamad Fadli Bin Zolkifli (#00165)</option>
+            <option value="Mohd Syazwan Bin Abdul Rahim">Mohd Syazwan Bin Abdul Rahim (#00287)</option>
+            <option value="Muhammad Daniel Bin Zul Karnain">Muhammad Daniel Bin Zul Karnain (#00513)</option>
+            <option value="Muhammad Aniff Izzat Akmal Bin Abu Hassan">Muhammad Aniff Izzat Akmal Bin Abu Hassan (#00981)</option>
+            <option value="Muhamad Fakhrul Imran Bin Mohamad Khairi">Muhamad Fakhrul Imran Bin Mohamad Khairi (#01086)</option>
+          </select>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Jenis Cuti:</label>
+            <select id="leaveType" required>
+              <option value="AL">Cuti Tahunan (AL)</option>
+              <option value="EL">Cuti Kecemasan (EL - Potong AL)</option>
+              <option value="MC">Sijil Sakit (MC)</option>
+              <option value="PL">Cuti Paternity (PL)</option>
+              <option value="UL">Cuti Tanpa Gaji (UL)</option>
+              <option value="PH">Cuti Umum (Public Holiday - Tanpa Had)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Pilihan Shift:</label>
+            <select id="shiftType" required>
+              <option value="Siang">☀️ Siang</option>
+              <option value="Malam">🌙 Malam</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Tarikh Mula:</label>
+            <input type="date" id="startDate" required>
+          </div>
+          <div class="form-group">
+            <label>Tarikh Tamat:</label>
+            <input type="date" id="endDate" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Tempoh Cuti:</label>
+          <select id="durationOption" required>
+            <option value="Full">Penuh (Full Day)</option>
+            <option value="1stHalf">1st Half (0.5 Hari)</option>
+            <option value="2ndHalf">2nd Half (0.5 Hari)</option>
+          </select>
+        </div>
+
+        <div class="day-count-badge" id="dayCountBadge">Jumlah Hari: 1 Hari</div>
+
+        <div class="form-group">
+          <label>Sebab / Catatan:</label>
+          <input type="text" id="leaveReason" placeholder="Contoh: Demam / Hal Keluarga" required>
+        </div>
+
+        <button type="submit" class="btn-submit">Hantar Rekod Cuti</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2> Carta Ranking MC (Shift C)</h2>
+      <p class="sub-text">Jumlah hari MC mengikut juruteknik</p>
+      <div class="ranking-list" id="mcRankingList"></div>
+    </div>
+  </div>
+
+  <div class="grid-middle">
+    <div class="card">
+      <h2 id="statTitle"> Ringkasan Baki Cuti</h2>
+      <div class="stat-boxes">
+        <div class="s-box al-box"><span class="s-label">AL Taken (Termasuk EL)</span><span class="s-count" id="countAL">0 Hari</span></div>
+        <div class="s-box mc-box"><span class="s-label">MC Taken</span><span class="s-count" id="countMC">0 / 18</span></div>
+        <div class="s-box el-box"><span class="s-label">EL Taken</span><span class="s-count" id="countEL">0 Hari</span></div>
+        <div class="s-box pl-box"><span class="s-label">PL Taken</span><span class="s-count" id="countPL">0 Hari</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <button type="button" class="btn-toggle-supervisor" id="toggleSupBtn"> Mod Penyelia</button>
+      <h2>⚙️ Pelarasan Cuti</h2>
+      <p class="sub-text">Kemaskini rekod terdahulu</p>
+      
+      <div id="supervisorSection" style="display: none; border-top: 1px dashed var(--border); padding-top: 12px; margin-top: 5px;">
+        <form id="editForm">
+          <div class="form-group">
+            <select id="editTechName" required>
+              <option value="" disabled selected>-- Pilih Staff --</option>
+              <option value="Muhammad Adib Bin Noordin">Muhammad Adib Bin Noordin</option>
+              <option value="Abu Hanifah Bin Muhamdhazir">Abu Hanifah Bin Muhamdhazir</option>
+              <option value="Muhamad Fadli Bin Zolkifli">Muhamad Fadli Bin Zolkifli</option>
+              <option value="Mohd Syazwan Bin Abdul Rahim">Mohd Syazwan Bin Abdul Rahim</option>
+              <option value="Muhammad Daniel Bin Zul Karnain">Muhammad Daniel Bin Zul Karnain</option>
+              <option value="Muhammad Aniff Izzat Akmal Bin Abu Hassan">Muhammad Aniff Izzat Akmal Bin Abu Hassan</option>
+              <option value="Muhamad Fakhrul Imran Bin Mohamad Khairi">Muhamad Fakhrul Imran Bin Mohamad Khairi</option>
+            </select>
+          </div>
+          <div class="form-row-mini">
+            <div><label>AL</label><input type="number" id="editAL" step="0.5" min="0" value="0"></div>
+            <div><label>MC</label><input type="number" id="editMC" step="0.5" min="0" value="0"></div>
+            <div><label>EL</label><input type="number" id="editEL" step="0.5" min="0" value="0"></div>
+            <div><label>PL</label><input type="number" id="editPL" step="0.5" min="0" value="0"></div>
+          </div>
+          <button type="submit" class="btn-update">Kemaskini Rekod</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2> Senarai Plan Cuti (Mengikut Bulan)</h2>
+    <p class="sub-text">Disusun mengikut bulan dan tarikh. Simbol [S] Siang, [M] Malam. Tekan untuk perincian.</p>
+    <div id="leaveCardsContainer" class="compact-leave-list"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="detailModal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3> Maklumat Terperinci Cuti</h3>
+      <button type="button" class="close-btn" id="closeModalBtn">✕</button>
+    </div>
+    <div id="modalClashContainer"></div>
+    <div class="modal-row"><div class="modal-label">Nama Technician</div><div class="modal-val" id="mName">-</div></div>
+    <div style="display: flex; gap: 15px;" class="modal-row">
+      <div><div class="modal-label">Jenis Cuti</div><div id="mType">-</div></div>
+      <div><div class="modal-label">Shift</div><div id="mShift" style="color: var(--yellow); font-weight: bold;">-</div></div>
+      <div><div class="modal-label">Jumlah Tempoh</div><div class="modal-val" id="mDays" style="color: var(--accent);">-</div></div>
+    </div>
+    <div class="modal-row"><div class="modal-label">Tarikh Cuti</div><div class="modal-val" id="mDates">-</div></div>
+    <div class="modal-row" id="mHalfDayRow" style="display:none;"><div class="modal-label">Maklumat Half Day</div><div class="modal-val" id="mHalfDayVal" style="color: var(--teal); font-weight: bold;">-</div></div>
+    <div class="modal-row"><div class="modal-label">Sebab / Catatan</div><div class="modal-val" id="mReason">-</div></div>
+    <button type="button" class="btn-delete" id="deleteLeaveBtn">️ Padam Rekod Ini</button>
+  </div>
+</div>
+
+<!-- SCRIPTS FIREBASE MODULAR (ESM) -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCjefti7PCPCQncKEdve5GZUecWDNnH3l8",
+    authDomain: "qa-attendance-e9de0.firebaseapp.com",
+    projectId: "qa-attendance-e9de0",
+    storageBucket: "qa-attendance-e9de0.firebasestorage.app",
+    messagingSenderId: "940673861320",
+    appId: "1:940673861320:web:502f77c4e840e0bec887fd"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  const SECRET_PASSWORD = "QA2026";
+  const SUPERVISOR_PIN = "9988";
+  let activeLeaveId = null;
+
+  function getTodayDateString() {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  // Tetapan had tarikh minimum berlandaskan jenis cuti (MC & EL boleh backdated)
+  function updateDateConstraint() {
+    const leaveType = document.getElementById("leaveType").value;
+    const startInput = document.getElementById("startDate");
+    const endInput = document.getElementById("endDate");
+    
+    if (leaveType === "MC" || leaveType === "EL") {
+      startInput.removeAttribute("min");
+      endInput.removeAttribute("min");
+    } else {
+      const todayStr = getTodayDateString();
+      startInput.setAttribute("min", todayStr);
+      endInput.setAttribute("min", todayStr);
+    }
+  }
+
+  document.getElementById("leaveType").addEventListener("change", updateDateConstraint);
+  updateDateConstraint();
+
+  function checkPassword() {
+    const inputEl = document.getElementById("passInput");
+    const errorEl = document.getElementById("loginError");
+    const overlayEl = document.getElementById("loginOverlay");
+    
+    if (!inputEl) return;
+    
+    const inputVal = inputEl.value.trim();
+    if (inputVal === SECRET_PASSWORD) {
+      sessionStorage.setItem("qa_authenticated", "true");
+      if (overlayEl) overlayEl.style.display = "none";
+    } else {
+      if (errorEl) errorEl.style.display = "block";
+    }
+  }
+
+  window.checkPassword = checkPassword;
+
+  document.getElementById("loginBtn").addEventListener("click", checkPassword);
+  document.getElementById("passInput").addEventListener("keypress", function(e) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      checkPassword();
+    }
+  });
+
+  if (sessionStorage.getItem("qa_authenticated") === "true") {
+    const overlayEl = document.getElementById("loginOverlay");
+    if (overlayEl) overlayEl.style.display = "none";
+  }
+
+  document.getElementById("toggleSupBtn").addEventListener("click", function() {
+    const section = document.getElementById("supervisorSection");
+    if (section.style.display === "none") {
+      const pin = prompt(" Sila masukkan PIN Penyelia untuk melaraskan cuti:");
+      if (pin === SUPERVISOR_PIN) {
+        section.style.display = "block";
+        alert("✅ Akses Penyelia Dibenarkan.");
+      } else if (pin !== null) {
+        alert("❌ PIN Penyelia Salah!");
+      }
+    } else {
+      section.style.display = "none";
+    }
+  });
+
+  let technicians = [
+    { name: "Muhammad Adib Bin Noordin", AL: 0, MC: 0, EL: 0, PL: 0, UL: 0 },
+    { name: "Abu Hanifah Bin Muhamdhazir", AL: 0, MC: 0, EL: 0, PL: 0, UL: 0 },
+    { name: "Muhamad Fadli Bin Zolkifli", AL: 0, MC: 0, EL: 0, PL: 0, UL: 0 },
+    { name: "Mohd Syazwan Bin Abdul Rahim", AL: 0, MC: 0, EL: 0, PL: 0, UL: 0 },
+    { name: "Muhammad Daniel Bin Zul Karnain", AL: 0, MC: 0, EL: 0, PL: 0, UL: 0 },
+    { name: "Muhammad Aniff Izzat Akmal Bin Abu Hassan", AL: 0, MC: 0, EL: 0, PL: 0, UL: 0 },
+    { name: "Muhamad Fakhrul Imran Bin Mohamad Khairi", AL: 0, MC: 0, EL: 0, PL: 0, UL: 0 }
+  ];
+
+  let leaveLogs = [];
+
+  function isDateOverlapping(start1, end1, start2, end2) {
+    return new Date(start1) <= new Date(end2) && new Date(end1) >= new Date(start2);
+  }
+
+  function formatDateDDMMYY(dateString) {
+    if (!dateString) return "";
+    const parts = dateString.split("-");
+    if (parts.length !== 3) return dateString;
+    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+  }
+
+  onSnapshot(collection(db, "leaves"), (snapshot) => {
+    leaveLogs = [];
+    snapshot.forEach(docSnap => leaveLogs.push({ id: docSnap.id, ...docSnap.data() }));
+    renderLogs();
+    renderMCRanking();
+    updatePersonalStats();
+  });
+
+  onSnapshot(collection(db, "stats"), (snapshot) => {
+    snapshot.forEach(docSnap => {
+      const data = docSnap.data();
+      const tech = technicians.find(t => t.name === docSnap.id);
+      if (tech) {
+        tech.AL = data.AL || 0;
+        tech.MC = data.MC || 0;
+        tech.EL = data.EL || 0;
+        tech.PL = data.PL || 0;
+      }
+    });
+    renderMCRanking();
+    updatePersonalStats();
+  });
+
+  function calculateDays() {
+    const start = document.getElementById('startDate').value;
+    const end = document.getElementById('endDate').value;
+    const durationOpt = document.getElementById('durationOption').value;
+
+    if (start && end) {
+      const d1 = new Date(start); const d2 = new Date(end);
+      if (d2 < d1) { document.getElementById('dayCountBadge').innerText = "❌ Tarikh Tamat tidak sah!"; return 0; }
+      
+      let diff = Math.ceil(Math.abs(d2 - d1) / (1000 * 60 * 60 * 24)) + 1;
+      
+      if (durationOpt === '1stHalf' || durationOpt === '2ndHalf') {
+        if (diff > 1) {
+          document.getElementById('dayCountBadge').innerText = "❌ Half Day hanya untuk 1 hari sahaja!";
+          return 0;
+        }
+        diff = 0.5;
+        document.getElementById('dayCountBadge').innerText = `Jumlah Hari: 0.5 Hari (${durationOpt})`;
+      } else {
+        document.getElementById('dayCountBadge').innerText = `Jumlah Hari: ${diff} Hari`;
+      }
+      return diff;
+    }
+    return 1;
+  }
+
+  document.getElementById('startDate').addEventListener('change', calculateDays);
+  document.getElementById('endDate').addEventListener('change', calculateDays);
+  document.getElementById('durationOption').addEventListener('change', calculateDays);
+
+  function renderMCRanking() {
+    const currentYear = new Date().getFullYear();
+    let mcTotalsByTech = {};
+    technicians.forEach(t => mcTotalsByTech[t.name] = 0);
+
+    leaveLogs.forEach(log => {
+      if (log.type === 'MC' && log.startDate) {
+        const startYear = new Date(log.startDate).getFullYear();
+        if (startYear === currentYear) {
+          if (mcTotalsByTech[log.name] !== undefined) {
+            mcTotalsByTech[log.name] += Number(log.days || 0);
+          }
+        }
+      }
+    });
+
+    technicians.forEach(t => {
+      if (t.MC > mcTotalsByTech[t.name]) {
+        mcTotalsByTech[t.name] = t.MC;
+      }
+    });
+
+    const sorted = [...technicians].map(t => ({
+      ...t,
+      currentYearMC: mcTotalsByTech[t.name] || t.MC || 0
+    })).sort((a, b) => b.currentYearMC - a.currentYearMC);
+
+    const container = document.getElementById("mcRankingList");
+    if(!container) return;
+    container.innerHTML = "";
+    sorted.forEach((tech, index) => {
+      container.innerHTML += `
+        <div class="rank-item">
+          <span class="rank-num">#${index + 1}</span>
+          <span class="rank-name">${tech.name}</span>
+          <div class="rank-bar-bg"><div class="rank-bar-fill" style="width: ${Math.min((tech.currentYearMC / 18) * 100, 100)}%;"></div></div>
+          <span class="rank-val">${tech.currentYearMC} H</span>
+        </div>`;
+    });
+  }
+
+  function updatePersonalStats() {
+    const nameEl = document.getElementById("techName");
+    if (!nameEl) return;
+    const name = nameEl.value;
+    const tech = technicians.find(t => t.name === name);
+    if (tech) {
+      const firstName = tech.name.split(' ')[0];
+      document.getElementById("statTitle").innerText = ` Rekod: ${firstName}`;
+      
+      let cAL = tech.AL || 0; 
+      let cMC = tech.MC || 0; 
+      let cEL = tech.EL || 0; 
+      let cPL = tech.PL || 0;
+
+      document.getElementById("countAL").innerText = `${cAL} Hari`;
+      document.getElementById("countMC").innerText = `${cMC} / 18`;
+      document.getElementById("countEL").innerText = `${cEL} Hari`;
+      document.getElementById("countPL").innerText = `${cPL} Hari`;
+    }
+  }
+
+  document.getElementById("techName").addEventListener("change", updatePersonalStats);
+
+  function openModal(id) {
+    const log = leaveLogs.find(l => l.id === id);
+    if (!log) return;
+    activeLeaveId = id;
+    
+    const clashPeers = leaveLogs.filter(other => 
+      other.id !== log.id && 
+      other.name !== log.name && 
+      isDateOverlapping(log.startDate, log.endDate, other.startDate, other.endDate)
+    );
+
+    const clashContainer = document.getElementById("modalClashContainer");
+    if (clashPeers.length > 0) {
+      let peerNames = clashPeers.map(p => `• ${p.name} (${formatDateDDMMYY(p.startDate)} - ${formatDateDDMMYY(p.endDate)})`).join("<br>");
+      clashContainer.innerHTML = `
+        <div class="clash-alert-box">
+          <b>⚠️ Amaran Pertindihan Tarikh:</b><br>
+          Cuti ini bertindih dengan rakan berikut:<br>${peerNames}
+        </div>`;
+    } else {
+      clashContainer.innerHTML = "";
+    }
+
+    document.getElementById("mName").innerText = log.name;
+    document.getElementById("mType").innerHTML = `<span class="badge badge-${log.type}">${log.type}</span>`;
+    document.getElementById("mShift").innerText = log.shift ? (log.shift === "Malam" ? " Malam" : "☀️ Siang") : "☀️ Siang";
+    document.getElementById("mDays").innerText = `${log.days} Hari`;
+    document.getElementById("mDates").innerText = `${formatDateDDMMYY(log.startDate)} hingga ${formatDateDDMMYY(log.endDate)}`;
+    document.getElementById("mReason").innerText = log.reason;
+
+    const halfDayRow = document.getElementById("mHalfDayRow");
+    const halfDayVal = document.getElementById("mHalfDayVal");
+    if (log.durationOption === "1stHalf") {
+      halfDayRow.style.display = "block";
+      halfDayVal.innerText = "1st Half (0.5 Hari)";
+    } else if (log.durationOption === "2ndHalf") {
+      halfDayRow.style.display = "block";
+      halfDayVal.innerText = "2nd Half (0.5 Hari)";
+    } else {
+      halfDayRow.style.display = "none";
+    }
+
+    document.getElementById("detailModal").classList.add("active");
+  }
+  window.openModal = openModal;
+
+  function closeModal() { 
+    activeLeaveId = null;
+    document.getElementById("detailModal").classList.remove("active"); 
+  }
+  document.getElementById("closeModalBtn").addEventListener("click", closeModal);
+
+  function renderLogs() {
+    const container = document.getElementById("leaveCardsContainer");
+    if (!container) return;
+    container.innerHTML = "";
+    if (leaveLogs.length === 0) {
+      container.innerHTML = `<div style="text-align:center; color:#8b949e; padding:15px; font-size:12px;">Tiada perancangan cuti.</div>`;
+      return;
+    }
+    
+    leaveLogs.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+    
+    const groupedByMonth = {};
+    leaveLogs.forEach(log => {
+      const monthKey = log.startDate ? log.startDate.substring(0, 7) : "Lain-lain";
+      if (!groupedByMonth[monthKey]) groupedByMonth[monthKey] = [];
+      groupedByMonth[monthKey].push(log);
+    });
+
+    const monthNames = {
+      "01": "JANUARI", "02": "FEBRUARI", "03": "MAC", "04": "APRIL",
+      "05": "MEI", "06": "JUN", "07": "JULAI", "08": "OGOS",
+      "09": "SEPTEMBER", "10": "OKTOBER", "11": "NOVEMBER", "12": "DISEMBER"
+    };
+
+    Object.keys(groupedByMonth).sort().forEach(monthKey => {
+      let monthLabel = monthKey;
+      if (monthKey.length === 7) {
+        const parts = monthKey.split("-");
+        monthLabel = `${monthNames[parts[1]] || parts[1]} ${parts[0]}`;
+      }
+
+      container.innerHTML += `<div class="month-group-title"> ${monthLabel}</div>`;
+
+      groupedByMonth[monthKey].forEach(log => {
+        const hasClash = leaveLogs.some(other => 
+          other.id !== log.id && 
+          other.name !== log.name && 
+          isDateOverlapping(log.startDate, log.endDate, other.startDate, other.endDate)
+        );
+
+        const formattedStart = formatDateDDMMYY(log.startDate);
+        const formattedEnd = formatDateDDMMYY(log.endDate);
+        const shiftVal = log.shift || "Siang";
+        const shiftTag = shiftVal === "Malam" ? '<span class="shift-tag-m">[M]</span>' : '<span class="shift-tag-s">[S]</span>';
+        
+        let extraTag = '';
+        if (log.durationOption === '1stHalf') {
+          extraTag = '<span class="halfday-tag">1st Half (0.5H)</span>';
+        } else if (log.durationOption === '2ndHalf') {
+          extraTag = '<span class="halfday-tag">2nd Half (0.5H)</span>';
+        }
+
+        container.innerHTML += `
+          <div class="compact-item ${hasClash ? 'is-clash' : ''}" onclick="openModal('${log.id}')">
+            <div class="compact-name-wrap">
+              ${shiftTag}
+              <span class="compact-name">${log.name}</span>
+            </div>
+            <div class="compact-right">
+              ${extraTag}
+              ${hasClash ? '<span class="clash-tag">⚠️ BERTINDIH</span>' : ''}
+              <span class="compact-date">${formattedStart} ➔ ${formattedEnd}</span>
+            </div>
+          </div>`;
+      });
+    });
+  }
+
+  const leaveFormEl = document.getElementById("leaveForm");
+  if (leaveFormEl) {
+    leaveFormEl.addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const name = document.getElementById("techName").value;
+      const type = document.getElementById("leaveType").value;
+      const shift = document.getElementById("shiftType").value;
+      const startDate = document.getElementById("startDate").value;
+      const endDate = document.getElementById("endDate").value;
+      const durationOption = document.getElementById("durationOption").value;
+      const reason = document.getElementById("leaveReason").value;
+      const days = calculateDays();
+
+      if (days <= 0) {
+        alert("❌ Sila pastikan Julat Tarikh Cuti dan Tempoh adalah sah!");
+        return;
+      }
+
+      const selfOverlap = leaveLogs.some(log => 
+        log.name === name && 
+        isDateOverlapping(startDate, endDate, log.startDate, log.endDate)
+      );
+
+      if (selfOverlap) {
+        alert(`❌ PERTINDIHAN DIKESAN!\n\n${name} telah mempunyai rekod cuti yang bertindih pada julat tarikh ini.`);
+        return;
+      }
+
+      const peerOverlap = leaveLogs.some(log => 
+        log.name !== name && 
+        isDateOverlapping(startDate, endDate, log.startDate, log.endDate)
+      );
+
+      if (peerOverlap) {
+        alert("⚠️ AMARAN: Tarikh cuti yang anda pilih bertindih dengan cuti rakan sekerja lain pada tempoh yang sama!");
+      }
+
+      try {
+        await addDoc(collection(db, "leaves"), { name, type, shift, startDate, endDate, durationOption, days, reason });
+        const currentYear = new Date().getFullYear();
+        const startYear = new Date(startDate).getFullYear();
+
+        // Cuti PH (Public Holiday) tidak menjejaskan baki kuota (no limit)
+        if (startYear === currentYear && type !== 'PH') {
+          const tech = technicians.find(t => t.name === name);
+          if (tech) {
+            let addAL = (type === 'AL' || type === 'EL') ? days : 0;
+            let addEL = (type === 'EL') ? days : 0;
+            let addMC = (type === 'MC') ? days : 0;
+            let addPL = (type === 'PL') ? days : 0;
+
+            await setDoc(doc(db, "stats", name), {
+              AL: (tech.AL || 0) + addAL,
+              MC: (tech.MC || 0) + addMC,
+              EL: (tech.EL || 0) + addEL,
+              PL: (tech.PL || 0) + addPL
+            }, { merge: true });
+          }
+        }
+        alert("✅ Rekod Cuti Disimpan ke Server!");
+        document.getElementById("leaveReason").value = "";
+      } catch (error) {
+        alert("❌ Ralat: " + error.message);
+      }
+    });
+  }
+
+  const editFormEl = document.getElementById("editForm");
+  if (editFormEl) {
+    editFormEl.addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const name = document.getElementById("editTechName").value;
+      if (!name) {
+        alert("❌ Sila pilih nama staff terlebih dahulu.");
+        return;
+      }
+      
+      const newAL = parseFloat(document.getElementById("editAL").value) || 0;
+      const newMC = parseFloat(document.getElementById("editMC").value) || 0;
+      const newEL = parseFloat(document.getElementById("editEL").value) || 0;
+      const newPL = parseFloat(document.getElementById("editPL").value) || 0;
+
+      try {
+        await setDoc(doc(db, "stats", name), {
+          AL: newAL,
+          MC: newMC,
+          EL: newEL,
+          PL: newPL
+        }, { merge: true });
+
+        const tech = technicians.find(t => t.name === name);
+        if (tech) {
+          tech.AL = newAL;
+          tech.MC = newMC;
+          tech.EL = newEL;
+          tech.PL = newPL;
+        }
+        renderMCRanking();
+        updatePersonalStats();
+        alert("✅ Rekod Pelarasan Berjaya Disimpan dan Dikemaskini!");
+      } catch (error) {
+        alert("❌ Ralat semasa menyimpan: " + error.message);
+      }
+    });
+  }
+
+  document.getElementById("deleteLeaveBtn").addEventListener("click", async function() {
+    if (!activeLeaveId) return;
+    
+    if (!confirm("Adakah anda pasti mahu memadam rekod cuti ini? Kiraan baki cuti akan dikemaskini semula.")) {
+      return;
+    }
+
+    const logToDel = leaveLogs.find(l => l.id === activeLeaveId);
+    if (!logToDel) return;
+
+    try {
+      await deleteDoc(doc(db, "leaves", activeLeaveId));
+      const currentYear = new Date().getFullYear();
+      const startYear = logToDel.startDate ? new Date(logToDel.startDate).getFullYear() : currentYear;
+
+      if (startYear === currentYear && logToDel.type !== 'PH') {
+        const tech = technicians.find(t => t.name === logToDel.name);
+        if (tech) {
+          let subAL = (logToDel.type === 'AL' || logToDel.type === 'EL') ? logToDel.days : 0;
+          let subEL = (logToDel.type === 'EL') ? logToDel.days : 0;
+          let subMC = (logToDel.type === 'MC') ? logToDel.days : 0;
+          let subPL = (logToDel.type === 'PL') ? logToDel.days : 0;
+
+          await setDoc(doc(db, "stats", logToDel.name), {
+            AL: Math.max(0, tech.AL - subAL),
+            MC: Math.max(0, tech.MC - subMC),
+            EL: Math.max(0, tech.EL - subEL),
+            PL: Math.max(0, tech.PL - subPL)
+          }, { merge: true });
+        }
+      }
+      alert("️ Rekod telah berjaya dipadam.");
+      closeModal();
+    } catch (error) {
+      alert("❌ Ralat semasa memadam: " + error.message);
+    }
+  });
+</script>
+</body>
+</html>
+
