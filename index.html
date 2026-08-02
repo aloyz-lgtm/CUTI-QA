@@ -459,7 +459,7 @@
 
 <div class="login-overlay" id="loginOverlay">
   <div class="login-card">
-    <h2>🔐 Akses Terhad</h2>
+    <h2>🔒 Akses Terhad</h2>
     <p>Sila masukkan Kata Laluan Portal QA (Shift C) untuk meneruskan.</p>
     <input type="password" id="passInput" class="login-input" placeholder="••••••••">
     <button type="button" id="loginBtn" class="login-btn">Masuk Portal</button>
@@ -577,7 +577,7 @@
 
         <div class="card">
           <h2 id="statTitle">
-            <span>📈 Ringkasan Baki Cuti</span>
+            <span>📉 Ringkasan Baki Cuti</span>
             <select id="statFilterTech" style="width: 160px; font-size: 11px; padding: 6px 10px; background:#030712; color:var(--accent); border:1px solid var(--border); border-radius:8px; display:inline-block; font-weight:800;">
               <option value="ALL">-- Semua Staf --</option>
               <option value="Muhammad Adib Bin Noordin">Muhammad Adib Bin Noordin</option>
@@ -865,358 +865,267 @@
             const name = input.getAttribute('data-tech');
             const type = input.getAttribute('data-type');
             await addDoc(collection(db, "leaves"), {
-              name, type, startDate: todayStr, endDate: todayStr, days: val,
-              reason: 'Rekod Cuti Lepas / Awal Tahun',
+              name: name,
+              type: type,
+              startDate: todayStr,
+              endDate: todayStr,
+              duration: val,
+              reason: "Rekod Cuti Lepas / Terkumpul (Bulk)",
               timestamp: Date.now(),
-              isOverlap: false,
-              isPastRecord: true
+              isPastRecord: true,
+              days: val
             });
           }
         }
-
-        alert("✅ Semua rekod cuti berjaya dikemaskini sekaligus!");
+        alert("✅ Rekod cuti sekaligus berjaya disimpan!");
         document.getElementById("detailModal").classList.remove("active");
       } catch (err) {
-        alert("❌ Ralat: " + err.message);
+        console.error(err);
+        alert("❌ Ralat menyimpan data: " + err.message);
       }
     });
   };
+
+  document.getElementById("leaveForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+    const name = document.getElementById("techName").value;
+    const type = document.getElementById("leaveType").value;
+    const startDate = document.getElementById("startDate").value;
+    const endDate = document.getElementById("endDate").value;
+    const durationOption = document.getElementById("durationOption").value;
+    const reason = document.getElementById("leaveReason").value;
+
+    if (startDate > endDate) {
+      alert("❌ Tarikh Mula tidak boleh lewat dari Tarikh Tamat!");
+      return;
+    }
+
+    let calculatedDays = 1;
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const diffTime = Math.abs(end - start);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+
+    if (durationOption === 'Full') {
+      calculatedDays = diffDays;
+    } else {
+      calculatedDays = 0.5;
+    }
+
+    try {
+      await addDoc(collection(db, "leaves"), {
+        name,
+        type,
+        startDate,
+        endDate,
+        duration: durationOption,
+        days: calculatedDays,
+        reason,
+        timestamp: Date.now(),
+        isPastRecord: false
+      });
+      alert("✅ Permohonan Cuti berjaya dihantar!");
+      document.getElementById("leaveForm").reset();
+      document.getElementById("dayCountBadge").innerText = "Jumlah Hari: 1 Hari";
+    } catch(err) {
+      console.error(err);
+      alert("❌ Ralat: " + err.message);
+    }
+  });
+
+  const startDateInput = document.getElementById("startDate");
+  const endDateInput = document.getElementById("endDate");
+  const durationOptionSelect = document.getElementById("durationOption");
+
+  function updateDayCount() {
+    const s = startDateInput.value;
+    const e = endDateInput.value;
+    const durOpt = durationOptionSelect.value;
+    const badge = document.getElementById("dayCountBadge");
+
+    if (!s) {
+      badge.innerText = "Jumlah Hari: 1 Hari";
+      return;
+    }
+    if (!e || s === e) {
+      endDateInput.value = s;
+      if (durOpt === 'Full') {
+        badge.innerText = "Jumlah Hari: 1 Hari";
+      } else {
+        badge.innerText = "Jumlah Hari: 0.5 Hari (Separuh Hari)";
+      }
+    } else {
+      const d1 = new Date(s);
+      const d2 = new Date(e);
+      if (d2 < d1) {
+        badge.innerText = "❌ Tarikh Tamat tidak boleh awal dari Tarikh Mula";
+        return;
+      }
+      const diffTime = Math.abs(d2 - d1);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+      if (durOpt === 'Full') {
+        badge.innerText = `Jumlah Hari: ${diffDays} Hari`;
+      } else {
+        badge.innerText = `Jumlah Hari: 0.5 Hari (Separuh Hari daripada ${diffDays} hari julat)`;
+      }
+    }
+  }
+
+  startDateInput.addEventListener("change", updateDayCount);
+  endDateInput.addEventListener("change", updateDayCount);
+  durationOptionSelect.addEventListener("change", updateDayCount);
 
   document.getElementById("announcementForm").addEventListener("submit", async function(e) {
     e.preventDefault();
     const text = document.getElementById("announcementText").value;
     const fileInput = document.getElementById("announcementImgFile");
-    
-    let imageUrl = "";
+    let imgBase64 = "";
+
+    const saveAnnounce = async (imgData) => {
+      try {
+        await addDoc(collection(db, "announcements"), {
+          text,
+          image: imgData || "",
+          author: "Penyelia Shift C",
+          date: new Date().toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' }),
+          timestamp: Date.now()
+        });
+        alert("✅ Pengumuman berjaya disiarkan!");
+        document.getElementById("announcementForm").reset();
+        document.getElementById("supervisorAnnouncePanel").style.display = "none";
+      } catch(err) {
+        console.error(err);
+        alert("❌ Ralat menyiarkan pengumuman: " + err.message);
+      }
+    };
+
     if (fileInput.files && fileInput.files[0]) {
       const reader = new FileReader();
-      reader.onload = async function(uploadEvent) {
-        imageUrl = uploadEvent.target.result;
-        await saveAnnouncementData(text, imageUrl);
+      reader.onload = function(uploadEvent) {
+        imgBase64 = uploadEvent.target.result;
+        saveAnnounce(imgBase64);
       };
       reader.readAsDataURL(fileInput.files[0]);
     } else {
-      await saveAnnouncementData(text, "");
-    }
-  });
-
-  async function saveAnnouncementData(text, imageUrl) {
-    try {
-      const d = new Date();
-      const dateStr = `${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear()}`;
-      await addDoc(collection(db, "announcements"), {
-        text, imageUrl, date: dateStr, author: "Penyelia Shift C", timestamp: Date.now()
-      });
-      alert("✅ Pengumuman berjaya disiarkan!");
-      document.getElementById("announcementForm").reset();
-      document.getElementById("supervisorAnnouncePanel").style.display = "none";
-    } catch(err) {
-      alert("❌ Ralat: " + err.message);
-    }
-  }
-
-  function isDateOverlapping(start1, end1, start2, end2) {
-    const s1 = new Date(start1); s1.setHours(0,0,0,0);
-    const e1 = new Date(end1); e1.setHours(23,59,59,999);
-    const s2 = new Date(start2); s2.setHours(0,0,0,0);
-    const e2 = new Date(end2); e2.setHours(23,59,59,999);
-    return s1 <= e2 && e1 >= s2;
-  }
-
-  onSnapshot(collection(db, "leaves"), (snapshot) => {
-    leaveLogs = [];
-    snapshot.forEach(docSnap => leaveLogs.push({ id: docSnap.id, ...docSnap.data() }));
-    renderLogs();
-    renderMCRanking();
-    updateStats();
-    if(document.getElementById('calendarPage').classList.contains('active')) {
-      renderInteractiveCalendar();
+      saveAnnounce("");
     }
   });
 
   onSnapshot(collection(db, "announcements"), (snapshot) => {
     announcementsList = [];
-    snapshot.forEach(docSnap => announcementsList.push({ id: docSnap.id, ...docSnap.data() }));
+    snapshot.forEach((docSnap) => {
+      announcementsList.push({ id: docSnap.id, ...docSnap.data() });
+    });
+    announcementsList.sort((a, b) => b.timestamp - a.timestamp);
     renderAnnouncements();
-  });
-
-  function calculateDays() {
-    const startInput = document.getElementById('startDate').value;
-    const endInput = document.getElementById('endDate').value;
-    const duration = document.getElementById('durationOption').value;
-    const badge = document.getElementById('dayCountBadge');
-    
-    if (!startInput || !endInput) {
-      badge.innerText = "Jumlah Hari: 1 Hari";
-      return 1;
-    }
-
-    const d1 = new Date(startInput);
-    const d2 = new Date(endInput);
-    d1.setHours(0,0,0,0);
-    d2.setHours(0,0,0,0);
-
-    if (d2 < d1) {
-      badge.innerText = "❌ Tarikh tamat tidak boleh awal dari tarikh mula!";
-      return 0;
-    }
-
-    const diffTime = Math.abs(d2 - d1);
-    let diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24)) + 1;
-
-    if (duration === "1stHalf" || duration === "2ndHalf") {
-      diffDays = 0.5;
-    }
-
-    badge.innerText = `Jumlah Hari: ${diffDays} Hari`;
-    return diffDays;
-  }
-
-  document.getElementById('startDate').addEventListener('change', calculateDays);
-  document.getElementById('endDate').addEventListener('change', calculateDays);
-  document.getElementById('durationOption').addEventListener('change', calculateDays);
-
-  document.getElementById('leaveForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const name = document.getElementById('techName').value;
-    const type = document.getElementById('leaveType').value;
-    const startDate = document.getElementById('startDate').value;
-    const endDate = document.getElementById('endDate').value;
-    const duration = document.getElementById('durationOption').value;
-    const reason = document.getElementById('leaveReason').value;
-    const days = calculateDays();
-
-    if (days <= 0) {
-      alert("Sila semak tarikh mula dan tamat cuti dengan betul.");
-      return;
-    }
-
-    let isOverlap = false;
-    for (let log of leaveLogs) {
-      if (!log.isPastRecord && isDateOverlapping(startDate, endDate, log.startDate, log.endDate)) {
-        isOverlap = true;
-        break;
-      }
-    }
-
-    try {
-      await addDoc(collection(db, "leaves"), {
-        name, type, startDate, endDate, duration, days, reason,
-        timestamp: Date.now(),
-        isOverlap,
-        isPastRecord: false
-      });
-      alert(isOverlap ? "⚠️ Permohonan berjaya dihantar, TETAPI dikesan bertindih dengan cuti staf lain!" : "✅ Permohonan cuti berjaya dihantar!");
-      document.getElementById('leaveForm').reset();
-      document.getElementById('dayCountBadge').innerText = "Jumlah Hari: 1 Hari";
-    } catch(err) {
-      alert("❌ Ralat: " + err.message);
-    }
   });
 
   function renderAnnouncements() {
     const container = document.getElementById("announcementContainer");
-    if (!container) return;
-    if (announcementsList.length === 0) {
-      container.innerHTML = `<p style="font-size:12px; color:var(--text-muted); text-align:center; padding:10px;">Tiada pengumuman rasmi setakat ini.</p>`;
+    if (!announcementsList.length) {
+      container.innerHTML = `<p style="font-size:12px; color:var(--text-muted); text-align:center; padding:10px;">Tiada pengumuman rasmi buat masa ini.</p>`;
       return;
     }
 
-    announcementsList.sort((a,b) => b.timestamp - a.timestamp);
     let html = '';
     announcementsList.forEach(item => {
-      let imgHtml = item.imageUrl ? `<img src="${item.imageUrl}" class="announcement-img">` : '';
       html += `
         <div class="announcement-box">
           <div class="announcement-header">
-            <span class="announcement-author">👑 ${item.author}</span>
-            <span class="announcement-date">📅 ${item.date}</span>
+            <span class="announcement-author">📌 ${item.author}</span>
+            <span class="announcement-date">${item.date}</span>
           </div>
           <div class="announcement-content">${item.text}</div>
-          ${imgHtml}
-        </div>
-      `;
-    });
-    container.innerHTML = html;
-  }
-
-  function renderLogs() {
-    const container = document.getElementById("leaveCardsContainer");
-    if (!container) return;
-
-    const normalLeaves = leaveLogs.filter(l => !l.isPastRecord);
-    if (normalLeaves.length === 0) {
-      container.innerHTML = `<p style="font-size:12px; color:var(--text-muted); text-align:center; padding:20px;">Tiada permohonan cuti dalam rekod.</p>`;
-      return;
-    }
-
-    // Susun mengikut tarikh terdekat di atas (ascending startDate)
-    normalLeaves.sort((a,b) => new Date(a.startDate) - new Date(b.startDate));
-
-    // Kumpul mengikut bulan berdasarkan startDate
-    let groupedByMonth = {};
-    normalLeaves.forEach(log => {
-      const parts = log.startDate.split("-");
-      if (parts.length === 3) {
-        const y = parts[0];
-        const m = parseInt(parts[1], 10) - 1;
-        const key = `${y}-${m}`;
-        if (!groupedByMonth[key]) groupedByMonth[key] = { year: y, monthIdx: m, items: [] };
-        groupedByMonth[key].items.push(log);
-      }
-    });
-
-    let html = '';
-    Object.keys(groupedByMonth).sort().forEach(key => {
-      const group = groupedByMonth[key];
-      const monthTitle = `${monthNames[group.monthIdx]} ${group.year}`;
-      
-      html += `
-        <div class="month-group-container">
-          <div class="month-group-title">📅 ${monthTitle}</div>
-          <div class="compact-leave-list">
-      `;
-
-      group.items.forEach(log => {
-        const shiftInfo = getShiftStatusForDate(log.name, log.startDate);
-        let shiftBadgeClass = 'shift-badge-free';
-        if (shiftInfo.type === 'siang') shiftBadgeClass = 'shift-badge-siang';
-        else if (shiftInfo.type === 'malam') shiftBadgeClass = 'shift-badge-malam';
-
-        let overlapClass = log.isOverlap ? 'is-overlap' : '';
-        let warningBadge = log.isOverlap ? `<span class="warning-badge">⚠️ Bertindih</span>` : '';
-        let halfDayBadge = (log.duration && log.duration !== 'Full') ? `<span class="shift-badge-halfday">${log.duration === '1stHalf' ? '1st Half' : '2nd Half'}</span>` : '';
-        
-        let dateRangeStr = formatLeaveDateRange(log.startDate, log.endDate);
-
-        html += `
-          <div class="compact-item ${overlapClass}" onclick="openDetailModal('${log.id}')">
-            <div class="compact-name-wrap">
-              <span class="badge badge-${log.type}">${log.type}</span>
-              <span class="compact-name">${log.name}</span>
-              ${halfDayBadge}
-              ${warningBadge}
-            </div>
-            <div class="compact-right">
-              <span class="shift-badge-main ${shiftBadgeClass}">${shiftInfo.label}</span>
-              <span class="compact-date">${dateRangeStr} (${log.days}h)</span>
-            </div>
+          ${item.image ? `<img src="${item.image}" class="announcement-img" alt="Lampiran Pengumuman">` : ''}
+          <div style="margin-top: 10px; text-align: right;">
+            <button type="button" class="btn-action" style="background:var(--red); color:#fff; padding:4px 10px; font-size:10px;" onclick="deleteAnnouncement('${item.id}')">🗑️ Padam</button>
           </div>
-        `;
-      });
-
-      html += `</div></div>`;
+        </div>
+      `;
     });
-
     container.innerHTML = html;
   }
 
-  window.openDetailModal = function(id) {
-    const log = leaveLogs.find(l => l.id === id);
-    if (!log) return;
-
-    const modalBody = document.getElementById("modalBodyContent");
-    document.getElementById("modalHeaderTitle").innerText = `ℹ️ Perincian Cuti - ${log.name}`;
-
-    modalBody.innerHTML = `
-      <div class="modal-row">
-        <div class="modal-label">Jenis Cuti</div>
-        <div class="modal-val"><span class="badge badge-${log.type}">${log.type}</span> (${log.days} Hari)</div>
-      </div>
-      <div class="modal-row">
-        <div class="modal-label">Tarikh Mula & Tamat</div>
-        <div class="modal-val">${log.startDate} hingga ${log.endDate}</div>
-      </div>
-      <div class="modal-row">
-        <div class="modal-label">Tempoh / Sesi</div>
-        <div class="modal-val">${log.duration || 'Full Day'}</div>
-      </div>
-      <div class="modal-row">
-        <div class="modal-label">Sebab / Catatan</div>
-        <div class="modal-val">${log.reason || '-'}</div>
-      </div>
-      <div class="modal-row">
-        <div class="modal-label">Status Pertindihan Cuti</div>
-        <div class="modal-val" style="color:${log.isOverlap ? 'var(--orange)' : 'var(--green)'};">
-          ${log.isOverlap ? '⚠️ Dikesan bertindih dengan cuti staf lain' : '✅ Tiada pertindihan'}
-        </div>
-      </div>
-      <button type="button" class="btn-delete" onclick="deleteLeaveRecord('${log.id}')">🗑️ Padam Rekod Ini (Penyelia)</button>
-    `;
-
-    document.getElementById("detailModal").classList.add("active");
-  };
-
-  window.deleteLeaveRecord = async function(id) {
-    const pin = prompt("🔐 Sila masukkan PIN Penyelia untuk memadam rekod:");
-    if (pin !== SUPERVISOR_PIN) {
-      if (pin !== null) alert("❌ PIN Penyelia Salah!");
-      return;
-    }
-
-    if (confirm("Adakah anda pasti untuk memadam rekod cuti ini?")) {
+  window.deleteAnnouncement = async function(id) {
+    const pin = prompt("🔐 Masukkan PIN Penyelia untuk memadam pengumuman:");
+    if (pin === SUPERVISOR_PIN) {
       try {
-        await deleteDoc(doc(db, "leaves", id));
-        alert("✅ Rekod berjaya dipadam!");
-        document.getElementById("detailModal").classList.remove("active");
-      } catch (err) {
+        await deleteDoc(doc(db, "announcements", id));
+        alert("✅ Pengumuman dipadam.");
+      } catch(err) {
         alert("❌ Ralat: " + err.message);
       }
+    } else if (pin !== null) {
+      alert("❌ PIN Salah!");
     }
   };
 
-  function renderMCRanking() {
-    const container = document.getElementById("mcRankingList");
-    if (!container) return;
-
-    let mcCounts = {};
-    technicianList.forEach(tech => mcCounts[tech] = 0);
-
-    leaveLogs.forEach(log => {
-      if (log.type === 'MC' && mcCounts.hasOwnProperty(log.name)) {
-        mcCounts[log.name] += Number(log.days || 0);
-      }
+  onSnapshot(collection(db, "leaves"), (snapshot) => {
+    leaveLogs = [];
+    snapshot.forEach((docSnap) => {
+      leaveLogs.push({ id: docSnap.id, ...docSnap.data() });
     });
+    renderDashboardStats();
+    renderMcRanking();
+    renderLeaveListByMonth();
+    if (document.getElementById("calendarPage").classList.contains("active")) {
+      renderInteractiveCalendar();
+    }
+  });
 
-    let sortedTechs = technicianList.map(tech => ({ name: tech, totalMC: mcCounts[tech] }));
-    sortedTechs.sort((a,b) => b.totalMC - a.totalMC);
+  document.getElementById("statFilterTech").addEventListener("change", renderDashboardStats);
 
-    let maxMC = sortedTechs[0] ? Math.max(sortedTechs[0].totalMC, 10) : 10;
-    let html = '';
-
-    sortedTechs.forEach((item, index) => {
-      let percent = Math.min((item.totalMC / maxMC) * 100, 100);
-      let rankEmoji = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index+1}`;
-
-      html += `
-        <div class="rank-item">
-          <div class="rank-top-row">
-            <span class="rank-num-name">${rankEmoji} ${item.name}</span>
-            <span class="rank-val">${item.totalMC} Hari MC</span>
-          </div>
-          <div class="rank-bar-bg">
-            <div class="rank-bar-fill" style="width: ${percent}%;"></div>
-          </div>
-        </div>
-      `;
-    });
-
-    container.innerHTML = html;
-  }
-
-  function updateStats() {
+  function renderDashboardStats() {
     const filterTech = document.getElementById("statFilterTech").value;
-    let totalAL = 0, totalMC = 0, totalEL = 0, totalPL = 0;
+    let targetLeaves = leaveLogs.filter(l => !l.isPastRecord);
+    if (filterTech !== "ALL") {
+      targetLeaves = targetLeaves.filter(l => l.name === filterTech);
+    }
 
-    leaveLogs.forEach(log => {
-      if (filterTech === "ALL" || log.name === filterTech) {
-        const d = Number(log.days || 0);
-        if (log.type === 'AL') totalAL += d;
-        else if (log.type === 'MC') totalMC += d;
-        else if (log.type === 'EL') totalEL += d;
-        else if (log.type === 'PL') totalPL += d;
-      }
+    let totalAL = 0;
+    let totalMC = 0;
+    let totalEL = 0;
+    let totalPL = 0;
+
+    targetLeaves.forEach(l => {
+      const days = parseFloat(l.days) || 1;
+      if (l.type === 'AL') totalAL += days;
+      if (l.type === 'MC') totalMC += days;
+      if (l.type === 'EL') totalEL += days;
+      if (l.type === 'PL') totalPL += days;
     });
+
+    const pastRecords = leaveLogs.filter(l => l.isPastRecord);
+    if (filterTech !== "ALL") {
+      pastRecords.filter(l => l.name === filterTech).forEach(l => {
+        const days = parseFloat(l.days) || 0;
+        if (l.type === 'AL') totalAL += days;
+        if (l.type === 'MC') totalMC += days;
+        if (l.type === 'EL') totalEL += days;
+        if (l.type === 'PL') totalPL += days;
+      });
+    } else {
+      technicianList.forEach(tech => {
+        const techPast = pastRecords.filter(l => l.name === tech);
+        let techHasPastAL = techPast.some(l => l.type === 'AL');
+        let techHasPastMC = techPast.some(l => l.type === 'MC');
+        let techHasPastEL = techPast.some(l => l.type === 'EL');
+        let techHasPastPL = techPast.some(l => l.type === 'PL');
+
+        if (techHasPastAL) {
+          totalAL += techPast.filter(l => l.type === 'AL').reduce((acc, curr) => acc + (parseFloat(curr.days)||0), 0);
+        }
+        if (techHasPastMC) {
+          totalMC += techPast.filter(l => l.type === 'MC').reduce((acc, curr) => acc + (parseFloat(curr.days)||0), 0);
+        }
+        if (techHasPastEL) {
+          totalEL += techPast.filter(l => l.type === 'EL').reduce((acc, curr) => acc + (parseFloat(curr.days)||0), 0);
+        }
+        if (techHasPastPL) {
+          totalPL += techPast.filter(l => l.type === 'PL').reduce((acc, curr) => acc + (parseFloat(curr.days)||0), 0);
+        }
+      });
+    }
 
     document.getElementById("countAL").innerText = `${totalAL} Hari`;
     document.getElementById("countMC").innerText = `${totalMC} / 18`;
@@ -1224,88 +1133,183 @@
     document.getElementById("countPL").innerText = `${totalPL} Hari`;
   }
 
-  document.getElementById("statFilterTech").addEventListener("change", updateStats);
+  function renderMcRanking() {
+    const container = document.getElementById("mcRankingList");
+    let mcCounts = {};
+    technicianList.forEach(t => mcCounts[t] = 0);
 
-  function renderInteractiveCalendar() {
-    const titleEl = document.getElementById("calMonthYearTitle");
-    const gridContainer = document.getElementById("calGridDaysContainer");
-    if (!titleEl || !gridContainer) return;
-
-    titleEl.innerText = `${monthNames[currentCalMonth]} ${currentCalYear}`;
-
-    const firstDayIndex = new Date(currentCalYear, currentCalMonth, 1).getDay();
-    const totalDays = new Date(currentCalYear, currentCalMonth + 1, 0).getDate();
-    const prevTotalDays = new Date(currentCalYear, currentCalMonth, 0).getDate();
-
-    let html = '';
-
-    // Days from previous month
-    for (let i = firstDayIndex; i > 0; i--) {
-      let dayNum = prevTotalDays - i + 1;
-      html += `<div class="cal-day-cell other-month"><div class="cal-day-num">${dayNum}</div></div>`;
-    }
-
-    // Days of current month
-    for (let d = 1; d <= totalDays; d++) {
-      let mStr = (currentCalMonth + 1).toString().padStart(2, '0');
-      let dStr = d.toString().padStart(2, '0');
-      let dateString = `${currentCalYear}-${mStr}-${dStr}`;
-
-      const shiftInfo = getShiftStatusForDate(technicianList[0], dateString);
-      let cellShiftClass = '';
-      if (shiftInfo.type === 'siang') cellShiftClass = 'shift-siang';
-      else if (shiftInfo.type === 'malam') cellShiftClass = 'shift-malam';
-      else if (shiftInfo.type === 'free') cellShiftClass = 'shift-free';
-
-      let isPH = publicHolidaysKedah2026[dateString] ? true : false;
-      
-      let hasLeave = false;
-      leaveLogs.forEach(log => {
-        if (!log.isPastRecord && dateString >= log.startDate && dateString <= log.endDate) {
-          hasLeave = true;
+    leaveLogs.forEach(l => {
+      if (l.type === 'MC') {
+        const days = parseFloat(l.days) || 1;
+        if (mcCounts[l.name] !== undefined) {
+          mcCounts[l.name] += days;
+        } else {
+          mcCounts[l.name] = days;
         }
-      });
-
-      let dotIndicator = '';
-      if (isPH) dotIndicator += `<span style="width:6px; height:6px; background:var(--pink); border-radius:50%; display:inline-block; margin:0 1px;"></span>`;
-      if (hasLeave) dotIndicator += `<span style="width:6px; height:6px; background:var(--accent); border-radius:50%; display:inline-block; margin:0 1px;"></span>`;
-
-      html += `
-        <div class="cal-day-cell ${cellShiftClass}" onclick="openCalendarDayModal('${dateString}')">
-          <div class="cal-day-num">${d}</div>
-          <div style="display:flex; gap:2px; min-height:8px;">${dotIndicator}</div>
-        </div>
-      `;
-    }
-
-    gridContainer.innerHTML = html;
-  }
-
-  window.openCalendarDayModal = function(dateStr) {
-    const modalBody = document.getElementById("modalBodyContent");
-    document.getElementById("modalHeaderTitle").innerText = `📅 Maklumat Tarikh: ${dateStr}`;
-
-    let contentHtml = `<div class="modal-row"><div class="modal-label">Cuti Am (Kedah)</div><div class="modal-val">${publicHolidaysKedah2026[dateStr] || 'Tiada Cuti Am'}</div></div>`;
-
-    let dayLeaves = [];
-    leaveLogs.forEach(log => {
-      if (!log.isPastRecord && dateStr >= log.startDate && dateStr <= log.endDate) {
-        dayLeaves.push(log);
       }
     });
 
-    if (dayLeaves.length > 0) {
-      contentHtml += `<div class="modal-row" style="margin-top:12px;"><div class="modal-label">Senarai Staf Cuti Pada Hari Ini</div>`;
-      dayLeaves.forEach(l => {
-        contentHtml += `<div style="margin-top:4px; font-size:12px;"><span class="badge badge-${l.type}">${l.type}</span> <strong>${l.name}</strong> (${l.reason || '-'})</div>`;
-      });
-      contentHtml += `</div>`;
-    } else {
-      contentHtml += `<div class="modal-row"><div class="modal-label">Senarai Staf Cuti</div><div class="modal-val">Tiada staf cuti pada tarikh ini.</div></div>`;
+    const sortedTechs = technicianList.map(name => ({ name, mc: mcCounts[name] || 0 }));
+    sortedTechs.sort((a, b) => b.mc - a.mc);
+
+    let maxMc = sortedTechs[0].mc || 1;
+    if (maxMc === 0) maxMc = 1;
+
+    let html = '';
+    sortedTechs.forEach((item, index) => {
+      const percentage = Math.min(100, Math.round((item.mc / maxMc) * 100));
+      html += `
+        <div class="rank-item">
+          <div class="rank-top-row">
+            <div class="rank-num-name">
+              <span style="color:var(--accent);">#${index + 1}</span>
+              <span>${item.name}</span>
+            </div>
+            <div class="rank-val">${item.mc} Hari MC</div>
+          </div>
+          <div class="rank-bar-bg">
+            <div class="rank-bar-fill" style="width: ${percentage}%;"></div>
+          </div>
+        </div>
+      `;
+    });
+    container.innerHTML = html;
+  }
+
+  function renderLeaveListByMonth() {
+    const container = document.getElementById("leaveCardsContainer");
+    const activeLeaves = leaveLogs.filter(l => !l.isPastRecord);
+
+    if (!activeLeaves.length) {
+      container.innerHTML = `<p style="font-size:12px; color:var(--text-muted); text-align:center; padding:15px;">Tiada permohonan cuti aktif dalam sistem.</p>`;
+      return;
     }
 
-    modalBody.innerHTML = contentHtml;
+    let grouped = {};
+    activeLeaves.forEach(l => {
+      if (!l.startDate) return;
+      const yearMonth = l.startDate.substring(0, 7); // "YYYY-MM"
+      if (!grouped[yearMonth]) {
+        grouped[yearMonth] = [];
+      }
+      grouped[yearMonth].push(l);
+    });
+
+    // Susun bulan: bulan yang terdekat di atas (tahun & bulan menaik)
+    let sortedYearMonths = Object.keys(grouped).sort();
+
+    let html = '';
+    sortedYearMonths.forEach(ym => {
+      const parts = ym.split("-");
+      const y = parseInt(parts[0], 10);
+      const mIdx = parseInt(parts[1], 10) - 1;
+      const monthTitle = `${monthNames[mIdx] || parts[1]} ${y}`;
+
+      // Di dalam setiap bulan, susun tarikh terdekat (paling awal) berada di atas
+      let items = grouped[ym];
+      items.sort((a, b) => a.startDate.localeCompare(b.startDate));
+
+      html += `
+        <div class="month-group-container">
+          <div class="month-group-title">📅 ${monthTitle}</div>
+          <div class="compact-leave-list">
+      `;
+
+      items.forEach(l => {
+        const shiftInfo = getShiftStatusForDate(l.name, l.startDate);
+        let shiftBadgeClass = 'shift-badge-free';
+        if (shiftInfo.type === 'siang') shiftBadgeClass = 'shift-badge-siang';
+        else if (shiftInfo.type === 'malam') shiftBadgeClass = 'shift-badge-malam';
+
+        let badgeClass = 'badge-AL';
+        if (l.type === 'MC') badgeClass = 'badge-MC';
+        else if (l.type === 'EL') badgeClass = 'badge-EL';
+        else if (l.type === 'PL') badgeClass = 'badge-PL';
+        else if (l.type === 'UL') badgeClass = 'badge-UL';
+        else if (l.type === 'PH') badgeClass = 'badge-PH';
+
+        let durationText = '';
+        if (l.duration === '1stHalf') durationText = '<div class="shift-badge-halfday">1st Half</div>';
+        else if (l.duration === '2ndHalf') durationText = '<div class="shift-badge-halfday">2nd Half</div>';
+        else {
+          if (l.days && l.days !== 1) {
+            durationText = `<span style="font-size:10px; color:var(--text-muted); font-weight:700;">(${l.days}h)</span>`;
+          } else {
+            durationText = `<span style="font-size:10px; color:var(--text-muted); font-weight:700;">(1h)</span>`;
+          }
+        }
+
+        const dateRangeStr = formatLeaveDateRange(l.startDate, l.endDate);
+
+        html += `
+          <div class="compact-item" onclick="openLeaveDetailModal('${l.id}')">
+            <div class="compact-name-wrap">
+              <span class="badge ${badgeClass}">${l.type}</span>
+              <span class="compact-name">${l.name}</span>
+              ${durationText}
+            </div>
+            <div class="compact-right">
+              <span class="shift-badge-main ${shiftBadgeClass}">${shiftInfo.label}</span>
+              <span class="compact-date">${dateRangeStr}</span>
+            </div>
+          </div>
+        `;
+      });
+
+      html += `
+          </div>
+        </div>
+      `;
+    });
+
+    container.innerHTML = html;
+  }
+
+  window.openLeaveDetailModal = function(id) {
+    const l = leaveLogs.find(item => item.id === id);
+    if (!l) return;
+
+    const modalHeader = document.getElementById("modalHeaderTitle");
+    const modalBody = document.getElementById("modalBodyContent");
+
+    modalHeader.innerText = `ℹ️ Perincian Cuti (${l.type})`;
+    modalBody.innerHTML = `
+      <div class="modal-row">
+        <div class="modal-label">Nama Juruteknik</div>
+        <div class="modal-val">${l.name}</div>
+      </div>
+      <div class="modal-row">
+        <div class="modal-label">Jenis Cuti</div>
+        <div class="modal-val"><span class="badge badge-${l.type}">${l.type}</span></div>
+      </div>
+      <div class="modal-row">
+        <div class="modal-label">Tarikh Mula & Tamat</div>
+        <div class="modal-val">${l.startDate} hingga ${l.endDate || l.startDate} (${l.days || 1} Hari)</div>
+      </div>
+      <div class="modal-row">
+        <div class="modal-label">Sebab / Catatan</div>
+        <div class="modal-val">${l.reason || '-'}</div>
+      </div>
+      <div style="margin-top: 20px; border-top: 1px solid var(--border); padding-top: 15px;">
+        <button type="button" class="btn-delete" onclick="deleteLeaveItem('${l.id}')">🗑️ Batalkan / Padam Cuti Ini</button>
+      </div>
+    `;
     document.getElementById("detailModal").classList.add("active");
+  };
+
+  window.deleteLeaveItem = async function(id) {
+    const pin = prompt("🔐 Sila masukkan PIN Penyelia untuk memadam permohonan cuti ini:");
+    if (pin === SUPERVISOR_PIN) {
+      try {
+        await deleteDoc(doc(db, "leaves", id));
+        alert("✅ Rekod cuti berjaya dipadam.");
+        document.getElementById("detailModal").classList.remove("active");
+      } catch(err) {
+        alert("❌ Ralat memadam rekod: " + err.message);
+      }
+    } else if (pin !== null) {
+      alert("❌ PIN Penyelia Salah!");
+    }
   };
 
   document.getElementById("prevMonthBtn").addEventListener("click", () => {
@@ -1325,6 +1329,116 @@
     }
     renderInteractiveCalendar();
   });
+
+  function renderInteractiveCalendar() {
+    const titleEl = document.getElementById("calMonthYearTitle");
+    const gridContainer = document.getElementById("calGridDaysContainer");
+
+    titleEl.innerText = `${monthNames[currentCalMonth]} ${currentCalYear}`;
+
+    const firstDayIndex = new Date(currentCalYear, currentCalMonth, 1).getDay();
+    const totalDaysInMonth = new Date(currentCalYear, currentCalMonth + 1, 0).getDate();
+    const prevMonthDays = new Date(currentCalYear, currentCalMonth, 0).getDate();
+
+    let html = '';
+
+    for (let i = firstDayIndex; i > 0; i--) {
+      const dayNum = prevMonthDays - i + 1;
+      html += `<div class="cal-day-cell other-month"><span class="cal-day-num">${dayNum}</span></div>`;
+    }
+
+    for (let d = 1; d <= totalDaysInMonth; d++) {
+      const mStr = String(currentCalMonth + 1).padStart(2, '0');
+      const dStr = String(d).padStart(2, '0');
+      const dateString = `${currentCalYear}-${mStr}-${dStr}`;
+
+      const sampleShift = getShiftStatusForDate("Muhammad Adib Bin Noordin", dateString);
+      let cellClass = 'cal-day-cell';
+      if (sampleShift.type === 'siang') cellClass += ' shift-siang';
+      else if (sampleShift.type === 'malam') cellClass += ' shift-malam';
+      else if (sampleShift.type === 'free') cellClass += ' shift-free';
+
+      const isHoliday = publicHolidaysKedah2026[dateString];
+      const matchingLeaves = leaveLogs.filter(l => !l.isPastRecord && l.startDate <= dateString && (l.endDate >= dateString || !l.endDate));
+
+      let indicators = '';
+      if (isHoliday) {
+        indicators += `<div style="width:6px; height:6px; background:var(--pink); border-radius:50%; display:inline-block;" title="${isHoliday}"></div>`;
+      }
+      if (matchingLeaves.length > 0) {
+        indicators += `<div style="background:var(--accent); color:#030712; font-size:9px; font-weight:900; padding:1px 4px; border-radius:4px; margin-top:2px;">${matchingLeaves.length} Cuti</div>`;
+      }
+
+      html += `
+        <div class="${cellClass}" onclick="openCalendarDayModal('${dateString}')">
+          <span class="cal-day-num">${d}</span>
+          <div style="display:flex; gap:3px; align-items:center; flex-wrap:wrap; justify-content:center;">${indicators}</div>
+        </div>
+      `;
+    }
+
+    const totalCellsSoFar = firstDayIndex + totalDaysInMonth;
+    const nextMonthDaysCount = totalCellsSoFar <= 35 ? (35 - totalCellsSoFar) : (42 - totalCellsSoFar);
+
+    for (let nd = 1; nd <= nextMonthDaysCount; nd++) {
+      html += `<div class="cal-day-cell other-month"><span class="cal-day-num">${nd}</span></div>`;
+    }
+
+    gridContainer.innerHTML = html;
+  }
+
+  window.openCalendarDayModal = function(dateStr) {
+    const modalHeader = document.getElementById("modalHeaderTitle");
+    const modalBody = document.getElementById("modalBodyContent");
+
+    modalHeader.innerText = `📅 Perincian Tarikh: ${dateStr}`;
+
+    const holidayName = publicHolidaysKedah2026[dateStr] || "Tiada Cuti Am";
+    const dayLeaves = leaveLogs.filter(l => !l.isPastRecord && l.startDate <= dateStr && (l.endDate >= dateString || !l.endDate));
+
+    let leavesHtml = '';
+    if (dayLeaves.length === 0) {
+      leavesHtml = `<p style="font-size:12px; color:var(--text-muted);">Tiada cuti staf pada tarikh ini.</p>`;
+    } else {
+      dayLeaves.forEach(l => {
+        leavesHtml += `
+          <div style="background:#030712; border:1px solid var(--border); padding:8px; border-radius:8px; margin-bottom:6px; font-size:12px;">
+            <b>${l.name}</b> - <span class="badge badge-${l.type}">${l.type}</span> (${l.reason || '-'})
+          </div>
+        `;
+      });
+    }
+
+    let shiftsHtml = '';
+    technicianList.forEach(tech => {
+      const shift = getShiftStatusForDate(tech, dateStr);
+      shiftsHtml += `
+        <div style="display:flex; justify-content:space-between; font-size:11px; padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.05);">
+          <span style="color:var(--text-muted);">${tech}</span>
+          <span style="font-weight:700; color:var(--text);">${shift.label}</span>
+        </div>
+      `;
+    });
+
+    modalBody.innerHTML = `
+      <div class="modal-row">
+        <div class="modal-label">Cuti Am / Perayaan (Kedah)</div>
+        <div class="modal-val" style="color:var(--pink);">${holidayName}</div>
+      </div>
+      <div class="modal-row">
+        <div class="modal-label">Senarai Staf Cuti Pada Tarikh Ini</div>
+        <div style="margin-top:6px;">${leavesHtml}</div>
+      </div>
+      <div class="modal-row" style="margin-top:14px;">
+        <div class="modal-label">Status Shift Semua Staf</div>
+        <div style="background:#030712; border:1px solid var(--border); border-radius:10px; padding:10px; max-height:150px; overflow-y:auto;">
+          ${shiftsHtml}
+        </div>
+      </div>
+    `;
+
+    document.getElementById("detailModal").classList.add("active");
+  };
 </script>
 
 </body>
