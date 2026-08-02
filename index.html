@@ -38,7 +38,7 @@
       color: var(--text);
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       margin: 0;
-      padding: 12px;
+      padding: 16px;
       min-height: 100vh;
     }
 
@@ -52,7 +52,7 @@
     .login-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(3, 7, 18, 0.92);
+      background: rgba(3, 7, 18, 0.9);
       backdrop-filter: blur(16px);
       display: flex;
       align-items: center;
@@ -65,27 +65,27 @@
       background: linear-gradient(145deg, #0f172a, #090d16);
       border: 1px solid var(--border-glow);
       border-radius: 20px;
-      padding: 28px 20px;
+      padding: 32px 24px;
       width: 100%;
-      max-width: 360px;
+      max-width: 380px;
       text-align: center;
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 30px rgba(56, 189, 248, 0.15);
     }
 
-    .login-card h2 { font-size: 18px; color: var(--accent); margin-top: 0; margin-bottom: 8px; font-weight: 800; }
-    .login-card p { font-size: 12px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.5; }
+    .login-card h2 { font-size: 20px; color: var(--accent); margin-top: 0; margin-bottom: 8px; font-weight: 800; }
+    .login-card p { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; line-height: 1.5; }
 
     .login-input {
       width: 100%;
-      padding: 12px;
+      padding: 14px;
       background: #020617;
       border: 1px solid var(--border);
       border-radius: 12px;
       color: var(--text);
-      font-size: 15px;
+      font-size: 16px;
       text-align: center;
-      letter-spacing: 2px;
-      margin-bottom: 12px;
+      letter-spacing: 4px;
+      margin-bottom: 16px;
       outline: none;
       transition: all 0.3s ease;
     }
@@ -96,50 +96,55 @@
       background: linear-gradient(135deg, #38bdf8, #0284c7);
       color: #030712;
       border: none;
-      padding: 12px;
+      padding: 14px;
       border-radius: 12px;
       font-weight: 800;
-      font-size: 13px;
+      font-size: 14px;
       cursor: pointer;
       box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3);
+      transition: transform 0.2s;
     }
-    .login-error { color: var(--red); font-size: 11px; margin-top: 12px; display: none; font-weight: 700; }
+    .login-btn:active { transform: scale(0.98); }
 
-    .container { max-width: 1100px; margin: 0 auto; padding-bottom: 40px; }
-    .header { text-align: center; padding: 10px 0; margin-bottom: 16px; }
+    .login-error { color: var(--red); font-size: 12px; margin-top: 14px; display: none; font-weight: 700; }
+
+    .container { max-width: 1100px; margin: 0 auto; padding-bottom: 50px; }
+    .header { text-align: center; padding: 20px 0 15px 0; margin-bottom: 20px; }
     .header h1 { 
-      font-size: 20px; 
+      font-size: 24px; 
       background: linear-gradient(135deg, #f8fafc, #38bdf8);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       margin: 0; 
       font-weight: 900; 
+      letter-spacing: -0.5px;
     }
 
     .nav-tabs {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 8px;
+      gap: 10px;
       background: var(--card);
-      padding: 6px;
-      border-radius: 14px;
+      padding: 8px;
+      border-radius: 16px;
       border: 1px solid var(--border);
-      margin-bottom: 16px;
+      margin-bottom: 24px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
     }
 
     .nav-tab-btn {
       background: transparent;
       border: none;
-      padding: 10px;
+      padding: 12px;
       color: var(--text-muted);
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 700;
-      border-radius: 10px;
+      border-radius: 12px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
+      gap: 8px;
       transition: all 0.3s ease;
     }
 
@@ -147,6 +152,7 @@
       background: linear-gradient(135deg, rgba(56, 189, 248, 0.15), rgba(56, 189, 248, 0.25));
       color: var(--accent);
       border: 1px solid rgba(56, 189, 248, 0.4);
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.15);
     }
 
     .sub-page { display: none; }
@@ -155,86 +161,91 @@
     .card {
       background: linear-gradient(145deg, #0f172a, #0b1120);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 16px;
-      margin-bottom: 16px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      border-radius: 20px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      transition: border-color 0.3s ease;
     }
+    .card:hover { border-color: rgba(56, 189, 248, 0.2); }
 
     .card h2 { 
-      font-size: 14px; 
+      font-size: 15px; 
       margin-top: 0; 
-      margin-bottom: 12px; 
+      margin-bottom: 16px; 
       color: var(--text); 
       border-bottom: 1px solid var(--border); 
-      padding-bottom: 10px;
+      padding-bottom: 12px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       font-weight: 800;
+      letter-spacing: -0.2px;
     }
 
-    .sub-text { font-size: 11px; color: var(--text-muted); margin-top: -8px; margin-bottom: 12px; line-height: 1.4; }
+    .sub-text { font-size: 12px; color: var(--text-muted); margin-top: -10px; margin-bottom: 16px; line-height: 1.5; }
 
     .announcement-box {
       background: linear-gradient(145deg, #131c2e, #0f172a);
       border-left: 4px solid var(--accent);
       border: 1px solid var(--border);
       border-left-width: 4px;
-      border-radius: 12px;
-      padding: 12px;
-      margin-bottom: 10px;
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 14px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
-    .announcement-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-    .announcement-author { font-size: 11px; font-weight: 800; color: var(--accent); }
-    .announcement-date { font-size: 10px; color: var(--text-muted); }
-    .announcement-content { font-size: 12px; color: var(--text); line-height: 1.5; white-space: pre-wrap; }
-    .announcement-img { width: 100%; max-height: 200px; object-fit: cover; border-radius: 8px; margin-top: 8px; border: 1px solid var(--border); }
+    .announcement-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .announcement-author { font-size: 12px; font-weight: 800; color: var(--accent); }
+    .announcement-date { font-size: 11px; color: var(--text-muted); }
+    .announcement-content { font-size: 13px; color: var(--text); line-height: 1.6; white-space: pre-wrap; }
+    .announcement-img { width: 100%; max-height: 240px; object-fit: cover; border-radius: 10px; margin-top: 10px; border: 1px solid var(--border); }
 
     .supervisor-upload-panel {
       background: rgba(2, 6, 23, 0.6);
       border: 1px dashed var(--border-glow);
-      padding: 12px;
-      border-radius: 12px;
-      margin-bottom: 14px;
+      padding: 16px;
+      border-radius: 14px;
+      margin-bottom: 18px;
     }
 
-    .form-group { margin-bottom: 12px; }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .form-group { margin-bottom: 16px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     
-    label { display: block; font-size: 10px; margin-bottom: 4px; color: var(--text-muted); font-weight: 800; text-transform: uppercase; }
+    label { display: block; font-size: 11px; margin-bottom: 6px; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
     
     input, select, textarea {
       width: 100%;
-      padding: 10px 12px;
+      padding: 12px 14px;
       background: #030712;
       border: 1px solid var(--border);
-      border-radius: 10px;
+      border-radius: 12px;
       color: var(--text);
-      font-size: 13px;
+      font-size: 14px;
       outline: none;
       appearance: none;
       -webkit-appearance: none;
       background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
       background-repeat: no-repeat;
-      background-position: right 12px center;
-      background-size: 12px;
-      padding-right: 32px;
+      background-position: right 14px center;
+      background-size: 14px;
+      padding-right: 36px;
+      transition: all 0.3s ease;
     }
     input:focus, select:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
-    input[type="date"], input[type="file"], input[type="number"] { background-image: none; padding-right: 12px; }
-    select option { background-color: #0f172a; color: var(--text); padding: 10px; }
+    input[type="date"], input[type="file"], input[type="number"] { background-image: none; padding-right: 14px; }
+    select option { background-color: #0f172a; color: var(--text); padding: 12px; }
 
     .day-count-badge {
       background: rgba(56, 189, 248, 0.08);
       color: var(--accent);
-      padding: 10px;
-      border-radius: 10px;
-      font-size: 12px;
+      padding: 12px;
+      border-radius: 12px;
+      font-size: 13px;
       font-weight: 800;
       text-align: center;
       border: 1px dashed rgba(56, 189, 248, 0.3);
-      margin-bottom: 12px;
+      margin-bottom: 16px;
     }
 
     .btn-submit {
@@ -242,161 +253,200 @@
       background: linear-gradient(135deg, #10b981, #059669);
       color: #fff;
       border: none;
-      padding: 12px;
-      border-radius: 10px;
+      padding: 14px;
+      border-radius: 12px;
       font-weight: 800;
-      font-size: 13px;
+      font-size: 14px;
       cursor: pointer;
-      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+      transition: transform 0.2s, opacity 0.2s;
     }
+    .btn-submit:active { transform: scale(0.98); }
 
     .btn-action {
       background: linear-gradient(135deg, #38bdf8, #0284c7);
       color: #030712;
       border: none;
-      padding: 8px 12px;
-      border-radius: 8px;
+      padding: 10px 16px;
+      border-radius: 10px;
       font-weight: 800;
-      font-size: 11px;
+      font-size: 12px;
       cursor: pointer;
+      box-shadow: 0 2px 10px rgba(56, 189, 248, 0.2);
+      transition: transform 0.2s;
+    }
+    .btn-action:active { transform: scale(0.98); }
+
+    .btn-delete {
+      width: 100%;
+      background: linear-gradient(135deg, #f43f5e, #e11d48);
+      color: #fff;
+      border: none;
+      padding: 12px;
+      border-radius: 12px;
+      font-weight: 800;
+      font-size: 13px;
+      cursor: pointer;
+      margin-top: 10px;
+      box-shadow: 0 4px 12px rgba(244, 63, 94, 0.3);
     }
 
     .btn-toggle-supervisor {
       background: #1e293b;
       color: var(--accent);
       border: 1px dashed var(--border-glow);
-      padding: 4px 8px;
-      border-radius: 8px;
-      font-size: 10px;
+      padding: 6px 12px;
+      border-radius: 10px;
+      font-size: 11px;
       cursor: pointer;
       font-weight: 800;
+      transition: background 0.2s;
     }
+    .btn-toggle-supervisor:hover { background: #334155; }
 
-    /* COMPACT & MOBILE-FRIENDLY UNTUK PLAN CUTI */
-    .month-group-container { margin-bottom: 14px; }
-    .month-group-title { font-size: 12px; font-weight: 900; color: var(--accent); margin-bottom: 6px; padding-left: 2px; display: flex; align-items: center; gap: 6px; }
+    .calendar-container { background: #030712; border: 1px solid var(--border); border-radius: 16px; padding: 16px; box-shadow: inset 0 2px 8px rgba(0,0,0,0.5); }
+    .cal-header-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .cal-title { font-size: 15px; font-weight: 900; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px; }
+    .cal-nav-btn { background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 8px 14px; border-radius: 10px; font-weight: 800; font-size: 12px; cursor: pointer; transition: border-color 0.2s; }
+    .cal-nav-btn:hover { border-color: var(--accent); }
     
-    .compact-leave-list { display: flex; flex-direction: column; gap: 6px; }
-    .compact-item {
-      background: #030712;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 8px 10px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      cursor: pointer;
-      gap: 8px;
-    }
-    .compact-item:hover { border-color: var(--accent); }
-    
-    .compact-item.is-overlap {
-      background: rgba(251, 146, 60, 0.08);
-      border: 1.5px solid var(--orange) !important;
-    }
-
-    .compact-name-wrap { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; min-width: 0; flex: 1; }
-    .compact-name { font-size: 11px; font-weight: 800; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; }
-    .compact-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
-    .compact-date { font-size: 10px; color: var(--text-muted); font-weight: 700; white-space: nowrap; }
-    
-    .shift-badge-main {
-      font-size: 9px;
-      font-weight: 900;
-      padding: 2px 5px;
-      border-radius: 4px;
-      display: inline-block;
-      white-space: nowrap;
-    }
-    .shift-badge-siang { background: rgba(245, 158, 11, 0.15); color: var(--shift-siang); border: 1px solid var(--shift-siang); }
-    .shift-badge-malam { background: rgba(45, 212, 191, 0.15); color: var(--shift-malam); border: 1px solid var(--shift-malam); }
-    .shift-badge-free { background: rgba(100, 116, 139, 0.15); color: var(--shift-free); border: 1px solid var(--shift-free); }
-
-    .warning-badge { 
-      background: var(--orange); 
-      color: #030712; 
-      font-size: 9px; 
-      font-weight: 900; 
-      padding: 2px 5px; 
-      border-radius: 4px; 
-      display: inline-flex; 
-      align-items: center; 
-      gap: 3px; 
-    }
-
-    .calendar-container { background: #030712; border: 1px solid var(--border); border-radius: 12px; padding: 12px; }
-    .cal-header-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-    .cal-title { font-size: 13px; font-weight: 900; color: var(--accent); text-transform: uppercase; }
-    .cal-nav-btn { background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 6px 10px; border-radius: 8px; font-weight: 800; font-size: 11px; cursor: pointer; }
-    
-    .cal-grid-header { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 10px; font-weight: 900; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; }
-    .cal-grid-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+    .cal-grid-header { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 11px; font-weight: 900; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; }
+    .cal-grid-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
     
     .cal-day-cell {
-      min-height: 55px;
+      min-height: 65px;
       background: var(--card);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 4px;
+      border-radius: 10px;
+      padding: 6px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       align-items: center;
       cursor: pointer;
+      position: relative;
+      transition: all 0.2s ease;
     }
-    .cal-day-num { font-size: 11px; font-weight: 800; color: var(--text); }
+    .cal-day-cell:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .cal-day-num { font-size: 12px; font-weight: 800; color: var(--text); }
     .cal-day-cell.other-month { opacity: 0.25; }
-    .cal-day-cell.shift-siang { border-bottom: 2px solid var(--shift-siang); background: linear-gradient(to bottom, var(--card), rgba(245, 158, 11, 0.05)); }
-    .cal-day-cell.shift-malam { border-bottom: 2px solid var(--shift-malam); background: linear-gradient(to bottom, var(--card), rgba(45, 212, 191, 0.05)); }
-    .cal-day-cell.shift-free { border-bottom: 2px solid var(--shift-free); background: linear-gradient(to bottom, var(--card), rgba(100, 116, 139, 0.05)); }
+    .cal-day-cell.shift-siang { border-bottom: 3px solid var(--shift-siang); background: linear-gradient(to bottom, var(--card), rgba(245, 158, 11, 0.08)); }
+    .cal-day-cell.shift-malam { border-bottom: 3px solid var(--shift-malam); background: linear-gradient(to bottom, var(--card), rgba(45, 212, 191, 0.08)); }
+    .cal-day-cell.shift-free { border-bottom: 3px solid var(--shift-free); background: linear-gradient(to bottom, var(--card), rgba(100, 116, 139, 0.08)); }
 
-    .cal-legend { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; font-size: 10px; justify-content: center; border-top: 1px solid var(--border); padding-top: 10px; color: var(--text-muted); font-weight: 700; }
-    .legend-item { display: flex; align-items: center; gap: 4px; }
-    .legend-box { width: 10px; height: 10px; border-radius: 3px; }
+    .cal-legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; font-size: 11px; justify-content: center; border-top: 1px solid var(--border); padding-top: 14px; color: var(--text-muted); font-weight: 700; }
+    .legend-item { display: flex; align-items: center; gap: 6px; }
+    .legend-box { width: 12px; height: 12px; border-radius: 4px; }
 
-    .stat-boxes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
-    .s-box { background: #030712; border: 1px solid var(--border); padding: 10px; border-radius: 10px; text-align: center; }
-    .s-label { display: block; font-size: 10px; color: var(--text-muted); font-weight: 800; text-transform: uppercase; }
-    .s-count { display: block; font-size: 14px; font-weight: 900; margin-top: 4px; }
+    .stat-boxes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .s-box { background: #030712; border: 1px solid var(--border); padding: 14px; border-radius: 14px; text-align: center; box-shadow: inset 0 2px 4px rgba(0,0,0,0.3); }
+    .s-label { display: block; font-size: 11px; color: var(--text-muted); font-weight: 800; text-transform: uppercase; }
+    .s-count { display: block; font-size: 16px; font-weight: 900; margin-top: 6px; }
     .al-box .s-count { color: var(--accent); }
     .mc-box .s-count { color: var(--red); }
     .el-box .s-count { color: var(--yellow); }
     .pl-box .s-count { color: var(--purple); }
 
-    .ranking-list { display: flex; flex-direction: column; gap: 8px; }
-    .rank-item { background: #030712; border: 1px solid var(--border); border-radius: 10px; padding: 10px; font-size: 11px; }
-    .rank-top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-    .rank-num-name { display: flex; align-items: center; gap: 8px; font-weight: 800; color: var(--text); }
-    .rank-val { font-weight: 900; color: var(--red); font-size: 12px; }
-    .rank-bar-bg { width: 100%; background: #1e293b; height: 5px; border-radius: 3px; overflow: hidden; }
-    .rank-bar-fill { height: 100%; background: var(--red); border-radius: 3px; }
+    .ranking-list { display: flex; flex-direction: column; gap: 10px; }
+    .rank-item { background: #030712; border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; font-size: 12px; }
+    .rank-top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .rank-num-name { display: flex; align-items: center; gap: 10px; font-weight: 800; color: var(--text); }
+    .rank-val { font-weight: 900; color: var(--red); font-size: 13px; }
+    .rank-bar-bg { width: 100%; background: #1e293b; height: 6px; border-radius: 3px; overflow: hidden; }
+    .rank-bar-fill { height: 100%; background: var(--red); border-radius: 3px; box-shadow: 0 0 10px var(--red); }
 
-    .bulk-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 11px; }
-    .bulk-table th, .bulk-table td { border: 1px solid var(--border); padding: 8px; text-align: center; }
+    .month-group-container { margin-bottom: 18px; }
+    .month-group-title { font-size: 13px; font-weight: 900; color: var(--accent); margin-bottom: 8px; padding-left: 4px; display: flex; align-items: center; gap: 8px; letter-spacing: 0.5px; }
+    
+    .compact-leave-list { display: flex; flex-direction: column; gap: 8px; }
+    .compact-item {
+      background: #030712;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .compact-item:hover { border-color: var(--accent); transform: translateX(2px); }
+    
+    .compact-item.is-overlap {
+      background: rgba(251, 146, 60, 0.1);
+      border: 2px solid var(--orange) !important;
+      box-shadow: 0 0 15px rgba(251, 146, 60, 0.25);
+    }
+
+    .compact-name-wrap { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .compact-name { font-size: 12px; font-weight: 800; color: var(--text); }
+    .compact-right { display: flex; align-items: center; gap: 8px; }
+    .compact-date { font-size: 11px; color: var(--text-muted); font-weight: 700; }
+    
+    .shift-badge-main {
+      font-size: 10px;
+      font-weight: 900;
+      padding: 3px 7px;
+      border-radius: 6px;
+      display: inline-block;
+      letter-spacing: 0.3px;
+    }
+    .shift-badge-siang { background: rgba(245, 158, 11, 0.2); color: var(--shift-siang); border: 1px solid var(--shift-siang); }
+    .shift-badge-malam { background: rgba(45, 212, 191, 0.2); color: var(--shift-malam); border: 1px solid var(--shift-malam); }
+    .shift-badge-free { background: rgba(100, 116, 139, 0.2); color: var(--shift-free); border: 1px solid var(--shift-free); }
+    
+    .shift-badge-halfday { background: rgba(244, 114, 182, 0.2); color: var(--pink); border: 1px solid var(--pink); font-size: 10px; font-weight: 900; padding: 3px 7px; border-radius: 6px; display: inline-block; }
+
+    .warning-badge { 
+      background: var(--orange); 
+      color: #030712; 
+      font-size: 10px; 
+      font-weight: 900; 
+      padding: 3px 7px; 
+      border-radius: 6px; 
+      display: inline-flex; 
+      align-items: center; 
+      gap: 4px; 
+      animation: pulseWarning 1.5s infinite; 
+    }
+
+    @keyframes pulseWarning {
+      0% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.75; transform: scale(1.04); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    .bulk-table { width: 100%; border-collapse: collapse; margin-bottom: 14px; font-size: 12px; }
+    .bulk-table th, .bulk-table td { border: 1px solid var(--border); padding: 10px; text-align: center; }
     .bulk-table th { background: #1e293b; color: var(--accent); font-weight: 900; }
-    .bulk-input { width: 60px; padding: 6px; background: #030712; border: 1px solid var(--border); border-radius: 6px; color: var(--text); text-align: center; font-size: 12px; font-weight: 800; }
+    .bulk-input { width: 70px; padding: 8px; background: #030712; border: 1px solid var(--border); border-radius: 8px; color: var(--text); text-align: center; font-size: 13px; font-weight: 800; }
+    .bulk-input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-glow); }
 
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(3, 7, 18, 0.85);
-      backdrop-filter: blur(6px);
+      backdrop-filter: blur(8px);
       display: flex;
       align-items: center;
       justify-content: center;
       z-index: 1000;
-      padding: 12px;
+      padding: 16px;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.2s ease;
+      transition: opacity 0.25s ease;
     }
     .modal-overlay.active { opacity: 1; pointer-events: auto; }
-    .modal-card { background: var(--card); border: 1px solid var(--border-glow); border-radius: 16px; width: 100%; max-width: 450px; padding: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.7); max-height: 85vh; overflow-y: auto; }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 14px; }
-    .modal-header h3 { font-size: 14px; margin: 0; color: var(--accent); font-weight: 900; }
-    .close-btn { background: none; border: none; color: var(--text-muted); font-size: 18px; cursor: pointer; }
-    
-    .badge { padding: 3px 8px; border-radius: 10px; font-size: 10px; font-weight: 900; display: inline-block; }
+    .modal-card { background: var(--card); border: 1px solid var(--border-glow); border-radius: 20px; width: 100%; max-width: 500px; padding: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.7); max-height: 90vh; overflow-y: auto; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 16px; }
+    .modal-header h3 { font-size: 16px; margin: 0; color: var(--accent); font-weight: 900; }
+    .close-btn { background: none; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer; transition: color 0.2s; }
+    .close-btn:hover { color: var(--text); }
+    .modal-row { margin-bottom: 14px; font-size: 13px; }
+    .modal-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; font-weight: 800; letter-spacing: 0.5px; }
+    .modal-val { font-size: 14px; color: var(--text); font-weight: 700; }
+
+    .badge { padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 900; display: inline-block; letter-spacing: 0.3px; }
     .badge-AL { background: rgba(56,189,248,0.15); color: var(--accent); border: 1px solid rgba(56,189,248,0.3); }
     .badge-MC { background: rgba(244,63,94,0.15); color: var(--red); border: 1px solid rgba(244,63,94,0.3); }
     .badge-EL { background: rgba(245,158,11,0.15); color: var(--yellow); border: 1px solid rgba(245,158,11,0.3); }
@@ -409,13 +459,10 @@
 
 <div class="login-overlay" id="loginOverlay">
   <div class="login-card">
-    <h2>🔐 Akses Portal QA</h2>
-    <p>Masukkan kata laluan penyelia atau masuk sebagai staf biasa.</p>
+    <h2> Akses Terhad</h2>
+    <p>Sila masukkan Kata Laluan Portal QA (Shift C) untuk meneruskan.</p>
     <input type="password" id="passInput" class="login-input" placeholder="••••••••">
-    <button type="button" id="loginBtn" class="login-btn">Masuk Sistem</button>
-    <div style="margin-top: 10px; font-size: 11px; color: var(--text-muted);">
-      <span style="cursor:pointer; text-decoration: underline;" onclick="loginAsStaff()">Masuk sebagai Staf Biasa</span>
-    </div>
+    <button type="button" id="loginBtn" class="login-btn">Masuk Portal</button>
     <div class="login-error" id="loginError">❌ Kata Laluan Salah! Sila cuba lagi.</div>
   </div>
 </div>
@@ -426,43 +473,43 @@
   </header>
 
   <div class="nav-tabs">
-    <button type="button" class="nav-tab-btn active" onclick="switchSubPage('homePage', this)">📊 Dashboard Utama</button>
-    <button type="button" class="nav-tab-btn" onclick="switchSubPage('calendarPage', this)">📅 Kalendar & Shift</button>
+    <button type="button" class="nav-tab-btn active" onclick="switchSubPage('homePage', this)"> Dashboard Utama</button>
+    <button type="button" class="nav-tab-btn" onclick="switchSubPage('calendarPage', this)"> Kalendar & Shift</button>
   </div>
 
   <div id="homePage" class="sub-page active animate-fade">
     
     <div class="card">
       <h2>
-        <span>📢 Pengumuman Terkini & Info Kilang</span>
-        <button type="button" class="btn-toggle-supervisor" id="toggleSupAnnounceBtn" style="display:none;">⚙️ Penyelia</button>
+        <span> Pengumuman Terkini & Info Kilang</span>
+        <button type="button" class="btn-toggle-supervisor" id="toggleSupAnnounceBtn">⚙️ Mod Penyelia</button>
       </h2>
       
-      <div style="margin-bottom: 12px; display:none;" id="supervisorBulkWrap">
-        <button type="button" class="btn-action" style="width:100%; background:linear-gradient(135deg, #10b981, #059669); color:#fff; padding:10px;" onclick="promptAddPastLeave()">➕ Bulk Edit Cuti (Penyelia)</button>
+      <div style="margin-bottom: 14px;">
+        <button type="button" class="btn-action" style="width:100%; background:linear-gradient(135deg, #10b981, #059669); color:#fff; padding:12px;" onclick="promptAddPastLeave()">➕ Kemasukan Data Cuti Sekaligus (Bulk Edit Penyelia)</button>
       </div>
 
       <div id="supervisorAnnouncePanel" class="supervisor-upload-panel" style="display: none;">
         <form id="announcementForm">
           <div class="form-group">
             <label>Tajuk / Catatan Pengumuman:</label>
-            <textarea id="announcementText" rows="2" placeholder="Tulis pengumuman di sini..." required></textarea>
+            <textarea id="announcementText" rows="3" placeholder="Tulis pengumuman, isu disiplin atau info penting kilang di sini..." required></textarea>
           </div>
           <div class="form-group">
-            <label>Lampiran Gambar:</label>
+            <label>Lampiran Gambar (Pilihan):</label>
             <input type="file" id="announcementImgFile" accept="image/*">
           </div>
-          <button type="submit" class="btn-action" style="width:100%;">Siarkan</button>
+          <button type="submit" class="btn-action" style="width:100%;"> Siarkan Pengumuman</button>
         </form>
       </div>
       <div id="announcementContainer"></div>
     </div>
 
-    <div style="display: grid; grid-template-columns: 1fr; gap: 14px;">
+    <div style="display: grid; grid-template-columns: 1fr; gap: 16px;">
       
       <div class="card">
-        <h2>📝 Borang Permohonan Cuti</h2>
-        <p class="sub-text">Semak jenis shift dan pertindihan secara automatik.</p>
+        <h2> Borang Permohonan Cuti Pintar</h2>
+        <p class="sub-text">Sistem mengesan jenis shift dan menyemak pertindihan cuti secara automatik.</p>
         <form id="leaveForm">
           <div class="form-group">
             <label>Pilih Nama Juruteknik:</label>
@@ -514,32 +561,32 @@
 
           <div class="form-group">
             <label>Sebab / Catatan:</label>
-            <input type="text" id="leaveReason" placeholder="Contoh: Demam" required>
+            <input type="text" id="leaveReason" placeholder="Contoh: Demam / Urusan Keluarga" required>
           </div>
 
-          <button type="submit" class="btn-submit">Hantar Permohonan</button>
+          <button type="submit" class="btn-submit">Hantar Permohonan Cuti</button>
         </form>
       </div>
 
-      <div style="display: grid; grid-template-columns: 1fr; gap: 14px;">
+      <div style="display: grid; grid-template-columns: 1fr; gap: 16px;">
         <div class="card">
-          <h2>🏆 Carta Ranking MC</h2>
-          <p class="sub-text">Jumlah hari MC terkumpul mengikut juruteknik</p>
+          <h2> Carta Ranking MC (Shift C)</h2>
+          <p class="sub-text">Jumlah hari cuti sakit terkumpul mengikut juruteknik</p>
           <div class="ranking-list" id="mcRankingList"></div>
         </div>
 
         <div class="card">
           <h2 id="statTitle">
-            <span>📊 Ringkasan Baki Cuti</span>
-            <select id="statFilterTech" style="width: 140px; font-size: 10px; padding: 4px 8px; background:#030712; color:var(--accent); border:1px solid var(--border); border-radius:6px; font-weight:800;">
+            <span> Ringkasan Baki Cuti</span>
+            <select id="statFilterTech" style="width: 160px; font-size: 11px; padding: 6px 10px; background:#030712; color:var(--accent); border:1px solid var(--border); border-radius:8px; display:inline-block; font-weight:800;">
               <option value="ALL">-- Semua Staf --</option>
-              <option value="Muhammad Adib Bin Noordin">Muhammad Adib</option>
-              <option value="Abu Hanifah Bin Muhamdhazir">Abu Hanifah</option>
-              <option value="Muhamad Fadli Bin Zolkifli">Muhamad Fadli</option>
-              <option value="Mohd Syazwan Bin Abdul Rahim">Mohd Syazwan</option>
-              <option value="Muhammad Daniel Bin Zul Karnain">Muhammad Daniel</option>
-              <option value="Muhammad Aniff Izzat Akmal Bin Abu Hassan">Muhammad Aniff</option>
-              <option value="Muhamad Fakhrul Imran Bin Mohamad Khairi">Muhamad Fakhrul</option>
+              <option value="Muhammad Adib Bin Noordin">Muhammad Adib Bin Noordin</option>
+              <option value="Abu Hanifah Bin Muhamdhazir">Abu Hanifah Bin Muhamdhazir</option>
+              <option value="Muhamad Fadli Bin Zolkifli">Muhamad Fadli Bin Zolkifli</option>
+              <option value="Mohd Syazwan Bin Abdul Rahim">Mohd Syazwan Bin Abdul Rahim</option>
+              <option value="Muhammad Daniel Bin Zul Karnain">Muhammad Daniel Bin Zul Karnain</option>
+              <option value="Muhammad Aniff Izzat Akmal Bin Abu Hassan">Muhammad Aniff Izzat Akmal Bin Abu Hassan</option>
+              <option value="Muhamad Fakhrul Imran Bin Mohamad Khairi">Muhamad Fakhrul Imran Bin Mohamad Khairi</option>
             </select>
           </h2>
           <div class="stat-boxes">
@@ -553,17 +600,17 @@
 
     </div>
 
-    <div class="card" style="margin-top: 14px;">
-      <h2>📅 Senarai Plan Cuti Mengikut Bulan (Terdekat Di Atas)</h2>
-      <p class="sub-text">Tekan senarai untuk perincian.</p>
+    <div class="card" style="margin-top: 16px;">
+      <h2> Senarai Plan Cuti Mengikut Bulan</h2>
+      <p class="sub-text">Tekan pada mana-mana senarai cuti untuk perincian atau pengurusan oleh penyelia.</p>
       <div id="leaveCardsContainer"></div>
     </div>
   </div>
 
   <div id="calendarPage" class="sub-page animate-fade">
     <div class="card">
-      <h2>📆 Kalendar Interaktif & Shift</h2>
-      <p class="sub-text">Kitaran 4-2-4-2 berterusan.</p>
+      <h2> Kalendar Interaktif & Kitaran Shift</h2>
+      <p class="sub-text">Paparan lengkap shift kerja, cuti am negeri Kedah, dan cuti staff (Kitaran 4-2-4-2 berterusan).</p>
       
       <div class="calendar-container">
         <div class="cal-header-nav">
@@ -579,11 +626,11 @@
       </div>
 
       <div class="cal-legend">
-        <div class="legend-item"><div class="legend-box" style="background:var(--shift-siang)"></div> Siang</div>
-        <div class="legend-item"><div class="legend-box" style="background:var(--shift-free)"></div> Free</div>
-        <div class="legend-item"><div class="legend-box" style="background:var(--shift-malam)"></div> Malam</div>
+        <div class="legend-item"><div class="legend-box" style="background:var(--shift-siang)"></div> Shift Siang (4 Hari)</div>
+        <div class="legend-item"><div class="legend-box" style="background:var(--shift-free)"></div> Free Shift (2 Hari)</div>
+        <div class="legend-item"><div class="legend-box" style="background:var(--shift-malam)"></div> Shift Malam (4 Hari)</div>
         <div class="legend-item"><div class="legend-box" style="background:var(--accent)"></div> Cuti Staff</div>
-        <div class="legend-item"><div class="legend-box" style="background:var(--pink)"></div> Cuti Am</div>
+        <div class="legend-item"><div class="legend-box" style="background:var(--pink)"></div> Cuti Am (Kedah)</div>
       </div>
     </div>
   </div>
@@ -592,7 +639,7 @@
 <div class="modal-overlay" id="detailModal">
   <div class="modal-card">
     <div class="modal-header">
-      <h3 id="modalHeaderTitle">ℹ️ Maklumat Terperinci</h3>
+      <h3 id="modalHeaderTitle">ℹ️ Maklumat Tarikh & Cuti</h3>
       <button type="button" class="close-btn" id="closeModalBtn">✕</button>
     </div>
     <div id="modalBodyContent"></div>
@@ -619,28 +666,44 @@
   const SUPERVISOR_PIN = "9988";
   let leaveLogs = [];
   let announcementsList = [];
-  let isSupervisorMode = false;
 
   let currentCalYear = 2026;
-  let currentCalMonth = 7; // Ogos
+  let currentCalMonth = 7; // August (0-indexed)
 
   const publicHolidaysKedah2026 = {
-    "2026-01-01": "Tahun Baru 2026", "2026-01-15": "Israk dan Mikraj", "2026-02-01": "Hari Wilayah Persekutuan",
-    "2026-02-01": "Hari Thaipusam", "2026-02-17": "Awal Ramadan", "2026-02-19": "Tahun Baru Cina",
-    "2026-02-20": "Tahun Baru Cina (Hari Kedua)", "2026-03-19": "Hari Nuzul Al-Quran", "2026-03-21": "Hari Raya Aidilfitri",
-    "2026-03-22": "Hari Raya Aidilfitri (Hari Kedua)", "2026-05-01": "Hari Pekerja", "2026-05-28": "Hari Raya Haji",
-    "2026-05-31": "Hari Wesak", "2026-06-18": "Awal Muharram (Maal Hijrah)", "2026-08-31": "Hari Kebangsaan",
-    "2026-08-25": "Maulidur Rasul", "2026-09-16": "Hari Malaysia", "2026-11-08": "Hari Keputeraan Sultan Kedah", "2026-12-25": "Hari Krismas"
+    "2026-01-01": "Tahun Baru 2026",
+    "2026-01-15": "Israk dan Mikraj",
+    "2026-02-01": "Hari Wilayah Persekutuan",
+    "2026-02-02": "Hari Thaipusam",
+    "2026-02-17": "Awal Ramadan",
+    "2026-02-19": "Tahun Baru Cina",
+    "2026-02-20": "Tahun Baru Cina (Hari Kedua)",
+    "2026-03-19": "Hari Nuzul Al-Quran",
+    "2026-03-21": "Hari Raya Aidilfitri",
+    "2026-03-22": "Hari Raya Aidilfitri (Hari Kedua)",
+    "2026-05-01": "Hari Pekerja",
+    "2026-05-28": "Hari Raya Haji",
+    "2026-05-31": "Hari Wesak",
+    "2026-06-18": "Awal Muharram (Maal Hijrah)",
+    "2026-08-31": "Hari Kebangsaan",
+    "2026-08-25": "Hari Keputeraan Nabi Muhammad SAW (Maulidur Rasul)",
+    "2026-09-16": "Hari Malaysia",
+    "2026-11-08": "Hari Keputeraan Sultan Kedah",
+    "2026-12-25": "Hari Krismas"
   };
 
   const technicianList = [
-    "Muhammad Adib Bin Noordin", "Abu Hanifah Bin Muhamdhazir", "Muhamad Fadli Bin Zolkifli",
-    "Mohd Syazwan Bin Abdul Rahim", "Muhammad Daniel Bin Zul Karnain",
-    "Muhammad Aniff Izzat Akmal Bin Abu Hassan", "Muhamad Fakhrul Imran Bin Mohamad Khairi"
+    "Muhammad Adib Bin Noordin",
+    "Abu Hanifah Bin Muhamdhazir",
+    "Muhamad Fadli Bin Zolkifli",
+    "Mohd Syazwan Bin Abdul Rahim",
+    "Muhammad Daniel Bin Zul Karnain",
+    "Muhammad Aniff Izzat Akmal Bin Abu Hassan",
+    "Muhamad Fakhrul Imran Bin Mohamad Khairi"
   ];
 
   const monthNames = ["Januari", "Februari", "Mac", "April", "Mei", "Jun", "Julai", "Ogos", "September", "Oktober", "November", "Disember"];
-  const shortMonthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ogo", "Sep", "Okt", "Nov", "Dis"];
+  const shortMonthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dis"];
 
   function formatDateShort(dateStr) {
     if (!dateStr) return "";
@@ -653,8 +716,13 @@
 
   function formatLeaveDateRange(startDate, endDate) {
     if (!startDate) return "";
-    if (!endDate || startDate === endDate) return formatDateShort(startDate);
-    return `${formatDateShort(startDate)} - ${formatDateShort(endDate)}`;
+    if (!endDate || startDate === endDate) {
+      return formatDateShort(startDate);
+    }
+    const sFormatted = formatDateShort(startDate);
+    const eFormatted = formatDateShort(endDate);
+    if (sFormatted === eFormatted) return sFormatted;
+    return `${sFormatted} - ${eFormatted}`;
   }
 
   function getShiftStatusForDate(techName, dateStr) {
@@ -664,15 +732,20 @@
     targetDate.setHours(0,0,0,0);
 
     const diffDays = Math.round((targetDate - baseDate) / (1000 * 60 * 60 * 24));
-    if (diffDays < 0) return { type: 'free', label: 'Free' };
+    if (diffDays < 0) return { type: 'free', label: 'Free / Tiada Rekod' };
 
     const cycleLength = 12;
     const dayInCycle = diffDays % cycleLength;
 
-    if (dayInCycle >= 0 && dayInCycle <= 3) return { type: 'siang', label: 'Shift Siang' };
-    else if (dayInCycle >= 4 && dayInCycle <= 5) return { type: 'free', label: 'Free Shift' };
-    else if (dayInCycle >= 6 && dayInCycle <= 9) return { type: 'malam', label: 'Shift Malam' };
-    else return { type: 'free', label: 'Free Shift' };
+    if (dayInCycle >= 0 && dayInCycle <= 3) {
+      return { type: 'siang', label: 'Shift Siang' };
+    } else if (dayInCycle >= 4 && dayInCycle <= 5) {
+      return { type: 'free', label: 'Free Shift' };
+    } else if (dayInCycle >= 6 && dayInCycle <= 9) {
+      return { type: 'malam', label: 'Shift Malam' };
+    } else {
+      return { type: 'free', label: 'Free Shift' };
+    }
   }
 
   window.switchSubPage = function(pageId, btnElement) {
@@ -686,48 +759,21 @@
   function checkPassword() {
     const inputEl = document.getElementById("passInput");
     const errorEl = document.getElementById("loginError");
+    const overlayEl = document.getElementById("loginOverlay");
     if (!inputEl) return;
     if (inputEl.value.trim() === SECRET_PASSWORD) {
-      isSupervisorMode = true;
       sessionStorage.setItem("qa_authenticated", "true");
-      sessionStorage.setItem("qa_supervisor", "true");
-      applyRoleUI();
-      document.getElementById("loginOverlay").style.display = "none";
+      if (overlayEl) overlayEl.style.display = "none";
     } else {
       if (errorEl) errorEl.style.display = "block";
     }
   }
   window.checkPassword = checkPassword;
-
-  window.loginAsStaff = function() {
-    isSupervisorMode = false;
-    sessionStorage.setItem("qa_authenticated", "true");
-    sessionStorage.setItem("qa_supervisor", "false");
-    applyRoleUI();
-    document.getElementById("loginOverlay").style.display = "none";
-  };
-
-  function applyRoleUI() {
-    const supBtn = document.getElementById("toggleSupAnnounceBtn");
-    const bulkWrap = document.getElementById("supervisorBulkWrap");
-    if (isSupervisorMode) {
-      if (supBtn) supBtn.style.display = "inline-block";
-      if (bulkWrap) bulkWrap.style.display = "block";
-    } else {
-      if (supBtn) supBtn.style.display = "none";
-      if (bulkWrap) bulkWrap.style.display = "none";
-    }
-    updateDashboardData();
-  }
-
   document.getElementById("loginBtn").addEventListener("click", checkPassword);
   document.getElementById("passInput").addEventListener("keypress", (e) => {
     if (e.key === "Enter") { e.preventDefault(); checkPassword(); }
   });
-
   if (sessionStorage.getItem("qa_authenticated") === "true") {
-    isSupervisorMode = (sessionStorage.getItem("qa_supervisor") === "true");
-    applyRoleUI();
     document.getElementById("loginOverlay").style.display = "none";
   }
 
@@ -738,11 +784,12 @@
   document.getElementById("toggleSupAnnounceBtn").addEventListener("click", () => {
     const panel = document.getElementById("supervisorAnnouncePanel");
     if (panel.style.display === "none") {
-      const pin = prompt("Masukkan PIN Penyelia:");
+      const pin = prompt(" Sila masukkan PIN Penyelia:");
       if (pin === SUPERVISOR_PIN) {
         panel.style.display = "block";
+        alert("✅ Akses Penyelia Dibenarkan.");
       } else if (pin !== null) {
-        alert("❌ PIN Salah!");
+        alert("❌ PIN Penyelia Salah!");
       }
     } else {
       panel.style.display = "none";
@@ -750,403 +797,495 @@
   });
 
   window.promptAddPastLeave = function() {
-    const pin = prompt("Masukkan PIN Penyelia untuk Bulk Edit:");
+    const pin = prompt(" Sila masukkan PIN Penyelia untuk kemasukan data cuti sekaligus:");
     if (pin !== SUPERVISOR_PIN) {
-      if (pin !== null) alert("❌ PIN Salah!");
+      if (pin !== null) alert("❌ PIN Penyelia Salah!");
       return;
     }
+
     const modalBody = document.getElementById("modalBodyContent");
-    document.getElementById("modalHeaderTitle").innerText = "➕ Bulk Edit Cuti Lepas";
+    document.getElementById("modalHeaderTitle").innerText = "➕ Kemasukan Data Cuti Sekaligus (Bulk Edit)";
+    
     let tableRows = '';
     technicianList.forEach((tech) => {
-      let existingAL = leaveLogs.find(l => l.name === tech && l.type === 'AL' && l.isPastRecord)?.days || '';
-      let existingMC = leaveLogs.find(l => l.name === tech && l.type === 'MC' && l.isPastRecord)?.days || '';
-      let existingEL = leaveLogs.find(l => l.name === tech && l.type === 'EL' && l.isPastRecord)?.days || '';
-      let existingPL = leaveLogs.find(l => l.name === tech && l.type === 'PL' && l.isPastRecord)?.days || '';
+      let existingAL = leaveLogs.find(l => l.name === tech && l.type === 'AL' && l.isPastRecord) ? leaveLogs.find(l => l.name === tech && l.type === 'AL' && l.isPastRecord).days : '';
+      let existingMC = leaveLogs.find(l => l.name === tech && l.type === 'MC' && l.isPastRecord) ? leaveLogs.find(l => l.name === tech && l.type === 'MC' && l.isPastRecord).days : '';
+      let existingEL = leaveLogs.find(l => l.name === tech && l.type === 'EL' && l.isPastRecord) ? leaveLogs.find(l => l.name === tech && l.type === 'EL' && l.isPastRecord).days : '';
+      let existingPL = leaveLogs.find(l => l.name === tech && l.type === 'PL' && l.isPastRecord) ? leaveLogs.find(l => l.name === tech && l.type === 'PL' && l.isPastRecord).days : '';
+
       tableRows += `
         <tr>
-          <td style="text-align:left; font-size:11px;">${tech}</td>
-          <td><input type="number" step="0.5" class="bulk-input" data-tech="${tech}" data-type="AL" value="${existingAL}"></td>
-          <td><input type="number" step="0.5" class="bulk-input" data-tech="${tech}" data-type="MC" value="${existingMC}"></td>
-          <td><input type="number" step="0.5" class="bulk-input" data-tech="${tech}" data-type="EL" value="${existingEL}"></td>
-          <td><input type="number" step="0.5" class="bulk-input" data-tech="${tech}" data-type="PL" value="${existingPL}"></td>
-        </tr>`;
+          <td style="text-align:left; font-weight:800; color:var(--text);">${tech}</td>
+          <td><input type="number" step="0.5" min="0" class="bulk-input" data-tech="${tech}" data-type="AL" value="${existingAL}"></td>
+          <td><input type="number" step="0.5" min="0" class="bulk-input" data-tech="${tech}" data-type="MC" value="${existingMC}"></td>
+          <td><input type="number" step="0.5" min="0" class="bulk-input" data-tech="${tech}" data-type="EL" value="${existingEL}"></td>
+          <td><input type="number" step="0.5" min="0" class="bulk-input" data-tech="${tech}" data-type="PL" value="${existingPL}"></td>
+        </tr>
+      `;
     });
+
     modalBody.innerHTML = `
-      <form id="bulkForm">
+      <form id="bulkLeaveForm">
+        <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">Masukkan jumlah hari cuti lepas/tahunan bagi setiap juruteknik di bawah. Biarkan kosong jika 0.</p>
         <div style="overflow-x:auto;">
           <table class="bulk-table">
-            <tr><th style="text-align:left;">Nama</th><th>AL</th><th>MC</th><th>EL</th><th>PL</th></tr>
-            ${tableRows}
+            <thead>
+              <tr>
+                <th style="text-align:left;">Nama Juruteknik</th>
+                <th>AL</th>
+                <th>MC</th>
+                <th>EL</th>
+                <th>PL</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${tableRows}
+            </tbody>
           </table>
         </div>
-        <button type="submit" class="btn-submit" style="margin-top:10px;">Simpan Rekod</button>
-      </form>`;
+        <button type="submit" class="btn-submit" style="margin-top:10px;"> Simpan Semua Rekod Sekaligus</button>
+      </form>
+    `;
     document.getElementById("detailModal").classList.add("active");
 
-    document.getElementById("bulkForm").addEventListener("submit", async function(e) {
+    document.getElementById("bulkLeaveForm").addEventListener("submit", async function(e) {
       e.preventDefault();
       const inputs = document.querySelectorAll('.bulk-input');
       const todayStr = new Date().toISOString().split('T')[0];
+
       try {
-        const oldPast = leaveLogs.filter(l => l.isPastRecord);
-        for (let op of oldPast) { await deleteDoc(doc(db, "leaves", op.id)); }
-        for (let inp of inputs) {
-          const val = parseFloat(inp.value);
+        const oldPastRecords = leaveLogs.filter(l => l.isPastRecord);
+        for (let oldRec of oldPastRecords) {
+          await deleteDoc(doc(db, "leaves", oldRec.id));
+        }
+
+        for (let input of inputs) {
+          const val = parseFloat(input.value);
           if (!isNaN(val) && val > 0) {
+            const name = input.getAttribute('data-tech');
+            const type = input.getAttribute('data-type');
             await addDoc(collection(db, "leaves"), {
-              name: inp.getAttribute('data-tech'),
-              type: inp.getAttribute('data-type'),
-              startDate: todayStr, endDate: todayStr, days: val,
-              reason: 'Rekod Cuti Lepas', timestamp: Date.now(),
-              isOverlap: false, isPastRecord: true
+              name, type, startDate: todayStr, endDate: todayStr, days: val,
+              reason: 'Rekod Cuti Lepas / Awal Tahun',
+              timestamp: Date.now(),
+              isOverlap: false,
+              isPastRecord: true
             });
           }
         }
-        alert("✅ Berjaya dikemaskini!");
+
+        alert("✅ Semua rekod cuti berjaya dikemaskini sekaligus!");
         document.getElementById("detailModal").classList.remove("active");
-      } catch(err) { alert("Ralat: " + err.message); }
+      } catch (err) {
+        alert("❌ Ralat: " + err.message);
+      }
     });
   };
 
-  // Firebase Realtime Listeners
-  onSnapshot(collection(db, "leaves"), (snapshot) => {
-    leaveLogs = [];
-    snapshot.forEach((docSnap) => {
-      leaveLogs.push({ id: docSnap.id, ...docSnap.data() });
-    });
-    updateDashboardData();
-  });
-
-  onSnapshot(collection(db, "announcements"), (snapshot) => {
-    announcementsList = [];
-    snapshot.forEach((docSnap) => {
-      announcementsList.push({ id: docSnap.id, ...docSnap.data() });
-    });
-    renderAnnouncements();
-  });
-
-  function updateDashboardData() {
-    renderLeaveCards();
-    renderStatistics();
-    renderRanking();
-    if(document.getElementById('calendarPage').classList.contains('active')) {
-      renderInteractiveCalendar();
+  async function saveAnnouncementData(text, imageUrl) {
+    try {
+      await addDoc(collection(db, "announcements"), {
+        text,
+        imageUrl,
+        author: "Penyelia Shift C",
+        timestamp: Date.now()
+      });
+      document.getElementById("announcementForm").reset();
+      alert("✅ Pengumuman berjaya disiarkan!");
+    } catch (err) {
+      alert("❌ Ralat: " + err.message);
     }
   }
-
-  function renderAnnouncements() {
-    const container = document.getElementById("announcementContainer");
-    if (!container) return;
-    container.innerHTML = "";
-    announcementsList.sort((a,b) => b.timestamp - a.timestamp).forEach(item => {
-      let imgHtml = item.image ? `<img src="${item.image}" class="announcement-img">` : '';
-      let deleteAnnBtn = isSupervisorMode ? `<button type="button" class="btn-action" style="background:var(--red); color:#fff; padding:2px 6px; font-size:9px;" onclick="deleteAnnouncement('${item.id}')">Padam</button>` : '';
-      container.innerHTML += `
-        <div class="announcement-box">
-          <div class="announcement-header">
-            <span class="announcement-author">Penyelia Shift C</span>
-            <div style="display:flex; align-items:center; gap:6px;">
-              <span class="announcement-date">${new Date(item.timestamp).toLocaleDateString()}</span>
-              ${deleteAnnBtn}
-            </div>
-          </div>
-          <div class="announcement-content">${item.text}</div>
-          ${imgHtml}
-        </div>`;
-    });
-  }
-
-  window.deleteAnnouncement = async function(id) {
-    if(confirm("Padam pengumuman ini?")) {
-      await deleteDoc(doc(db, "announcements", id));
-    }
-  };
 
   document.getElementById("announcementForm").addEventListener("submit", async function(e) {
     e.preventDefault();
     const text = document.getElementById("announcementText").value;
     const fileInput = document.getElementById("announcementImgFile");
+    
     let imageUrl = "";
     if (fileInput.files && fileInput.files[0]) {
       const reader = new FileReader();
-      reader.onload = async function(eUpload) {
-        imageUrl = eUpload.target.result;
-        await addDoc(collection(db, "announcements"), { text, image: imageUrl, timestamp: Date.now() });
-        alert("✅ Pengumuman disiarkan!");
-        document.getElementById("announcementForm").reset();
-        document.getElementById("supervisorAnnouncePanel").style.display = "none";
+      reader.onload = async function(uploadEvent) {
+        imageUrl = uploadEvent.target.result;
+        await saveAnnouncementData(text, imageUrl);
       };
       reader.readAsDataURL(fileInput.files[0]);
     } else {
-      await addDoc(collection(db, "announcements"), { text, image: "", timestamp: Date.now() });
-      alert("✅ Pengumuman disiarkan!");
-      document.getElementById("announcementForm").reset();
-      document.getElementById("supervisorAnnouncePanel").style.display = "none";
+      await saveAnnouncementData(text, imageUrl);
     }
   });
 
-  function renderLeaveCards() {
-    const container = document.getElementById("leaveCardsContainer");
-    if (!container) return;
-    container.innerHTML = "";
-
-    // TAPIS: Hanya ambil cuti biasa, KECUALIKAN isPastRecord (cuti lepas tidak dipaparkan di senarai)
-    const activeLeaves = leaveLogs.filter(l => !l.isPastRecord);
-    const sortedLogs = [...activeLeaves].sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
-
-    const grouped = {};
-    sortedLogs.forEach(log => {
-      if (!log.startDate) return;
-      const mKey = log.startDate.substring(0, 7);
-      if (!grouped[mKey]) grouped[mKey] = [];
-      grouped[mKey].push(log);
-    });
-
-    Object.keys(grouped).sort().forEach(mKey => {
-      const parts = mKey.split("-");
-      const monthName = shortMonthNames[parseInt(parts[1], 10) - 1] || parts[1];
-      
-      let html = `<div class="month-group-container">
-        <div class="month-group-title">📅 ${monthName} ${parts[0]}</div>
-        <div class="compact-leave-list">`;
-
-      grouped[mKey].forEach(log => {
-        const shiftInfo = getShiftStatusForDate(log.name, log.startDate);
-        const isOverlapClass = log.isOverlap ? "is-overlap" : "";
-        const badgeType = `badge-${log.type}`;
-        
-        let shiftBadgeClass = "shift-badge-free";
-        if(shiftInfo.type === 'siang') shiftBadgeClass = "shift-badge-siang";
-        if(shiftInfo.type === 'malam') shiftBadgeClass = "shift-badge-malam";
-
-        html += `
-          <div class="compact-item ${isOverlapClass}" onclick="openDetailModal('${log.id}')">
-            <div class="compact-name-wrap">
-              <span class="badge ${badgeType}">${log.type}</span>
-              <span class="compact-name">${log.name}</span>
-              ${log.isOverlap ? '<span class="warning-badge">⚠️ Bertindih</span>' : ''}
-            </div>
-            <div class="compact-right">
-              <span class="shift-badge-main ${shiftBadgeClass}">${shiftInfo.label}</span>
-              <span class="compact-date">${formatLeaveDateRange(log.startDate, log.endDate)} (${log.days}h)</span>
-            </div>
-          </div>
-        `;
-      });
-
-      html += `</div></div>`;
-      container.innerHTML += html;
-    });
+  // Calculate days for Leave Form
+  function calculateLeaveDays(startDateStr, endDateStr, duration) {
+    if (!startDateStr || !endDateStr) return 0;
+    if (duration === "1stHalf" || duration === "2ndHalf") return 0.5;
+    const d1 = new Date(startDateStr);
+    const d2 = new Date(endDateStr);
+    const diffTime = Math.abs(d2 - d1);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+    return diffDays > 0 ? diffDays : 0;
   }
 
-  window.openDetailModal = function(id) {
-    const log = leaveLogs.find(l => l.id === id);
-    if (!log) return;
-    const modalBody = document.getElementById("modalBodyContent");
-    document.getElementById("modalHeaderTitle").innerText = "ℹ️ Maklumat Cuti";
-    
-    let deleteBtnHtml = "";
-    if (isSupervisorMode) {
-      deleteBtnHtml = `<button type="button" class="btn-action" style="background:var(--red); color:#fff; width:100%; margin-top:10px;" onclick="deleteLeave('${log.id}')">Padam Rekod</button>`;
-    }
-
-    modalBody.innerHTML = `
-      <div style="font-size:12px; line-height:1.6;">
-        <p><b>Nama:</b> ${log.name}</p>
-        <p><b>Jenis:</b> ${log.type}</p>
-        <p><b>Tarikh:</b> ${formatLeaveDateRange(log.startDate, log.endDate)}</p>
-        <p><b>Tempoh:</b> ${log.days} Hari</p>
-        <p><b>Sebab:</b> ${log.reason || '-'}</p>
-        ${deleteBtnHtml}
-      </div>
-    `;
-    document.getElementById("detailModal").classList.add("active");
-  };
-
-  window.deleteLeave = async function(id) {
-    if(confirm("Padam rekod cuti ini?")) {
-      await deleteDoc(doc(db, "leaves", id));
-      document.getElementById("detailModal").classList.remove("active");
-    }
-  };
-
-  function renderStatistics() {
-    const filterTech = document.getElementById("statFilterTech")?.value || "ALL";
-    let tAL = 0, tMC = 0, tEL = 0, tPL = 0;
-
-    leaveLogs.forEach(l => {
-      if (filterTech === "ALL" || l.name === filterTech) {
-        const days = parseFloat(l.days) || 1;
-        if (l.type === 'AL') tAL += days;
-        if (l.type === 'MC') tMC += days;
-        if (l.type === 'EL') tEL += days;
-        if (l.type === 'PL') tPL += days;
-      }
-    });
-
-    document.getElementById("countAL").innerText = `${tAL} Hari`;
-    document.getElementById("countMC").innerText = `${tMC} / 18`;
-    document.getElementById("countEL").innerText = `${tEL} Hari`;
-    document.getElementById("countPL").innerText = `${tPL} Hari`;
-  }
-
-  document.getElementById("statFilterTech")?.addEventListener("change", renderStatistics);
-
-  function renderRanking() {
-    const listEl = document.getElementById("mcRankingList");
-    if (!listEl) return;
-    listEl.innerHTML = "";
-
-    const stats = {};
-    technicianList.forEach(t => stats[t] = 0);
-    leaveLogs.forEach(l => {
-      if (l.type === 'MC' && stats[l.name] !== undefined) {
-        stats[l.name] += (parseFloat(l.days) || 1);
-      }
-    });
-
-    const sorted = Object.entries(stats).sort((a,b) => b[1] - a[1]);
-    const maxVal = Math.max(...Object.values(stats), 1);
-
-    sorted.forEach(([name, days], idx) => {
-      const pct = (days / maxVal) * 100;
-      listEl.innerHTML += `
-        <div class="rank-item">
-          <div class="rank-top-row">
-            <div class="rank-num-name"><span>#${idx+1}</span><span>${name}</span></div>
-            <div class="rank-val">${days} Hari MC</div>
-          </div>
-          <div class="rank-bar-bg"><div class="rank-bar-fill" style="width: ${pct}%"></div></div>
-        </div>`;
-    });
-  }
-
-  function renderInteractiveCalendar() {
-    const container = document.getElementById("calGridDaysContainer");
-    const titleEl = document.getElementById("calMonthYearTitle");
-    if (!container) return;
-
-    container.innerHTML = "";
-    const year = currentCalYear;
-    const month = currentCalMonth;
-    titleEl.innerText = `${monthNames[month]} ${year}`;
-
-    const firstDayIndex = new Date(year, month, 1).getDay();
-    const totalDays = new Date(year, month + 1, 0).getDate();
-
-    for (let i = 0; i < firstDayIndex; i++) {
-      container.innerHTML += `<div class="cal-day-cell other-month"></div>`;
-    }
-
-    for (let day = 1; day <= totalDays; day++) {
-      const dStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-      let cellClass = "";
-      // Semak shift juruteknik pertama sebagai rujukan visual kalendar umum
-      const shiftRef = getShiftStatusForDate(technicianList[0], dStr);
-      if(shiftRef.type === 'siang') cellClass = "shift-siang";
-      else if(shiftRef.type === 'malam') cellClass = "shift-malam";
-      else cellClass = "shift-free";
-
-      container.innerHTML += `
-        <div class="cal-day-cell ${cellClass}" onclick="openCalendarDayModal('${dStr}')">
-          <span class="cal-day-num">${day}</span>
-        </div>`;
-    }
-  }
-
-  window.openCalendarDayModal = function(dStr) {
-    const modalBody = document.getElementById("modalBodyContent");
-    document.getElementById("modalHeaderTitle").innerText = `📅 Maklumat Tarikh: ${dStr}`;
-    
-    // TAPIS: Cuti lepas tidak dipaparkan dalam butiran harian kalendar
-    const activeLeaves = leaveLogs.filter(l => !l.isPastRecord);
-    const dayLeaves = activeLeaves.filter(l => dStr >= l.startDate && dStr <= l.endDate);
-    const holiday = publicHolidaysKedah2026[dStr];
-
-    let html = `<div style="font-size:12px; line-height:1.6;">`;
-    if(holiday) html += `<p><b>Cuti Am:</b> <span style="color:var(--pink)">${holiday}</span></p>`;
-    
-    html += `<p><b>Senarai Cuti Staf:</b></p>`;
-    if(dayLeaves.length > 0) {
-      dayLeaves.forEach(l => {
-        html += `<div style="background:#030712; padding:6px; border-radius:6px; margin-bottom:6px;"><b>${l.name}</b> (${l.type})</div>`;
-      });
-    } else {
-      html += `<p style="color:var(--text-muted)">Tiada cuti staf pada tarikh ini.</p>`;
-    }
-    html += `</div>`;
-    modalBody.innerHTML = html;
-    document.getElementById("detailModal").classList.add("active");
-  };
-
-  document.getElementById("prevMonthBtn").addEventListener("click", () => {
-    currentCalMonth--;
-    if(currentCalMonth < 0) { currentCalMonth = 11; currentCalYear--; }
-    renderInteractiveCalendar();
-  });
-  document.getElementById("nextMonthBtn").addEventListener("click", () => {
-    currentCalMonth++;
-    if(currentCalMonth > 11) { currentCalMonth = 0; currentCalYear++; }
-    renderInteractiveCalendar();
-  });
-
-  document.getElementById("startDate").addEventListener("change", updateDayCount);
-  document.getElementById("endDate").addEventListener("change", updateDayCount);
-  document.getElementById("durationOption").addEventListener("change", updateDayCount);
-
-  function updateDayCount() {
-    const start = document.getElementById("startDate").value;
-    const end = document.getElementById("endDate").value || start;
+  function updateDayCountBadge() {
+    const s = document.getElementById("startDate").value;
+    const e = document.getElementById("endDate").value;
     const dur = document.getElementById("durationOption").value;
-    const badge = document.getElementById("dayCountBadge");
-
-    if(!start) return;
-    const d1 = new Date(start);
-    const d2 = new Date(end);
-    let diff = Math.round((d2 - d1)/(1000*60*60*24)) + 1;
-    if(diff < 1) diff = 1;
-
-    let total = dur === 'Full' ? diff : diff - 0.5;
-    if(total < 0.5) total = 0.5;
-    badge.innerText = `Jumlah Hari: ${total} Hari`;
+    const days = calculateLeaveDays(s, e, dur);
+    document.getElementById("dayCountBadge").innerText = `Jumlah Hari: ${days} Hari`;
   }
 
+  document.getElementById("startDate").addEventListener("change", (e) => {
+    document.getElementById("endDate").value = e.target.value;
+    updateDayCountBadge();
+  });
+  document.getElementById("endDate").addEventListener("change", updateDayCountBadge);
+  document.getElementById("durationOption").addEventListener("change", updateDayCountBadge);
+
+  // Submit Leave Form
   document.getElementById("leaveForm").addEventListener("submit", async function(e) {
     e.preventDefault();
     const name = document.getElementById("techName").value;
     const type = document.getElementById("leaveType").value;
     const startDate = document.getElementById("startDate").value;
-    const endDate = document.getElementById("endDate").value || startDate;
-    const duration = document.getElementById("durationOption").value;
+    const endDate = document.getElementById("endDate").value;
+    const durationOption = document.getElementById("durationOption").value;
     const reason = document.getElementById("leaveReason").value;
 
-    const d1 = new Date(startDate);
-    const d2 = new Date(endDate);
-    let diff = Math.round((d2 - d1)/(1000*60*60*24)) + 1;
-    let days = duration === 'Full' ? diff : diff - 0.5;
-
-    // Semak pertindihan
-    let isOverlap = false;
-    leaveLogs.forEach(l => {
-      if(!l.isPastRecord && l.name === name) {
-        if(!(endDate < l.startDate || startDate > l.endDate)) {
-          isOverlap = true;
-        }
-      }
-    });
+    const days = calculateLeaveDays(startDate, endDate, durationOption);
 
     try {
       await addDoc(collection(db, "leaves"), {
-        name, type, startDate, endDate, days, reason,
-        timestamp: Date.now(), isOverlap, isPastRecord: false
+        name, type, startDate, endDate, durationOption, days, reason,
+        timestamp: Date.now(),
+        isPastRecord: false
       });
-      alert("✅ Permohonan berjaya dihantar!");
-      this.reset();
+      alert("✅ Permohonan cuti berjaya dihantar!");
+      document.getElementById("leaveForm").reset();
+      updateDayCountBadge();
     } catch (err) {
       alert("❌ Ralat: " + err.message);
     }
   });
+
+  // Check Overlaps for Leaves
+  function checkOverlaps() {
+    leaveLogs.forEach(l => l.isOverlap = false);
+    for (let i = 0; i < leaveLogs.length; i++) {
+      if (leaveLogs[i].isPastRecord) continue;
+      for (let j = i + 1; j < leaveLogs.length; j++) {
+        if (leaveLogs[j].isPastRecord) continue;
+        const l1 = leaveLogs[i];
+        const l2 = leaveLogs[j];
+        if (l1.name !== l2.name) {
+          const s1 = new Date(l1.startDate);
+          const e1 = new Date(l1.endDate);
+          const s2 = new Date(l2.startDate);
+          const e2 = new Date(l2.endDate);
+          if (s1 <= e2 && s2 <= e1) {
+            l1.isOverlap = true;
+            l2.isOverlap = true;
+          }
+        }
+      }
+    }
+  }
+
+  // Realtime Snapshots
+  onSnapshot(collection(db, "announcements"), (snapshot) => {
+    announcementsList = [];
+    snapshot.forEach(docSnap => {
+      announcementsList.push({ id: docSnap.id, ...docSnap.data() });
+    });
+    announcementsList.sort((a, b) => b.timestamp - a.timestamp);
+    renderAnnouncements();
+  });
+
+  onSnapshot(collection(db, "leaves"), (snapshot) => {
+    leaveLogs = [];
+    snapshot.forEach(docSnap => {
+      leaveLogs.push({ id: docSnap.id, ...docSnap.data() });
+    });
+    checkOverlaps();
+    renderLeaveCards();
+    renderMcRanking();
+    updateStats();
+    if (document.getElementById('calendarPage').classList.contains('active')) {
+      renderInteractiveCalendar();
+    }
+  });
+
+  function renderAnnouncements() {
+    const container = document.getElementById("announcementContainer");
+    if (announcementsList.length === 0) {
+      container.innerHTML = `<p style="font-size:12px; color:var(--text-muted); text-align:center;">Tiada pengumuman terkini.</p>`;
+      return;
+    }
+    let html = '';
+    announcementsList.forEach(a => {
+      const dateStr = new Date(a.timestamp).toLocaleDateString("ms-MY", { day: 'numeric', month: 'short', year: 'numeric' });
+      html += `
+        <div class="announcement-box">
+          <div class="announcement-header">
+            <span class="announcement-author">📢 ${a.author || "Penyelia"}</span>
+            <span class="announcement-date">${dateStr}</span>
+          </div>
+          <div class="announcement-content">${a.text}</div>
+          ${a.imageUrl ? `<img src="${a.imageUrl}" class="announcement-img">` : ''}
+          <button type="button" class="btn-delete" style="padding:6px; font-size:11px; margin-top:10px;" onclick="deleteAnnouncement('${a.id}')">🗑️ Padam Pengumuman</button>
+        </div>
+      `;
+    });
+    container.innerHTML = html;
+  }
+
+  window.deleteAnnouncement = async function(id) {
+    const pin = prompt("Sila masukkan PIN Penyelia:");
+    if (pin === SUPERVISOR_PIN) {
+      try {
+        await deleteDoc(doc(db, "announcements", id));
+        alert("✅ Pengumuman dipadam.");
+      } catch (err) {
+        alert("❌ Ralat: " + err.message);
+      }
+    } else if (pin !== null) {
+      alert("❌ PIN Salah!");
+    }
+  };
+
+  function renderLeaveCards() {
+    const container = document.getElementById("leaveCardsContainer");
+    const activeLeaves = leaveLogs.filter(l => !l.isPastRecord);
+
+    if (activeLeaves.length === 0) {
+      container.innerHTML = `<p style="font-size:12px; color:var(--text-muted); text-align:center;">Tiada permohonan cuti direkodkan.</p>`;
+      return;
+    }
+
+    // Group leaves by Month
+    const grouped = {};
+    activeLeaves.forEach(l => {
+      const m = l.startDate.substring(0, 7);
+      if (!grouped[m]) grouped[m] = [];
+      grouped[m].push(l);
+    });
+
+    const sortedMonths = Object.keys(grouped).sort();
+    let html = '';
+
+    sortedMonths.forEach(mStr => {
+      const [y, mVal] = mStr.split('-');
+      const monthTitle = `${monthNames[parseInt(mVal, 10) - 1]} ${y}`;
+      
+      let itemsHtml = '';
+      grouped[mStr].forEach(l => {
+        const shiftInfo = getShiftStatusForDate(l.name, l.startDate);
+        let shiftBadgeClass = 'shift-badge-free';
+        if (shiftInfo.type === 'siang') shiftBadgeClass = 'shift-badge-siang';
+        if (shiftInfo.type === 'malam') shiftBadgeClass = 'shift-badge-malam';
+
+        itemsHtml += `
+          <div class="compact-item ${l.isOverlap ? 'is-overlap' : ''}" onclick="openLeaveDetailModal('${l.id}')">
+            <div class="compact-name-wrap">
+              <span class="badge badge-${l.type}">${l.type}</span>
+              <span class="compact-name">${l.name}</span>
+              <span class="shift-badge-main ${shiftBadgeClass}">${shiftInfo.label}</span>
+              ${l.durationOption && l.durationOption !== 'Full' ? `<span class="shift-badge-halfday">${l.durationOption}</span>` : ''}
+              ${l.isOverlap ? `<span class="warning-badge">⚠️ Pertindihan Cuti</span>` : ''}
+            </div>
+            <div class="compact-right">
+              <span class="compact-date">${formatLeaveDateRange(l.startDate, l.endDate)} (${l.days} Hari)</span>
+            </div>
+          </div>
+        `;
+      });
+
+      html += `
+        <div class="month-group-container">
+          <div class="month-group-title">📅 ${monthTitle}</div>
+          <div class="compact-leave-list">${itemsHtml}</div>
+        </div>
+      `;
+    });
+
+    container.innerHTML = html;
+  }
+
+  window.openLeaveDetailModal = function(leaveId) {
+    const l = leaveLogs.find(x => x.id === leaveId);
+    if (!l) return;
+
+    const modalBody = document.getElementById("modalBodyContent");
+    document.getElementById("modalHeaderTitle").innerText = `ℹ️ Perincian Cuti - ${l.name}`;
+
+    modalBody.innerHTML = `
+      <div class="modal-row"><div class="modal-label">Nama Staf</div><div class="modal-val">${l.name}</div></div>
+      <div class="modal-row"><div class="modal-label">Jenis Cuti</div><div class="modal-val"><span class="badge badge-${l.type}">${l.type}</span></div></div>
+      <div class="modal-row"><div class="modal-label">Tarikh Cuti</div><div class="modal-val">${formatLeaveDateRange(l.startDate, l.endDate)} (${l.days} Hari)</div></div>
+      <div class="modal-row"><div class="modal-label">Sebab / Catatan</div><div class="modal-val">${l.reason || '-'}</div></div>
+      ${l.isOverlap ? `<div class="modal-row" style="color:var(--orange); font-weight:800;">⚠️ Amaran: Cuti bertindih dengan juruteknik lain pada tarikh yang sama!</div>` : ''}
+      <button type="button" class="btn-delete" onclick="deleteLeaveRecord('${l.id}')">🗑️ Padam Rekod Cuti Ini</button>
+    `;
+    document.getElementById("detailModal").classList.add("active");
+  };
+
+  window.deleteLeaveRecord = async function(id) {
+    const pin = prompt("Sila masukkan PIN Penyelia untuk memadam rekod ini:");
+    if (pin === SUPERVISOR_PIN) {
+      try {
+        await deleteDoc(doc(db, "leaves", id));
+        alert("✅ Rekod cuti dipadam.");
+        document.getElementById("detailModal").classList.remove("active");
+      } catch (err) {
+        alert("❌ Ralat: " + err.message);
+      }
+    } else if (pin !== null) {
+      alert("❌ PIN Salah!");
+    }
+  };
+
+  function renderMcRanking() {
+    const mcCounts = {};
+    technicianList.forEach(t => mcCounts[t] = 0);
+
+    leaveLogs.filter(l => l.type === 'MC').forEach(l => {
+      if (mcCounts[l.name] !== undefined) {
+        mcCounts[l.name] += parseFloat(l.days) || 0;
+      }
+    });
+
+    const sorted = Object.keys(mcCounts).map(k => ({ name: k, days: mcCounts[k] })).sort((a, b) => b.days - a.days);
+    const maxMC = Math.max(...sorted.map(s => s.days), 18);
+
+    let html = '';
+    sorted.forEach((item, idx) => {
+      const pct = Math.min((item.days / maxMC) * 100, 100);
+      html += `
+        <div class="rank-item">
+          <div class="rank-top-row">
+            <div class="rank-num-name">
+              <span>#${idx + 1}</span>
+              <span>${item.name}</span>
+            </div>
+            <div class="rank-val">${item.days} Hari</div>
+          </div>
+          <div class="rank-bar-bg">
+            <div class="rank-bar-fill" style="width: ${pct}%;"></div>
+          </div>
+        </div>
+      `;
+    });
+    document.getElementById("mcRankingList").innerHTML = html;
+  }
+
+  function updateStats() {
+    const filter = document.getElementById("statFilterTech").value;
+    let filtered = leaveLogs;
+    if (filter !== "ALL") {
+      filtered = leaveLogs.filter(l => l.name === filter);
+    }
+
+    let al = 0, mc = 0, el = 0, pl = 0;
+    filtered.forEach(l => {
+      const d = parseFloat(l.days) || 0;
+      if (l.type === 'AL') al += d;
+      if (l.type === 'MC') mc += d;
+      if (l.type === 'EL') el += d;
+      if (l.type === 'PL') pl += d;
+    });
+
+    document.getElementById("countAL").innerText = `${al} Hari`;
+    document.getElementById("countMC").innerText = filter === "ALL" ? `${mc} Hari` : `${mc} / 18`;
+    document.getElementById("countEL").innerText = `${el} Hari`;
+    document.getElementById("countPL").innerText = `${pl} Hari`;
+  }
+
+  document.getElementById("statFilterTech").addEventListener("change", updateStats);
+
+  // Calendar
+  function renderInteractiveCalendar() {
+    const titleEl = document.getElementById("calMonthYearTitle");
+    const containerEl = document.getElementById("calGridDaysContainer");
+
+    titleEl.innerText = `${monthNames[currentCalMonth]} ${currentCalYear}`;
+
+    const firstDay = new Date(currentCalYear, currentCalMonth, 1).getDay();
+    const daysInMonth = new Date(currentCalYear, currentCalMonth + 1, 0).getDate();
+    const prevDays = new Date(currentCalYear, currentCalMonth, 0).getDate();
+
+    let html = '';
+
+    // Previous month filler days
+    for (let i = firstDay - 1; i >= 0; i--) {
+      html += `<div class="cal-day-cell other-month"><span class="cal-day-num">${prevDays - i}</span></div>`;
+    }
+
+    // Days of current month
+    for (let d = 1; d <= daysInMonth; d++) {
+      const mStr = String(currentCalMonth + 1).padStart(2, '0');
+      const dStr = String(d).padStart(2, '0');
+      const fullDateStr = `${currentCalYear}-${mStr}-${dStr}`;
+
+      const shiftInfo = getShiftStatusForDate("General", fullDateStr);
+      let shiftClass = `shift-${shiftInfo.type}`;
+
+      // Check holidays & leaves
+      const isHoliday = publicHolidaysKedah2026[fullDateStr];
+      const leavesOnDay = leaveLogs.filter(l => !l.isPastRecord && fullDateStr >= l.startDate && fullDateStr <= l.endDate);
+
+      html += `
+        <div class="cal-day-cell ${shiftClass}" onclick="openCalendarDateModal('${fullDateStr}')">
+          <span class="cal-day-num">${d}</span>
+          <div style="display:flex; gap:3px; flex-wrap:wrap; margin-top:2px;">
+            ${isHoliday ? `<span style="font-size:9px;" title="${isHoliday}">🎉</span>` : ''}
+            ${leavesOnDay.length > 0 ? `<span style="font-size:9px; font-weight:900; color:var(--accent);">👤${leavesOnDay.length}</span>` : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    containerEl.innerHTML = html;
+  }
+
+  document.getElementById("prevMonthBtn").addEventListener("click", () => {
+    currentCalMonth--;
+    if (currentCalMonth < 0) { currentCalMonth = 11; currentCalYear--; }
+    renderInteractiveCalendar();
+  });
+
+  document.getElementById("nextMonthBtn").addEventListener("click", () => {
+    currentCalMonth++;
+    if (currentCalMonth > 11) { currentCalMonth = 0; currentCalYear++; }
+    renderInteractiveCalendar();
+  });
+
+  window.openCalendarDateModal = function(dateStr) {
+    const shiftInfo = getShiftStatusForDate("General", dateStr);
+    const holiday = publicHolidaysKedah2026[dateStr];
+    const leavesOnDay = leaveLogs.filter(l => !l.isPastRecord && dateStr >= l.startDate && dateStr <= l.endDate);
+
+    const modalBody = document.getElementById("modalBodyContent");
+    document.getElementById("modalHeaderTitle").innerText = `📅 Maklumat Tarikh: ${dateStr}`;
+
+    let leavesHtml = '';
+    if (leavesOnDay.length > 0) {
+      leavesOnDay.forEach(l => {
+        leavesHtml += `<li style="margin-bottom:6px;"><strong>${l.name}</strong> - <span class="badge badge-${l.type}">${l.type}</span> (${l.reason})</li>`;
+      });
+    } else {
+      leavesHtml = `<li>Tiada staf bercuti pada tarikh ini.</li>`;
+    }
+
+    modalBody.innerHTML = `
+      <div class="modal-row"><div class="modal-label">Kitaran Shift</div><div class="modal-val">${shiftInfo.label}</div></div>
+      ${holiday ? `<div class="modal-row"><div class="modal-label">Cuti Am (Kedah)</div><div class="modal-val" style="color:var(--pink);">🎉 ${holiday}</div></div>` : ''}
+      <div class="modal-row">
+        <div class="modal-label">Senarai Staf Bercuti</div>
+        <ul style="padding-left:16px; margin-top:6px; font-size:13px;">${leavesHtml}</ul>
+      </div>
+    `;
+
+    document.getElementById("detailModal").classList.add("active");
+  };
 </script>
 </body>
 </html>
