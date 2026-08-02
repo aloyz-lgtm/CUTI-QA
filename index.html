@@ -571,7 +571,7 @@
 
           <div class="form-group">
             <label>Sebab / Catatan:</label>
-            <input type="text" id="leaveReason" placeholder="Contoh: Demam / Urusan Keluarga / Peliaq Tergeliat" required>
+            <input type="text" id="leaveReason" placeholder="Contoh: Demam / Peliaq Tergeliat" required>
           </div>
 
           <button type="submit" class="btn-submit">✨ Hantar Permohonan Cuti</button>
@@ -1001,7 +1001,7 @@
       });
 
       if (isOverlap) {
-        alert("⚠️ Amaran: Permohonan cuti ini bertindih dengan tarikh cuti staff lain! Status AMARAN telah direkodkan.");
+        alert("⚠️ Amaran: Permohonan cuti ini bertindih dengan tarikh cuti memba lain! Status AMARAN telah direkodkan.");
       } else {
         alert("✅ Permohonan cuti berjaya dihantar!");
       }
@@ -1176,7 +1176,7 @@
       <div class="modal-row"><div class="modal-label">Tarikh Mula & Tamat</div><div class="modal-val">${formatDateDDMMYY(log.startDate)} hingga ${formatDateDDMMYY(log.endDate)}</div></div>
       <div class="modal-row"><div class="modal-label">Tempoh / Jumlah Hari</div><div class="modal-val">${log.days} Hari (${log.duration || 'Full'})</div></div>
       <div class="modal-row"><div class="modal-label">Sebab / Catatan</div><div class="modal-val">${log.reason || '-'}</div></div>
-      <div class="modal-row"><div class="modal-label">Status Pertindihan</div><div class="modal-val">${log.isOverlap ? '<span style="color:var(--orange); font-weight:800;">⚠️ Ya (Bertindih dengan staff lain)</span>' : '<span style="color:var(--green); font-weight:800;">✅ Tiada Pertindihan</span>'}</div></div>
+      <div class="modal-row"><div class="modal-label">Status Pertindihan</div><div class="modal-val">${log.isOverlap ? '<span style="color:var(--orange); font-weight:800;">⚠️ Ya (Bertindih dengan memba lain)</span>' : '<span style="color:var(--green); font-weight:800;">✅ Tiada Pertindihan</span>'}</div></div>
       <button type="button" class="btn-delete" onclick="deleteLeaveRecord('${log.id}')">🗑️ Padam Rekod Cuti Ini</button>
     `;
     document.getElementById("detailModal").classList.add("active");
