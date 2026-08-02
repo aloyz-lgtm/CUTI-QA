@@ -89,7 +89,6 @@
 
     .container { max-width: 1200px; margin: 0 auto; background: rgba(13, 17, 23, 0.85); padding: 20px; border-radius: 12px; }
     
-    /* PENGESAHAN DESIGN TAJUK DI TENGAH & EKSKLUSIF */
     .header { 
       border-bottom: 1px solid var(--border); 
       padding-bottom: 18px; 
@@ -158,7 +157,6 @@
 
     label { display: block; font-size: 11px; margin-bottom: 5px; color: #8b949e; font-weight: 600; }
     
-    /* MENYELESAIKAN ISU TINDANAN DROPDOWN */
     input, select {
       width: 100%;
       padding: 11px 12px;
@@ -243,12 +241,21 @@
 
     .sub-text { font-size: 11px; color: #8b949e; margin-top: -10px; margin-bottom: 14px; }
 
-    .rank-item { display: flex; align-items: center; margin-bottom: 10px; font-size: 11px; }
-    .rank-num { width: 24px; font-weight: bold; color: var(--accent); }
-    .rank-name { width: 115px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .rank-bar-bg { flex-grow: 1; background: #21262d; height: 8px; border-radius: 4px; overflow: hidden; margin: 0 8px; }
-    .rank-bar-fill { height: 100%; background: var(--red); border-radius: 4px; }
-    .rank-val { font-weight: bold; width: 42px; text-align: right; }
+    /* PENAMBAHBAIKAN CARTA RANKING SUPAYA NAMA PENUH KELIHATAN */
+    .ranking-list { display: flex; flex-direction: column; gap: 12px; }
+    .rank-item { 
+      background: #0d1117; 
+      border: 1px solid var(--border); 
+      border-radius: 8px; 
+      padding: 10px 12px; 
+      font-size: 11px; 
+    }
+    .rank-top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .rank-num-name { display: flex; align-items: center; gap: 8px; font-weight: 600; color: #f0f6fc; }
+    .rank-num { color: var(--accent); font-weight: bold; }
+    .rank-val { font-weight: bold; color: var(--accent); font-size: 12px; }
+    .rank-bar-bg { width: 100%; background: #21262d; height: 6px; border-radius: 3px; overflow: hidden; }
+    .rank-bar-fill { height: 100%; background: var(--red); border-radius: 3px; }
 
     .stat-boxes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
     .s-box { background: #0d1117; border: 1px solid var(--border); padding: 10px; border-radius: 8px; text-align: center; }
@@ -743,10 +750,14 @@
     sorted.forEach((tech, index) => {
       container.innerHTML += `
         <div class="rank-item">
-          <span class="rank-num">#${index + 1}</span>
-          <span class="rank-name">${tech.name}</span>
+          <div class="rank-top-row">
+            <div class="rank-num-name">
+              <span class="rank-num">#${index + 1}</span>
+              <span>${tech.name}</span>
+            </div>
+            <span class="rank-val">${tech.currentYearMC} H</span>
+          </div>
           <div class="rank-bar-bg"><div class="rank-bar-fill" style="width: ${Math.min((tech.currentYearMC / 18) * 100, 100)}%;"></div></div>
-          <span class="rank-val">${tech.currentYearMC} H</span>
         </div>`;
     });
   }
@@ -757,8 +768,8 @@
     const name = nameEl.value;
     const tech = technicians.find(t => t.name === name);
     if (tech) {
-      const firstName = tech.name.split(' ')[0];
-      document.getElementById("statTitle").innerText = `📈 Rekod: ${firstName}`;
+      // DIPERBETULKAN: Memaparkan nama penuh pilihan pada tajuk ringkasan
+      document.getElementById("statTitle").innerText = `📈 Rekod: ${tech.name}`;
       
       let cAL = tech.AL || 0; 
       let cMC = tech.MC || 0; 
@@ -1039,4 +1050,3 @@
 </script>
 </body>
 </html>
-<!-- trigger vercel update -->
