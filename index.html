@@ -328,6 +328,7 @@
 
     .cal-indicators { display: flex; gap: 2px; flex-wrap: wrap; justify-content: center; margin-top: 2px; }
     .cal-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
+    .cal-dot.ph-dot { background: var(--pink); }
 
     .cal-legend { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; font-size: 10px; justify-content: center; border-top: 1px solid var(--border); padding-top: 10px; color: var(--text-muted); }
     .legend-item { display: flex; align-items: center; gap: 4px; }
@@ -590,7 +591,7 @@
   <div id="calendarPage" class="sub-page animate-fade">
     <div class="card">
       <h2>🗓️ Kalendar Interaktif & Kitaran Shift</h2>
-      <p class="sub-text">Paparan lengkap shift kerja, cuti am, dan cuti staff (Kitaran 4-2 berterusan).</p>
+      <p class="sub-text">Paparan lengkap shift kerja, cuti am negeri Kedah, dan cuti staff (Kitaran 4-2-4-2 berterusan).</p>
       
       <div class="calendar-container">
         <div class="cal-header-nav">
@@ -606,10 +607,11 @@
       </div>
 
       <div class="cal-legend">
-        <div class="legend-item"><div class="legend-box" style="background:var(--shift-siang)"></div> Shift Siang (2 Hari)</div>
-        <div class="legend-item"><div class="legend-box" style="background:var(--shift-malam)"></div> Shift Malam (2 Hari)</div>
-        <div class="legend-item"><div class="legend-box" style="background:var(--shift-free)"></div> Free Shift (Rehat)</div>
+        <div class="legend-item"><div class="legend-box" style="background:var(--shift-malam)"></div> Shift Malam (4 Hari)</div>
+        <div class="legend-item"><div class="legend-box" style="background:var(--shift-free)"></div> Free Shift (2 Hari)</div>
+        <div class="legend-item"><div class="legend-box" style="background:var(--shift-siang)"></div> Shift Siang (4 Hari)</div>
         <div class="legend-item"><div class="legend-box" style="background:var(--accent)"></div> Cuti Staff</div>
+        <div class="legend-item"><div class="legend-box" style="background:var(--pink)"></div> Cuti Am (Kedah)</div>
       </div>
     </div>
   </div>
@@ -645,6 +647,29 @@
   const SUPERVISOR_PIN = "9988";
   let leaveLogs = [];
   let announcementsList = [];
+
+  // Senarai Cuti Am Kedah 2026
+  const publicHolidaysKedah2026 = {
+    "2026-01-01": "Tahun Baru 2026",
+    "2026-01-15": "Israk dan Mikraj",
+    "2026-02-01": "Hari Wilayah Persekutuan",
+    "2026-02-01": "Hari Thaipusam",
+    "2026-02-17": "Awal Ramadan",
+    "2026-02-19": "Tahun Baru Cina",
+    "2026-02-20": "Tahun Baru Cina (Hari Kedua)",
+    "2026-03-19": "Hari Nuzul Al-Quran",
+    "2026-03-21": "Hari Raya Aidilfitri",
+    "2026-03-22": "Hari Raya Aidilfitri (Hari Kedua)",
+    "2026-05-01": "Hari Pekerja",
+    "2026-05-28": "Hari Raya Haji",
+    "2026-05-31": "Hari Wesak",
+    "2026-06-18": "Awal Muharram (Maal Hijrah)",
+    "2026-08-31": "Hari Kebangsaan",
+    "2026-08-25": "Hari Keputeraan Nabi Muhammad SAW (Maulidur Rasul)",
+    "2026-09-16": "Hari Malaysia",
+    "2026-11-08": "Hari Keputeraan Sultan Kedah",
+    "2026-12-25": "Hari Krismas"
+  };
 
   const technicianList = [
     "Muhammad Adib Bin Noordin",
@@ -1155,26 +1180,24 @@
     });
   }
 
-  // LOGIK KITARAN SHIFT 4-2 (2 Siang, 2 Malam, 2 Free Shift) - Berterusan Merentasi Bulan & Tahun
   function getShiftTypeForDate(dateStr) {
     const baseDate = new Date("2026-08-01");
     baseDate.setHours(0,0,0,0);
     const targetDate = new Date(dateStr);
     targetDate.setHours(0,0,0,0);
     
-    // Kira perbezaan hari secara tepat menggunakan Math.round untuk mengelakkan isu daylight saving
     const diffTime = targetDate - baseDate;
     const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
     
-    // Kitaran 6 hari (0, 1 = Siang; 2, 3 = Malam; 4, 5 = Free/Rehat)
-    const cycleLength = 6;
+    const cycleLength = 12;
     let cyclePos = diffDays % cycleLength;
     if (cyclePos < 0) {
       cyclePos = (cyclePos + cycleLength) % cycleLength;
     }
     
-    if (cyclePos === 0 || cyclePos === 1) return 'siang';
-    if (cyclePos === 2 || cyclePos === 3) return 'malam';
+    if (cyclePos >= 0 && cyclePos <= 3) return 'malam';
+    if (cyclePos === 4 || cyclePos === 5) return 'free';
+    if (cyclePos >= 6 && cyclePos <= 9) return 'siang';
     return 'free';
   }
 
@@ -1195,7 +1218,6 @@
 
     for (let i = firstDayIndex; i > 0; i--) {
       let dayNum = prevTotalDays - i + 1;
-      // Mengira tarikh untuk bulan sebelumnya bagi paparan sel kelabu
       let prevMonth = calCurrentMonth - 1;
       let prevYear = calCurrentYear;
       if (prevMonth < 0) { prevMonth = 11; prevYear--; }
@@ -1212,6 +1234,8 @@
       let shift = getShiftTypeForDate(dateStr);
       let shiftClass = shift === 'siang' ? 'shift-siang' : (shift === 'malam' ? 'shift-malam' : 'shift-free');
       
+      let isPH = publicHolidaysKedah2026[dateStr] !== undefined;
+
       let hasLeave = leaveLogs.some(l => {
         if (l.isPastRecord) return false;
         let s = new Date(l.startDate); s.setHours(0,0,0,0);
@@ -1220,10 +1244,10 @@
         return curr >= s && curr <= e;
       });
 
-      let dotsHtml = '';
-      if (hasLeave) {
-        dotsHtml += `<div class="cal-indicators"><div class="cal-dot" title="Ada Cuti Staff"></div></div>`;
-      }
+      let dotsHtml = '<div class="cal-indicators">';
+      if (isPH) dotsHtml += `<div class="cal-dot ph-dot" title="Cuti Am: ${publicHolidaysKedah2026[dateStr]}"></div>`;
+      if (hasLeave) dotsHtml += `<div class="cal-dot" title="Ada Cuti Staff"></div>`;
+      dotsHtml += '</div>';
 
       container.innerHTML += `
         <div class="cal-day-cell ${shiftClass}" onclick="openCalendarDayDetail('${dateStr}')">
@@ -1232,7 +1256,6 @@
         </div>`;
     }
 
-    // Mengisi ruang kosong baki petak di hujung bulan berikutnya
     const totalCellsRendered = firstDayIndex + totalDays;
     const nextMonthDaysToAdd = totalCellsRendered % 7 === 0 ? 0 : 7 - (totalCellsRendered % 7);
     for (let nd = 1; nd <= nextMonthDaysToAdd; nd++) {
@@ -1256,17 +1279,23 @@
       return curr >= s && curr <= e;
     });
 
+    const phName = publicHolidaysKedah2026[dateStr];
+
     const modalBody = document.getElementById("modalBodyContent");
     document.getElementById("modalHeaderTitle").innerText = `📌 Tarikh: ${formatDateDDMMYY(dateStr)}`;
 
     let shiftRaw = getShiftTypeForDate(dateStr);
-    let shiftText = shiftRaw === 'siang' ? 'Shift Siang' : (shiftRaw === 'malam' ? 'Shift Malam' : 'Free Shift (Rehat)');
+    let shiftText = shiftRaw === 'siang' ? 'Shift Siang (Mor.)' : (shiftRaw === 'malam' ? 'Shift Malam (N)' : 'Free Shift (Off / Rest Day)');
     
     let html = `<div class="modal-row"><div class="modal-label">Status Shift Kerja</div><div class="modal-val">${shiftText}</div></div>`;
     
-    html += `<div class="modal-row" style="margin-top:10px;"><div class="modal-label">Senarai Cuti Pada Tarikh Ini</div>`;
+    if (phName) {
+      html += `<div class="modal-row"><div class="modal-label">Cuti Am (Negeri Kedah)</div><div class="modal-val" style="color:var(--pink); font-weight:800;">🎉 ${phName}</div></div>`;
+    }
+
+    html += `<div class="modal-row" style="margin-top:10px;"><div class="modal-label">Senarai Cuti Staff Pada Tarikh Ini</div>`;
     if (matchedLeaves.length === 0) {
-      html += `<div class="modal-val" style="color:var(--text-muted); font-weight:normal; margin-top:4px;">Tiada cuti direkodkan.</div>`;
+      html += `<div class="modal-val" style="color:var(--text-muted); font-weight:normal; margin-top:4px;">Tiada cuti staff direkodkan.</div>`;
     } else {
       matchedLeaves.forEach(l => {
         html += `<div style="background:#090d16; border:1px solid var(--border); padding:8px; border-radius:8px; margin-top:6px;">
