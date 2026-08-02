@@ -259,7 +259,33 @@
       font-weight: 700;
       font-size: 12px;
       cursor: pointer;
-      margin-top: 14px;
+      margin-top: 8px;
+    }
+
+    .btn-edit {
+      width: 100%;
+      background: linear-gradient(135deg, #38bdf8, #0284c7);
+      color: #0f172a;
+      border: none;
+      padding: 11px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 12px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .btn-save-edit {
+      width: 100%;
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      color: #fff;
+      border: none;
+      padding: 11px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 12px;
+      cursor: pointer;
+      margin-top: 10px;
     }
 
     .btn-toggle-supervisor {
@@ -325,7 +351,6 @@
     .rank-bar-bg { width: 100%; background: #1e293b; height: 5px; border-radius: 3px; overflow: hidden; }
     .rank-bar-fill { height: 100%; background: var(--red); border-radius: 3px; }
 
-    /* Pengelompokan Cuti Mengikut Bulan */
     .month-group-container { margin-bottom: 14px; }
     .month-group-title { font-size: 12px; font-weight: 800; color: var(--accent); margin-bottom: 6px; padding-left: 4px; display: flex; align-items: center; gap: 6px; }
     
@@ -387,7 +412,7 @@
       transition: opacity 0.2s ease;
     }
     .modal-overlay.active { opacity: 1; pointer-events: auto; }
-    .modal-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; width: 100%; max-width: 380px; padding: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+    .modal-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; width: 100%; max-width: 380px; padding: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); max-height: 90vh; overflow-y: auto; }
     .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 14px; }
     .modal-header h3 { font-size: 14px; margin: 0; color: var(--accent); font-weight: 800; }
     .close-btn { background: none; border: none; color: var(--text-muted); font-size: 18px; cursor: pointer; }
@@ -534,7 +559,7 @@
 
     <div class="card" style="margin-top: 16px;">
       <h2>📋 Senarai Plan Cuti Mengikut Bulan</h2>
-      <p class="sub-text">Tekan pada mana-mana senarai cuti untuk perincian atau pemadaman.</p>
+      <p class="sub-text">Tekan pada mana-mana senarai cuti untuk perincian, pengeditan atau pemadaman.</p>
       <div id="leaveCardsContainer"></div>
     </div>
   </div>
@@ -579,7 +604,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, doc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+  import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCjefti7PCPCQncKEdve5GZUecWDNnH3l8",
@@ -786,7 +811,6 @@
     }
   });
 
-  // Render senarai cuti dikelompokkan mengikut Bulan & Tahun
   function renderLogs() {
     const container = document.getElementById("leaveCardsContainer");
     if (!container) return;
@@ -797,12 +821,9 @@
       return;
     }
 
-    // Susun cuti mengikut tarikh mula (paling awal ke lewat)
     leaveLogs.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
 
     let totalAL = 0, totalMC = 0, totalEL = 0, totalPL = 0;
-
-    // Kumpulkan rekod mengikut kunci "Bulan Tahun" (Contoh: "Ogos 2026")
     let groupedByMonth = {};
 
     leaveLogs.forEach(log => {
@@ -822,7 +843,6 @@
       groupedByMonth[groupKey].push(log);
     });
 
-    // Paparkan mengikut kumpulan bulan
     for (let groupKey in groupedByMonth) {
       let groupHtml = `
         <div class="month-group-container">
@@ -867,9 +887,95 @@
       <div class="modal-row"><div class="modal-label">Jenis Cuti</div><div class="modal-val"><span class="badge badge-${log.type}">${log.type}</span></div></div>
       <div class="modal-row"><div class="modal-label">Tarikh Cuti</div><div class="modal-val">${formatDateDDMMYY(log.startDate)} hingga ${formatDateDDMMYY(log.endDate)} (${log.days} Hari)</div></div>
       <div class="modal-row"><div class="modal-label">Sebab / Catatan</div><div class="modal-val">${log.reason || '-'}</div></div>
+      <button type="button" class="btn-edit" onclick="promptEditLeave('${log.id}')">🔑 Edit Cuti (Mod Penyelia)</button>
       <button type="button" class="btn-delete" onclick="deleteLeave('${log.id}')">🗑️ Padam Permohonan Cuti</button>
     `;
     document.getElementById("detailModal").classList.add("active");
+  };
+
+  window.promptEditLeave = function(id) {
+    const pin = prompt("🔐 Sila masukkan PIN Penyelia untuk mengedit cuti:");
+    if (pin !== SUPERVISOR_PIN) {
+      if (pin !== null) alert("❌ PIN Penyelia Salah!");
+      return;
+    }
+
+    const log = leaveLogs.find(l => l.id === id);
+    if (!log) return;
+
+    const modalBody = document.getElementById("modalBodyContent");
+    modalBody.innerHTML = `
+      <form id="editLeaveForm">
+        <div class="form-group">
+          <label>Nama Juruteknik:</label>
+          <select id="editTechName" required>
+            ${technicianList.map(t => `<option value="${t}" ${t === log.name ? 'selected' : ''}>${t}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Jenis Cuti:</label>
+          <select id="editLeaveType" required>
+            <option value="AL" ${log.type === 'AL' ? 'selected' : ''}>Cuti Tahunan (AL)</option>
+            <option value="EL" ${log.type === 'EL' ? 'selected' : ''}>Cuti Kecemasan (EL)</option>
+            <option value="MC" ${log.type === 'MC' ? 'selected' : ''}>Sijil Sakit (MC)</option>
+            <option value="PL" ${log.type === 'PL' ? 'selected' : ''}>Cuti Paternity (PL)</option>
+            <option value="UL" ${log.type === 'UL' ? 'selected' : ''}>Cuti Tanpa Gaji (UL)</option>
+            <option value="PH" ${log.type === 'PH' ? 'selected' : ''}>Cuti Umum (Public Holiday)</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Tarikh Mula:</label>
+            <input type="date" id="editStartDate" value="${log.startDate}" required>
+          </div>
+          <div class="form-group">
+            <label>Tarikh Tamat:</label>
+            <input type="date" id="editEndDate" value="${log.endDate}" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Sebab / Catatan:</label>
+          <input type="text" id="editLeaveReason" value="${log.reason || ''}" required>
+        </div>
+        <button type="submit" class="btn-save-edit">💾 Simpan Perubahan</button>
+        <button type="button" class="btn-action" style="width:100%; margin-top:8px; background:#1e293b; color:var(--text);" onclick="openDetailModal('${log.id}')">Batal</button>
+      </form>
+    `;
+
+    document.getElementById("editLeaveForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const name = document.getElementById("editTechName").value;
+      const type = document.getElementById("editLeaveType").value;
+      const startDate = document.getElementById("editStartDate").value;
+      const endDate = document.getElementById("editEndDate").value;
+      const reason = document.getElementById("editLeaveReason").value;
+
+      const d1 = new Date(startDate);
+      const d2 = new Date(endDate);
+      if (d2 < d1) {
+        alert("❌ Tarikh Tamat tidak sah!");
+        return;
+      }
+      let days = Math.ceil(Math.abs(d2 - d1) / (1000 * 60 * 60 * 24)) + 1;
+
+      let hasOverlap = false;
+      for (let l of leaveLogs) {
+        if (l.id !== id && isDateOverlapping(startDate, endDate, l.startDate, l.endDate)) {
+          hasOverlap = true;
+          break;
+        }
+      }
+
+      try {
+        await updateDoc(doc(db, "leaves", id), {
+          name, type, startDate, endDate, days, reason, isOverlap
+        });
+        alert("✅ Maklumat cuti berjaya dikemaskini!");
+        document.getElementById("detailModal").classList.remove("active");
+      } catch (err) {
+        alert("❌ Ralat mengemaskini: " + err.message);
+      }
+    });
   };
 
   window.deleteLeave = async function(id) {
@@ -954,7 +1060,7 @@
   }
 
   let calCurrentYear = 2026;
-  let calCurrentMonth = 7; // Ogos
+  let calCurrentMonth = 7;
 
   function renderInteractiveCalendar() {
     const container = document.getElementById("calGridDaysContainer");
