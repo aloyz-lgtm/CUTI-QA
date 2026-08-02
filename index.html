@@ -397,6 +397,12 @@
       100% { opacity: 1; transform: scale(1); }
     }
 
+    .bulk-table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 11px; }
+    .bulk-table th, .bulk-table td { border: 1px solid var(--border); padding: 8px; text-align: center; }
+    .bulk-table th { background: #1e293b; color: var(--accent); font-weight: 800; }
+    .bulk-input { width: 65px; padding: 6px; background: #090d16; border: 1px solid var(--border); border-radius: 6px; color: var(--text); text-align: center; font-size: 12px; }
+    .bulk-input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-glow); }
+
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -412,7 +418,7 @@
       transition: opacity 0.2s ease;
     }
     .modal-overlay.active { opacity: 1; pointer-events: auto; }
-    .modal-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; width: 100%; max-width: 380px; padding: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); max-height: 90vh; overflow-y: auto; }
+    .modal-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; width: 100%; max-width: 500px; padding: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); max-height: 90vh; overflow-y: auto; }
     .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 14px; }
     .modal-header h3 { font-size: 14px; margin: 0; color: var(--accent); font-weight: 800; }
     .close-btn { background: none; border: none; color: var(--text-muted); font-size: 18px; cursor: pointer; }
@@ -460,7 +466,7 @@
       </h2>
       
       <div style="margin-bottom: 12px;">
-        <button type="button" class="btn-action" style="width:100%; background:linear-gradient(135deg, #10b981, #059669); color:#fff;" onclick="promptAddPastLeave()">➕ Tambah Rekod Cuti Lepas / Awal Tahun (Penyelia)</button>
+        <button type="button" class="btn-action" style="width:100%; background:linear-gradient(135deg, #10b981, #059669); color:#fff;" onclick="promptAddPastLeave()">➕ Kemasukan Data Cuti Sekaligus (Bulk Edit Penyelia)</button>
       </div>
 
       <div id="supervisorAnnouncePanel" class="supervisor-upload-panel" style="display: none;">
@@ -685,69 +691,86 @@
   });
 
   window.promptAddPastLeave = function() {
-    const pin = prompt("🔐 Sila masukkan PIN Penyelia untuk menambah rekod cuti lepas:");
+    const pin = prompt("🔐 Sila masukkan PIN Penyelia untuk kemasukan data cuti sekaligus:");
     if (pin !== SUPERVISOR_PIN) {
       if (pin !== null) alert("❌ PIN Penyelia Salah!");
       return;
     }
 
     const modalBody = document.getElementById("modalBodyContent");
-    document.getElementById("modalHeaderTitle").innerText = "➕ Tambah Cuti Lepas (Mod Penyelia)";
+    document.getElementById("modalHeaderTitle").innerText = "➕ Kemasukan Data Cuti Sekaligus (Bulk Edit)";
     
+    let tableRows = '';
+    technicianList.forEach((tech, idx) => {
+      // Semak data sedia ada jika ada
+      let existingAL = leaveLogs.find(l => l.name === tech && l.type === 'AL' && l.isPastRecord) ? leaveLogs.find(l => l.name === tech && l.type === 'AL' && l.isPastRecord).days : '';
+      let existingMC = leaveLogs.find(l => l.name === tech && l.type === 'MC' && l.isPastRecord) ? leaveLogs.find(l => l.name === tech && l.type === 'MC' && l.isPastRecord).days : '';
+      let existingEL = leaveLogs.find(l => l.name === tech && l.type === 'EL' && l.isPastRecord) ? leaveLogs.find(l => l.name === tech && l.type === 'EL' && l.isPastRecord).days : '';
+      let existingPL = leaveLogs.find(l => l.name === tech && l.type === 'PL' && l.isPastRecord) ? leaveLogs.find(l => l.name === tech && l.type === 'PL' && l.isPastRecord).days : '';
+
+      tableRows += `
+        <tr>
+          <td style="text-align:left; font-weight:700; color:var(--text);">${tech}</td>
+          <td><input type="number" step="0.5" min="0" class="bulk-input" data-tech="${tech}" data-type="AL" value="${existingAL}"></td>
+          <td><input type="number" step="0.5" min="0" class="bulk-input" data-tech="${tech}" data-type="MC" value="${existingMC}"></td>
+          <td><input type="number" step="0.5" min="0" class="bulk-input" data-tech="${tech}" data-type="EL" value="${existingEL}"></td>
+          <td><input type="number" step="0.5" min="0" class="bulk-input" data-tech="${tech}" data-type="PL" value="${existingPL}"></td>
+        </tr>
+      `;
+    });
+
     modalBody.innerHTML = `
-      <form id="pastLeaveForm">
-        <div class="form-group">
-          <label>NAMA JURUTEKNIK:</label>
-          <select id="pastTechName" required>
-            <option value="" disabled selected>-- Pilih Nama --</option>
-            ${technicianList.map(t => `<option value="${t}">${t}</option>`).join('')}
-          </select>
+      <form id="bulkLeaveForm">
+        <p style="font-size:11px; color:var(--text-muted); margin-bottom:10px;">Masukkan jumlah hari cuti lepas/tahunan bagi setiap juruteknik di bawah. Biarkan kosong jika 0.</p>
+        <div style="overflow-x:auto;">
+          <table class="bulk-table">
+            <thead>
+              <tr>
+                <th style="text-align:left;">Nama Juruteknik</th>
+                <th>AL</th>
+                <th>MC</th>
+                <th>EL</th>
+                <th>PL</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${tableRows}
+            </tbody>
+          </table>
         </div>
-        <div class="form-group">
-          <label>JENIS CUTI:</label>
-          <select id="pastLeaveType" required>
-            <option value="AL">Cuti Tahunan (AL)</option>
-            <option value="EL">Cuti Kecemasan (EL)</option>
-            <option value="MC">Sijil Sakit (MC)</option>
-            <option value="PL">Cuti Paternity (PL)</option>
-            <option value="UL">Cuti Tanpa Gaji (UL)</option>
-            <option value="PH">Cuti Umum (Public Holiday)</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>JUMLAH HARI CUTI:</label>
-          <input type="number" id="pastLeaveDays" step="0.5" min="0.5" placeholder="Cth: 3" required style="background:#090d16; color:var(--text); border:1px solid var(--border); border-radius:10px; padding:11px 12px; width:100%;">
-        </div>
-        <div class="form-group">
-          <label>SEBAB / CATATAN (CTH: CUTI AWAL TAHUN):</label>
-          <input type="text" id="pastLeaveReason" value="Rekod Cuti Lepas / Awal Tahun" required>
-        </div>
-        <button type="submit" class="btn-submit">💾 Simpan Rekod Cuti</button>
+        <button type="submit" class="btn-submit" style="margin-top:10px;">💾 Simpan Semua Rekod Sekaligus</button>
       </form>
     `;
     document.getElementById("detailModal").classList.add("active");
 
-    document.getElementById("pastLeaveForm").addEventListener("submit", async function(e) {
+    document.getElementById("bulkLeaveForm").addEventListener("submit", async function(e) {
       e.preventDefault();
-      const name = document.getElementById("pastTechName").value;
-      const type = document.getElementById("pastLeaveType").value;
-      const days = parseFloat(document.getElementById("pastLeaveDays").value);
-      const reason = document.getElementById("pastLeaveReason").value;
-
-      if (isNaN(days) || days <= 0) {
-        alert("❌ Sila masukkan jumlah hari yang sah!");
-        return;
-      }
-
+      const inputs = document.querySelectorAll('.bulk-input');
       const todayStr = new Date().toISOString().split('T')[0];
 
       try {
-        await addDoc(collection(db, "leaves"), {
-          name, type, startDate: todayStr, endDate: todayStr, days, reason,
-          timestamp: Date.now(),
-          isOverlap: false
-        });
-        alert("✅ Rekod cuti lepas berjaya ditambah & baki dikemaskini!");
+        // Padam rekod past record lama terlebih dahulu untuk diganti baru
+        const oldPastRecords = leaveLogs.filter(l => l.isPastRecord);
+        for (let oldRec of oldPastRecords) {
+          await deleteDoc(doc(db, "leaves", oldRec.id));
+        }
+
+        for (let input of inputs) {
+          const val = parseFloat(input.value);
+          if (!isNaN(val) && val > 0) {
+            const name = input.getAttribute('data-tech');
+            const type = input.getAttribute('data-type');
+            await addDoc(collection(db, "leaves"), {
+              name, type, startDate: todayStr, endDate: todayStr, days: val,
+              reason: 'Rekod Cuti Lepas / Awal Tahun',
+              timestamp: Date.now(),
+              isOverlap: false,
+              isPastRecord: true // Penanda supaya tidak dipaparkan dalam plan cuti bulanan
+            });
+          }
+        }
+
+        alert("✅ Semua rekod cuti berjaya dikemaskini sekaligus!");
         document.getElementById("detailModal").classList.remove("active");
       } catch (err) {
         alert("❌ Ralat: " + err.message);
@@ -860,7 +883,7 @@
     let overlappedWith = "";
 
     for (let log of leaveLogs) {
-      if (isDateOverlapping(startDate, endDate, log.startDate, log.endDate)) {
+      if (!log.isPastRecord && isDateOverlapping(startDate, endDate, log.startDate, log.endDate)) {
         hasOverlap = true;
         overlappedWith = `${log.name} (${log.startDate} hingga ${log.endDate})`;
         break;
@@ -876,7 +899,8 @@
       await addDoc(collection(db, "leaves"), {
         name, type, startDate, endDate, days, reason,
         timestamp: Date.now(),
-        isOverlap: hasOverlap
+        isOverlap: hasOverlap,
+        isPastRecord: false
       });
 
       alert("✅ Permohonan cuti berjaya dihantar!");
@@ -892,22 +916,27 @@
     if (!container) return;
     container.innerHTML = "";
     
-    if (leaveLogs.length === 0) {
-      container.innerHTML = `<div style="text-align:center; color:var(--text-muted); font-size:11px; padding:10px;">Tiada rekod cuti ditemui.</div>`;
-      return;
+    // Penapisan: Hanya paparkan cuti biasa DALAM senarai plan cuti bulanan (isPastRecord diasingkan)
+    const activePlanLogs = leaveLogs.filter(log => !log.isPastRecord);
+
+    if (activePlanLogs.length === 0) {
+      container.innerHTML = `<div style="text-align:center; color:var(--text-muted); font-size:11px; padding:10px;">Tiada rekod plan cuti ditemui.</div>`;
     }
 
-    leaveLogs.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+    activePlanLogs.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
 
     let totalAL = 0, totalMC = 0, totalEL = 0, totalPL = 0;
     let groupedByMonth = {};
 
+    // Kira keseluruhan termasuk past records untuk kotak statistik & baki
     leaveLogs.forEach(log => {
       if (log.type === 'AL') totalAL += log.days;
       if (log.type === 'MC') totalMC += log.days;
       if (log.type === 'EL') totalEL += log.days;
       if (log.type === 'PL') totalPL += log.days;
+    });
 
+    activePlanLogs.forEach(log => {
       const dateObj = new Date(log.startDate);
       const mName = monthNames[dateObj.getMonth()];
       const yNum = dateObj.getFullYear();
@@ -1152,6 +1181,7 @@
       let shiftClass = shift === 'siang' ? 'shift-siang' : (shift === 'malam' ? 'shift-malam' : 'shift-free');
       
       let hasLeave = leaveLogs.some(l => {
+        if (l.isPastRecord) return false;
         let s = new Date(l.startDate); s.setHours(0,0,0,0);
         let e = new Date(l.endDate); e.setHours(23,59,59,999);
         let curr = new Date(dateStr); curr.setHours(12,0,0,0);
@@ -1173,6 +1203,7 @@
 
   window.openCalendarDayDetail = function(dateStr) {
     const matchedLeaves = leaveLogs.filter(l => {
+      if (l.isPastRecord) return false;
       let s = new Date(l.startDate); s.setHours(0,0,0,0);
       let e = new Date(l.endDate); e.setHours(23,59,59,999);
       let curr = new Date(dateStr); curr.setHours(12,0,0,0);
