@@ -722,7 +722,6 @@
   });
 
   // Logik Kitaran Shift 4-2 Rotation
-  // Asas Rujukan Kitaran: Contoh Anchor Tarikh 2 Ogos 2026 (Day 4 Shift Siang terakhir)
   function getShiftStatusForDate(dateObj) {
     const anchorDate = new Date(2026, 7, 2); // 2 Ogos 2026
     anchorDate.setHours(0,0,0,0);
@@ -733,7 +732,6 @@
     const diffTime = target - anchorDate;
     const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
     
-    // Kitaran 12 hari (4 Siang, 1 Off, 1 Rest, 4 Malam, 1 Off, 1 Rest)
     const cycleLength = 12;
     let mod = diffDays % cycleLength;
     if (mod < 0) mod += cycleLength;
@@ -748,7 +746,7 @@
     return { type: 'siang', label: 'Shift Siang' };
   }
 
-  // Senarai Cuti Am Malaysia & Kedah 2026 (Contoh Tarikh Rasmi)
+  // Senarai Cuti Am Malaysia & Kedah 2026
   const publicHolidays2026 = {
     "2026-01-01": "Tahun Baru 2026",
     "2026-02-01": "Hari Wilayah / Thaipusam",
@@ -937,7 +935,7 @@
     });
   }
 
-  // Hantar Pengumuman (Penyelia Sahaja)
+  // Hantar Pengumuman (Penyelia Sahaja) dengan Auto-Compress Imej
   const annForm = document.getElementById("announcementForm");
   if (annForm) {
     annForm.addEventListener("submit", async function(e) {
@@ -950,8 +948,35 @@
         const file = fileInput.files[0];
         const reader = new FileReader();
         reader.onload = async function(event) {
-          imageUrl = event.target.result;
-          await saveAnnouncementToDB(text, imageUrl);
+          const img = new Image();
+          img.src = event.target.result;
+          img.onload = async function() {
+            const canvas = document.createElement('canvas');
+            let width = img.width;
+            let height = img.height;
+            
+            const MAX_WIDTH = 800;
+            const MAX_HEIGHT = 800;
+            if (width > height) {
+              if (width > MAX_WIDTH) {
+                height *= MAX_WIDTH / width;
+                width = MAX_WIDTH;
+              }
+            } else {
+              if (height > MAX_HEIGHT) {
+                width *= MAX_HEIGHT / height;
+                height = MAX_HEIGHT;
+              }
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            imageUrl = canvas.toDataURL('image/jpeg', 0.7);
+            await saveAnnouncementToDB(text, imageUrl);
+          };
         };
         reader.readAsDataURL(file);
       } else {
@@ -1010,7 +1035,6 @@
       const shiftInfo = getShiftStatusForDate(dObj);
       let shiftClass = `shift-${shiftInfo.type}`;
 
-      // Semak cuti staff pada tarikh ini
       const matchingLeaves = leaveLogs.filter(l => dObj >= new Date(l.startDate) && dObj <= new Date(l.endDate));
       const isPH = publicHolidays2026[dateStr] !== undefined;
 
@@ -1104,7 +1128,6 @@
     `;
     modal.classList.add("active");
 
-    // Re-bind delete button
     setTimeout(() => {
       const delBtn = document.getElementById("deleteLeaveBtn");
       if (delBtn) delBtn.onclick = deleteLeaveRecord;
@@ -1135,7 +1158,6 @@
         return;
       }
 
-      // SEMAKAN SEKATAN AUTOMATIK: Adakah tarikh mula/tamat jatuh pada Offday atau Restday (kecuali MC/PH jika perlu, atau ikut arahan tegas)
       const dStart = new Date(startDate);
       const dEnd = new Date(endDate);
       let currCheck = new Date(dStart);
