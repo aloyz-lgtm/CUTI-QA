@@ -724,7 +724,11 @@
   let announcementsList = [];
 
   function isDateOverlapping(start1, end1, start2, end2) {
-    return new Date(start1) <= new Date(end2) && new Date(end1) >= new Date(start2);
+    const s1 = new Date(start1); s1.setHours(0,0,0,0);
+    const e1 = new Date(end1); e1.setHours(23,59,59,999);
+    const s2 = new Date(start2); s2.setHours(0,0,0,0);
+    const e2 = new Date(end2); e2.setHours(23,59,59,999);
+    return s1 <= e2 && e1 >= s2;
   }
 
   function formatDateDDMMYY(dateString) {
@@ -1076,7 +1080,7 @@
 
     document.getElementById("modalBodyContent").innerHTML = `
       ${overlapAlertHTML}
-      <div class="modal-row"><div class="modal-label">Nama Juruteknik</div><div class="modal-val">${log.name}</div></div>
+      <div class="modal-row"><div class="modal-label">Nama Juruteknik</div><div class="modal-val">${log.name}</div>}</div>
       <div style="display: flex; gap: 15px;" class="modal-row">
         <div><div class="modal-label">Jenis Cuti</div><div style="margin-top:2px;"><span class="badge badge-${log.type}">${log.type}</span></div></div>
         <div><div class="modal-label">Shift Asal</div><div class="modal-val" style="color: var(--yellow);">${log.shift}</div></div>
@@ -1245,6 +1249,7 @@
 
       container.innerHTML += `<div style="font-size:11px; font-weight:800; color:var(--accent); margin:12px 0 6px 0; text-transform:uppercase;">📅 ${monthLabel}</div>`;
 
+      groupedByNodeLoop:
       groupedByMonth[monthKey].forEach(log => {
         const formattedStart = formatDateDDMMYY(log.startDate);
         const formattedEnd = formatDateDDMMYY(log.endDate);
