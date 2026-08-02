@@ -566,7 +566,6 @@
     return `${yyyy}-${mm}-${dd}`;
   }
 
-  // Tetapan had tarikh minimum berlandaskan jenis cuti (MC & EL boleh backdated)
   function updateDateConstraint() {
     const leaveType = document.getElementById("leaveType").value;
     const startInput = document.getElementById("startDate");
@@ -796,7 +795,7 @@
 
     document.getElementById("mName").innerText = log.name;
     document.getElementById("mType").innerHTML = `<span class="badge badge-${log.type}">${log.type}</span>`;
-    document.getElementById("mShift").innerText = log.shift ? (log.shift === "🌙 Malam" ? "🌙 Malam" : "☀️ Siang") : "☀️ Siang";
+    document.getElementById("mShift").innerText = log.shift ? (log.shift === "Malam" ? "🌙 Malam" : "☀️ Siang") : "☀️ Siang";
     document.getElementById("mDays").innerText = `${log.days} Hari`;
     document.getElementById("mDates").innerText = `${formatDateDDMMYY(log.startDate)} hingga ${formatDateDDMMYY(log.endDate)}`;
     document.getElementById("mReason").innerText = log.reason;
@@ -933,7 +932,6 @@
         const currentYear = new Date().getFullYear();
         const startYear = new Date(startDate).getFullYear();
 
-        // Cuti PH (Public Holiday) tidak menjejaskan baki kuota (no limit)
         if (startYear === currentYear && type !== 'PH') {
           const tech = technicians.find(t => t.name === name);
           if (tech) {
@@ -1037,4 +1035,3 @@
 </script>
 </body>
 </html>
-
