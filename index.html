@@ -282,7 +282,7 @@
     .cal-grid-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
     
     .cal-day-cell {
-      min-height: 52px;
+      min-height: 58px;
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 8px;
@@ -876,7 +876,7 @@
     sortedTechs.sort((a, b) => b.days - a.days);
 
     sortedTechs.forEach((item, index) => {
-      let maxDays = 18; // Max limit acuan rujukan
+      let maxDays = 18;
       let pct = Math.min(100, (item.days / maxDays) * 100);
       container.innerHTML += `
         <div class="rank-item">
@@ -908,8 +908,25 @@
     });
   }
 
+  // Logik Pengiraan Kitaran Shift (Contoh rujukan asas: 1 Ogos 2026 sebagai titik mula kitaran)
+  function getShiftTypeForDate(dateStr) {
+    const baseDate = new Date("2026-08-01");
+    baseDate.setHours(0,0,0,0);
+    const targetDate = new Date(dateStr);
+    targetDate.setHours(0,0,0,0);
+    
+    const diffDays = Math.floor((targetDate - baseDate) / (1000 * 60 * 60 * 24));
+    if (diffDays < 0) return 'free'; // Default jika sebelum tarikh asas
+    
+    const cyclePos = diffDays % 4; 
+    // Kitaran contoh: 0=Siang, 1=Siang, 2=Malam, 3=Malam (atau Free)
+    if (cyclePos === 0 || cyclePos === 1) return 'siang';
+    if (cyclePos === 2 || cyclePos === 3) return 'malam';
+    return 'free';
+  }
+
   let calCurrentYear = 2026;
-  let calCurrentMonth = 7; // Ogos (0-index)
+  let calCurrentMonth = 7; // Ogos
 
   const monthNames = ["Januari", "Februari", "Mac", "April", "Mei", "Jun", "Julai", "Ogos", "September", "Oktober", "November", "Disember"];
 
@@ -925,15 +942,16 @@
     const totalDays = new Date(calCurrentYear, calCurrentMonth + 1, 0).getDate();
     const prevTotalDays = new Date(calCurrentYear, calCurrentMonth, 0).getDate();
 
-    // Render Hari Bulan Sebelumnya
     for (let i = firstDayIndex; i > 0; i--) {
       let dayNum = prevTotalDays - i + 1;
       container.innerHTML += `<div class="cal-day-cell other-month"><span class="cal-day-num">${dayNum}</span></div>`;
     }
 
-    // Render Hari Bulan Semasa
     for (let d = 1; d <= totalDays; d++) {
       let dateStr = `${calCurrentYear}-${(calCurrentMonth + 1).toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`;
+      
+      let shift = getShiftTypeForDate(dateStr);
+      let shiftClass = shift === 'siang' ? 'shift-siang' : (shift === 'malam' ? 'shift-malam' : 'shift-free');
       
       let hasLeave = leaveLogs.some(l => {
         let s = new Date(l.startDate); s.setHours(0,0,0,0);
@@ -948,7 +966,7 @@
       }
 
       container.innerHTML += `
-        <div class="cal-day-cell" onclick="openCalendarDayDetail('${dateStr}')">
+        <div class="cal-day-cell ${shiftClass}" onclick="openCalendarDayDetail('${dateStr}')">
           <span class="cal-day-num">${d}</span>
           ${dotsHtml}
         </div>`;
@@ -966,9 +984,12 @@
     const modalBody = document.getElementById("modalBodyContent");
     document.getElementById("modalHeaderTitle").innerText = `📌 Tarikh: ${formatDateDDMMYY(dateStr)}`;
 
-    let html = `<div class="modal-row"><div class="modal-label">Senarai Cuti Pada Tarikh Ini</div>`;
+    let shift = getShiftTypeForDate(dateStr).toUpperCase();
+    let html = `<div class="modal-row"><div class="modal-label">Status Shift Kerja</div><div class="modal-val">Shift ${shift}</div></div>`;
+    
+    html += `<div class="modal-row" style="margin-top:10px;"><div class="modal-label">Senarai Cuti Pada Tarikh Ini</div>`;
     if (matchedLeaves.length === 0) {
-      html += `<div class="modal-val" style="color:var(--text-muted); font-weight:normal; margin-top:6px;">Tiada cuti direkodkan pada tarikh ini.</div>`;
+      html += `<div class="modal-val" style="color:var(--text-muted); font-weight:normal; margin-top:4px;">Tiada cuti direkodkan.</div>`;
     } else {
       matchedLeaves.forEach(l => {
         html += `<div style="background:#090d16; border:1px solid var(--border); padding:8px; border-radius:8px; margin-top:6px;">
