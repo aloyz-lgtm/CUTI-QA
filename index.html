@@ -19,7 +19,6 @@
       --red: #ef4444;
       --orange: #f97316;
       --purple: #a855f7;
-      --teal: #14b8a6;
       --pink: #ec4899;
       --shift-siang: #f59e0b;
       --shift-malam: #14b8a6;
@@ -341,7 +340,6 @@
     }
     .compact-item:hover { border-color: var(--accent); }
     
-    /* Ciri Highlight Overlap & Warning */
     .compact-item.is-overlap {
       background: rgba(249, 115, 22, 0.12);
       border: 2px solid var(--orange) !important;
@@ -556,6 +554,14 @@
         </div>
         <div class="cal-grid-days" id="calGridDaysContainer"></div>
       </div>
+
+      <div class="cal-legend">
+        <div class="legend-item"><div class="legend-box" style="background:var(--shift-siang)"></div> Shift Siang</div>
+        <div class="legend-item"><div class="legend-box" style="background:var(--shift-malam)"></div> Shift Malam</div>
+        <div class="legend-item"><div class="legend-box" style="background:var(--shift-free)"></div> Free Shift</div>
+        <div class="legend-item"><div class="legend-box" style="background:var(--accent)"></div> Cuti Staff</div>
+        <div class="legend-item"><div class="legend-box" style="background:var(--pink)"></div> Cuti Umum</div>
+      </div>
     </div>
   </div>
 </div>
@@ -591,6 +597,16 @@
   let activeLeaveId = null;
   let leaveLogs = [];
   let announcementsList = [];
+
+  const technicianList = [
+    "Muhammad Adib Bin Noordin",
+    "Abu Hanifah Bin Muhamdhazir",
+    "Muhamad Fadli Bin Zolkifli",
+    "Mohd Syazwan Bin Abdul Rahim",
+    "Muhammad Daniel Bin Zul Karnain",
+    "Muhammad Aniff Izzat Akmal Bin Abu Hassan",
+    "Muhamad Fakhrul Imran Bin Mohamad Khairi"
+  ];
 
   window.switchSubPage = function(pageId, btnElement) {
     document.querySelectorAll('.sub-page').forEach(p => p.classList.remove('active'));
@@ -636,6 +652,39 @@
     }
   });
 
+  document.getElementById("announcementForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+    const text = document.getElementById("announcementText").value;
+    const fileInput = document.getElementById("announcementImgFile");
+    
+    let imageUrl = "";
+    if (fileInput.files && fileInput.files[0]) {
+      const reader = new FileReader();
+      reader.onload = async function(uploadEvent) {
+        imageUrl = uploadEvent.target.result;
+        await saveAnnouncementData(text, imageUrl);
+      };
+      reader.readAsDataURL(fileInput.files[0]);
+    } else {
+      await saveAnnouncementData(text, "");
+    }
+  });
+
+  async function saveAnnouncementData(text, imageUrl) {
+    try {
+      const d = new Date();
+      const dateStr = `${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear()}`;
+      await addDoc(collection(db, "announcements"), {
+        text, imageUrl, date: dateStr, author: "Penyelia Shift C", timestamp: Date.now()
+      });
+      alert("✅ Pengumuman berjaya disiarkan!");
+      document.getElementById("announcementForm").reset();
+      document.getElementById("supervisorAnnouncePanel").style.display = "none";
+    } catch(err) {
+      alert("❌ Ralat: " + err.message);
+    }
+  }
+
   function isDateOverlapping(start1, end1, start2, end2) {
     const s1 = new Date(start1); s1.setHours(0,0,0,0);
     const e1 = new Date(end1); e1.setHours(23,59,59,999);
@@ -651,7 +700,6 @@
     return `${parts[2]}/${parts[1]}/${parts[0]}`;
   }
 
-  // --- REAL-TIME FIRESTORE SYNC ---
   onSnapshot(collection(db, "leaves"), (snapshot) => {
     leaveLogs = [];
     snapshot.forEach(docSnap => leaveLogs.push({ id: docSnap.id, ...docSnap.data() }));
@@ -690,7 +738,6 @@
   document.getElementById('endDate').addEventListener('change', calculateDays);
   document.getElementById('durationOption').addEventListener('change', calculateDays);
 
-  // --- BORANG SUBMIT DENGAN LOGIK SEMAKAN BERTINDIH (OVERLAP CHECK) ---
   document.getElementById("leaveForm").addEventListener("submit", async function(e) {
     e.preventDefault();
 
@@ -706,7 +753,6 @@
       return;
     }
 
-    // Semak Pertindihan Tarikh Cuti
     let hasOverlap = false;
     let overlappedWith = "";
 
@@ -718,7 +764,6 @@
       }
     }
 
-    // Popup Amaran Jika Bertindih
     if (hasOverlap) {
       const confirmOverlap = confirm(`⚠️ AMARAN: Cuti yang anda mohon bertindih dengan cuti ${overlappedWith}!\n\nAdakah anda pasti mahu meneruskan permohonan ini?`);
       if (!confirmOverlap) return;
@@ -749,10 +794,16 @@
       return;
     }
 
-    // Susun mengikut tarikh mula terbaru
     leaveLogs.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
 
+    let totalAL = 0, totalMC = 0, totalEL = 0, totalPL = 0;
+
     leaveLogs.forEach(log => {
+      if (log.type === 'AL') totalAL += log.days;
+      if (log.type === 'MC') totalMC += log.days;
+      if (log.type === 'EL') totalEL += log.days;
+      if (log.type === 'PL') totalPL += log.days;
+
       let isOverlapClass = log.isOverlap ? 'is-overlap' : '';
       let warningBadge = log.isOverlap ? '<span class="warning-badge">⚠️ Bertindih</span>' : '';
 
@@ -768,6 +819,11 @@
           </div>
         </div>`;
     });
+
+    document.getElementById("countAL").innerText = `${totalAL} Hari`;
+    document.getElementById("countMC").innerText = `${totalMC} / 18`;
+    document.getElementById("countEL").innerText = `${totalEL} Hari`;
+    document.getElementById("countPL").innerText = `${totalPL} Hari`;
   }
 
   window.openDetailModal = function(id) {
@@ -803,10 +859,34 @@
   });
 
   function renderMCRanking() {
-    // Fungsi Ringkasan Ranking MC
     const container = document.getElementById("mcRankingList");
     if(!container) return;
-    container.innerHTML = `<div style="text-align:center; color:var(--text-muted); font-size:11px;">Sistem pengiraan aktif.</div>`;
+    container.innerHTML = "";
+
+    let mcStats = {};
+    technicianList.forEach(tech => mcStats[tech] = 0);
+
+    leaveLogs.forEach(log => {
+      if (log.type === 'MC' && mcStats[log.name] !== undefined) {
+        mcStats[log.name] += log.days;
+      }
+    });
+
+    let sortedTechs = Object.keys(mcStats).map(name => ({ name, days: mcStats[name] }));
+    sortedTechs.sort((a, b) => b.days - a.days);
+
+    sortedTechs.forEach((item, index) => {
+      let maxDays = 18; // Max limit acuan rujukan
+      let pct = Math.min(100, (item.days / maxDays) * 100);
+      container.innerHTML += `
+        <div class="rank-item">
+          <div class="rank-top-row">
+            <span class="rank-num-name"><span class="rank-num">#${index + 1}</span> ${item.name}</span>
+            <span class="rank-val">${item.days} Hari</span>
+          </div>
+          <div class="rank-bar-bg"><div class="rank-bar-fill" style="width: ${pct}%"></div></div>
+        </div>`;
+    });
   }
 
   function renderAnnouncements() {
@@ -829,14 +909,90 @@
   }
 
   let calCurrentYear = 2026;
-  let calCurrentMonth = 7; // Ogos
+  let calCurrentMonth = 7; // Ogos (0-index)
+
+  const monthNames = ["Januari", "Februari", "Mac", "April", "Mei", "Jun", "Julai", "Ogos", "September", "Oktober", "November", "Disember"];
 
   function renderInteractiveCalendar() {
     const container = document.getElementById("calGridDaysContainer");
-    if (!container) return;
+    const titleEl = document.getElementById("calMonthYearTitle");
+    if (!container || !titleEl) return;
+
+    titleEl.innerText = `${monthNames[calCurrentMonth]} ${calCurrentYear}`;
     container.innerHTML = "";
-    // Logik render kalendar asas interaktif
+
+    const firstDayIndex = new Date(calCurrentYear, calCurrentMonth, 1).getDay();
+    const totalDays = new Date(calCurrentYear, calCurrentMonth + 1, 0).getDate();
+    const prevTotalDays = new Date(calCurrentYear, calCurrentMonth, 0).getDate();
+
+    // Render Hari Bulan Sebelumnya
+    for (let i = firstDayIndex; i > 0; i--) {
+      let dayNum = prevTotalDays - i + 1;
+      container.innerHTML += `<div class="cal-day-cell other-month"><span class="cal-day-num">${dayNum}</span></div>`;
+    }
+
+    // Render Hari Bulan Semasa
+    for (let d = 1; d <= totalDays; d++) {
+      let dateStr = `${calCurrentYear}-${(calCurrentMonth + 1).toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`;
+      
+      let hasLeave = leaveLogs.some(l => {
+        let s = new Date(l.startDate); s.setHours(0,0,0,0);
+        let e = new Date(l.endDate); e.setHours(23,59,59,999);
+        let curr = new Date(dateStr); curr.setHours(12,0,0,0);
+        return curr >= s && curr <= e;
+      });
+
+      let dotsHtml = '';
+      if (hasLeave) {
+        dotsHtml += `<div class="cal-indicators"><div class="cal-dot dot-leave" title="Ada Cuti Staff"></div></div>`;
+      }
+
+      container.innerHTML += `
+        <div class="cal-day-cell" onclick="openCalendarDayDetail('${dateStr}')">
+          <span class="cal-day-num">${d}</span>
+          ${dotsHtml}
+        </div>`;
+    }
   }
+
+  window.openCalendarDayDetail = function(dateStr) {
+    const matchedLeaves = leaveLogs.filter(l => {
+      let s = new Date(l.startDate); s.setHours(0,0,0,0);
+      let e = new Date(l.endDate); e.setHours(23,59,59,999);
+      let curr = new Date(dateStr); curr.setHours(12,0,0,0);
+      return curr >= s && curr <= e;
+    });
+
+    const modalBody = document.getElementById("modalBodyContent");
+    document.getElementById("modalHeaderTitle").innerText = `📌 Tarikh: ${formatDateDDMMYY(dateStr)}`;
+
+    let html = `<div class="modal-row"><div class="modal-label">Senarai Cuti Pada Tarikh Ini</div>`;
+    if (matchedLeaves.length === 0) {
+      html += `<div class="modal-val" style="color:var(--text-muted); font-weight:normal; margin-top:6px;">Tiada cuti direkodkan pada tarikh ini.</div>`;
+    } else {
+      matchedLeaves.forEach(l => {
+        html += `<div style="background:#090d16; border:1px solid var(--border); padding:8px; border-radius:8px; margin-top:6px;">
+          <span class="badge badge-${l.type}">${l.type}</span> <b>${l.name}</b><br>
+          <span style="font-size:11px; color:var(--text-muted);">${l.reason || '-'}</span>
+        </div>`;
+      });
+    }
+    html += `</div>`;
+    modalBody.innerHTML = html;
+    document.getElementById("detailModal").classList.add("active");
+  };
+
+  document.getElementById("prevMonthBtn").addEventListener("click", () => {
+    calCurrentMonth--;
+    if (calCurrentMonth < 0) { calCurrentMonth = 11; calCurrentYear--; }
+    renderInteractiveCalendar();
+  });
+
+  document.getElementById("nextMonthBtn").addEventListener("click", () => {
+    calCurrentMonth++;
+    if (calCurrentMonth > 11) { calCurrentMonth = 0; calCurrentYear++; }
+    renderInteractiveCalendar();
+  });
 </script>
 </body>
 </html>
