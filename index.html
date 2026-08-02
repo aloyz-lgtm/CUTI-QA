@@ -357,8 +357,6 @@
     }
     .shift-badge-siang { background: rgba(245, 158, 11, 0.2); color: var(--shift-siang); border: 1px solid var(--shift-siang); }
     .shift-badge-malam { background: rgba(20, 184, 166, 0.2); color: var(--shift-malam); border: 1px solid var(--shift-malam); }
-    /* Marking untuk Halfday - Reka bentuk serupa shift malam tetapi warna berbeza (cth: ungu/magenta) */
-    .shift-badge-halfday { background: rgba(168, 85, 247, 0.2); color: var(--purple); border: 1px solid var(--purple); }
 
     .warning-badge { 
       background: var(--orange); 
@@ -461,7 +459,7 @@
             <label>Lampiran Gambar (Pilihan):</label>
             <input type="file" id="announcementImgFile" accept="image/*">
           </div>
-          <button type="submit" class="btn-action" style="width:100%;">🚀 Siarkan Pengumuman</button>
+          <button type="submit" class="btn-action" style="width:100%;">📤 Siarkan Pengumuman</button>
         </form>
       </div>
       <div id="announcementContainer"></div>
@@ -532,14 +530,14 @@
 
       <div style="display: grid; grid-template-columns: 1fr; gap: 16px;">
         <div class="card">
-          <h2>📊 Carta Ranking MC (Shift C)</h2>
+          <h2>🏆 Carta Ranking MC (Shift C)</h2>
           <p class="sub-text">Jumlah hari cuti sakit terkumpul mengikut juruteknik</p>
           <div class="ranking-list" id="mcRankingList"></div>
         </div>
 
         <div class="card">
           <h2 id="statTitle">
-            <span>📉 Ringkasan Baki Cuti</span>
+            <span>📊 Ringkasan Baki Cuti</span>
             <select id="statFilterTech" style="width: 160px; font-size: 11px; padding: 4px 8px; background:#090d16; color:var(--accent); border:1px solid var(--border); border-radius:6px; display:inline-block;">
               <option value="ALL">-- Semua Staf --</option>
               <option value="Muhammad Adib Bin Noordin">Muhammad Adib Bin Noordin</option>
@@ -896,4 +894,15 @@
 
     if (!startInput || !endInput) {
       badge.innerText = "Jumlah Hari: 1 Hari";
-      re
+      return 1;
+    }
+
+    const s = new Date(startInput);
+    const e = new Date(endInput);
+    if (e < s) {
+      badge.innerText = "⚠️ Tarikh tamat tidak boleh awal dari tarikh mula";
+      return 0;
+    }
+
+    const diffTime = Math.abs(e - s);
+    let diffDays = Math
