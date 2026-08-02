@@ -556,7 +556,19 @@
         </div>
 
         <div class="card">
-          <h2 id="statTitle">📈 Ringkasan Baki Cuti</h2>
+          <h2 id="statTitle">
+            <span>📈 Ringkasan Baki Cuti</span>
+            <select id="statFilterTech" style="width: 160px; font-size: 11px; padding: 4px 8px; background:#090d16; color:var(--accent); border:1px solid var(--border); border-radius:6px; display:inline-block;">
+              <option value="ALL">-- Semua Staf --</option>
+              <option value="Muhammad Adib Bin Noordin">Muhammad Adib Bin Noordin</option>
+              <option value="Abu Hanifah Bin Muhamdhazir">Abu Hanifah Bin Muhamdhazir</option>
+              <option value="Muhamad Fadli Bin Zolkifli">Muhamad Fadli Bin Zolkifli</option>
+              <option value="Mohd Syazwan Bin Abdul Rahim">Mohd Syazwan Bin Abdul Rahim</option>
+              <option value="Muhammad Daniel Bin Zul Karnain">Muhammad Daniel Bin Zul Karnain</option>
+              <option value="Muhammad Aniff Izzat Akmal Bin Abu Hassan">Muhammad Aniff Izzat Akmal Bin Abu Hassan</option>
+              <option value="Muhamad Fakhrul Imran Bin Mohamad Khairi">Muhamad Fakhrul Imran Bin Mohamad Khairi</option>
+            </select>
+          </h2>
           <div class="stat-boxes">
             <div class="s-box al-box"><span class="s-label">AL Taken</span><span class="s-count" id="countAL">0 Hari</span></div>
             <div class="s-box mc-box"><span class="s-label">MC Taken</span><span class="s-count" id="countMC">0 / 18</span></div>
@@ -702,7 +714,6 @@
     
     let tableRows = '';
     technicianList.forEach((tech, idx) => {
-      // Semak data sedia ada jika ada
       let existingAL = leaveLogs.find(l => l.name === tech && l.type === 'AL' && l.isPastRecord) ? leaveLogs.find(l => l.name === tech && l.type === 'AL' && l.isPastRecord).days : '';
       let existingMC = leaveLogs.find(l => l.name === tech && l.type === 'MC' && l.isPastRecord) ? leaveLogs.find(l => l.name === tech && l.type === 'MC' && l.isPastRecord).days : '';
       let existingEL = leaveLogs.find(l => l.name === tech && l.type === 'EL' && l.isPastRecord) ? leaveLogs.find(l => l.name === tech && l.type === 'EL' && l.isPastRecord).days : '';
@@ -749,7 +760,6 @@
       const todayStr = new Date().toISOString().split('T')[0];
 
       try {
-        // Padam rekod past record lama terlebih dahulu untuk diganti baru
         const oldPastRecords = leaveLogs.filter(l => l.isPastRecord);
         for (let oldRec of oldPastRecords) {
           await deleteDoc(doc(db, "leaves", oldRec.id));
@@ -765,7 +775,7 @@
               reason: 'Rekod Cuti Lepas / Awal Tahun',
               timestamp: Date.now(),
               isOverlap: false,
-              isPastRecord: true // Penanda supaya tidak dipaparkan dalam plan cuti bulanan
+              isPastRecord: true
             });
           }
         }
@@ -911,12 +921,13 @@
     }
   });
 
+  document.getElementById("statFilterTech").addEventListener("change", renderLogs);
+
   function renderLogs() {
     const container = document.getElementById("leaveCardsContainer");
     if (!container) return;
     container.innerHTML = "";
     
-    // Penapisan: Hanya paparkan cuti biasa DALAM senarai plan cuti bulanan (isPastRecord diasingkan)
     const activePlanLogs = leaveLogs.filter(log => !log.isPastRecord);
 
     if (activePlanLogs.length === 0) {
@@ -925,17 +936,22 @@
 
     activePlanLogs.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
 
-    let totalAL = 0, totalMC = 0, totalEL = 0, totalPL = 0;
-    let groupedByMonth = {};
+    const selectedFilterTech = document.getElementById("statFilterTech").value;
+    
+    let filteredLogsForStats = leaveLogs;
+    if (selectedFilterTech !== "ALL") {
+      filteredLogsForStats = leaveLogs.filter(log => log.name === selectedFilterTech);
+    }
 
-    // Kira keseluruhan termasuk past records untuk kotak statistik & baki
-    leaveLogs.forEach(log => {
+    let totalAL = 0, totalMC = 0, totalEL = 0, totalPL = 0;
+    filteredLogsForStats.forEach(log => {
       if (log.type === 'AL') totalAL += log.days;
       if (log.type === 'MC') totalMC += log.days;
       if (log.type === 'EL') totalEL += log.days;
       if (log.type === 'PL') totalPL += log.days;
     });
 
+    let groupedByMonth = {};
     activePlanLogs.forEach(log => {
       const dateObj = new Date(log.startDate);
       const mName = monthNames[dateObj.getMonth()];
