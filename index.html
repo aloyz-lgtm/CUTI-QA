@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PORTAL KEHADIRAN & PENGURUSAN QA (SHIFT C)</title>
+  <title>Sistem Pengurusan Shift C</title>
   
   <style>
     :root {
@@ -122,11 +122,6 @@
       color: var(--text); 
       margin: 0; 
       font-weight: 800;
-    }
-    .header p { 
-      font-size: 11px; 
-      color: var(--text-muted); 
-      margin: 4px 0 6px 0; 
     }
 
     .nav-tabs {
@@ -369,8 +364,20 @@
       justify-content: space-between;
       align-items: center;
       cursor: pointer;
+      position: relative;
     }
     .compact-item:hover { border-color: var(--accent); }
+    
+    /* Highlight Rules */
+    .compact-item.is-mc {
+      background: rgba(236, 72, 153, 0.08);
+      border-color: rgba(236, 72, 153, 0.4);
+    }
+    .compact-item.is-overlap {
+      background: rgba(249, 115, 22, 0.1);
+      border-color: rgba(249, 115, 22, 0.5);
+    }
+
     .compact-name-wrap { display: flex; align-items: center; gap: 8px; }
     .compact-name { font-size: 12px; font-weight: 700; color: var(--text); }
     .compact-right { display: flex; align-items: center; gap: 6px; }
@@ -379,6 +386,7 @@
     .shift-tag-s { background: rgba(245, 158, 11, 0.15); color: var(--shift-siang); font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--shift-siang); }
     .shift-tag-m { background: rgba(20, 184, 166, 0.15); color: var(--shift-malam); font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--shift-malam); }
     .halfday-tag { background: rgba(20, 184, 166, 0.15); color: var(--teal); font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--teal); }
+    .warning-badge { background: var(--orange); color: #000; font-size: 9px; font-weight: 900; padding: 1px 5px; border-radius: 4px; display: inline-flex; align-items: center; gap: 2px; }
 
     .modal-overlay {
       position: fixed;
@@ -405,7 +413,7 @@
 
     .badge { padding: 3px 8px; border-radius: 12px; font-size: 10px; font-weight: 800; display: inline-block; }
     .badge-AL { background: rgba(56,189,248,0.15); color: var(--accent); }
-    .badge-MC { background: rgba(239,68,68,0.15); color: var(--red); }
+    .badge-MC { background: rgba(236,72,153,0.15); color: var(--pink); border: 1px solid var(--pink); }
     .badge-EL { background: rgba(234,179,8,0.15); color: var(--yellow); }
     .badge-PL { background: rgba(168,85,247,0.15); color: var(--purple); }
     .badge-UL { background: rgba(148,163,158,0.15); color: var(--text-muted); }
@@ -426,8 +434,7 @@
 
 <div class="container animate-fade">
   <header class="header">
-    <h1>PORTAL QA SHIFT C</h1>
-    <p>Sistem Pengurusan Kehadiran, Kitaran Shift & Cuti Pintar</p>
+    <h1>Sistem Pengurusan Shift C</h1>
   </header>
 
   <div class="nav-tabs">
@@ -669,18 +676,18 @@
     if (mod < 0) mod += cycleLength;
     
     const pattern = [
-      { type: 'malam', label: 'Malam (N)' },   // 0 (Sat 1)
-      { type: 'malam', label: 'Malam (N)' },   // 1 (Sun 2)
-      { type: 'free', label: 'Free' },         // 2 (Mon 3)
-      { type: 'free', label: 'Free' },         // 3 (Tue 4)
-      { type: 'siang', label: 'Mor. (Siang)' },// 4 (Wed 5)
-      { type: 'siang', label: 'Mor. (Siang)' },// 5 (Thu 6)
-      { type: 'siang', label: 'Mor. (Siang)' },// 6 (Fri 7)
-      { type: 'siang', label: 'Mor. (Siang)' },// 7 (Sat 8)
-      { type: 'free', label: 'Free' },         // 8 (Sun 9)
-      { type: 'free', label: 'Free' },         // 9 (Mon 10)
-      { type: 'malam', label: 'Malam (N)' },   // 10 (Tue 11)
-      { type: 'malam', label: 'Malam (N)' }    // 11 (Wed 12)
+      { type: 'malam', label: 'Malam (N)' },
+      { type: 'malam', label: 'Malam (N)' },
+      { type: 'free', label: 'Free' },
+      { type: 'free', label: 'Free' },
+      { type: 'siang', label: 'Mor. (Siang)' },
+      { type: 'siang', label: 'Mor. (Siang)' },
+      { type: 'siang', label: 'Mor. (Siang)' },
+      { type: 'siang', label: 'Mor. (Siang)' },
+      { type: 'free', label: 'Free' },
+      { type: 'free', label: 'Free' },
+      { type: 'malam', label: 'Malam (N)' },
+      { type: 'malam', label: 'Malam (N)' }
     ];
 
     return pattern[mod];
@@ -1039,6 +1046,14 @@
     modal.classList.add("active");
   };
 
+  function findOverlappingLeavesForRecord(targetLog) {
+    return leaveLogs.filter(l => 
+      l.id !== targetLog.id && 
+      l.name === targetLog.name && 
+      isDateOverlapping(targetLog.startDate, targetLog.endDate, l.startDate, l.endDate)
+    );
+  }
+
   function openModal(id) {
     const log = leaveLogs.find(l => l.id === id);
     if (!log) return;
@@ -1047,7 +1062,20 @@
     const modal = document.getElementById("detailModal");
     document.getElementById("modalHeaderTitle").innerText = `🔍 Perincian Permohonan Cuti`;
     
+    const overlaps = findOverlappingLeavesForRecord(log);
+    let overlapAlertHTML = "";
+    if (overlaps.length > 0) {
+      let overlapDetails = overlaps.map(o => `• ${o.type} (${formatDateDDMMYY(o.startDate)} hingga ${formatDateDDMMYY(o.endDate)})`).join("<br>");
+      overlapAlertHTML = `
+        <div style="background: rgba(249, 115, 22, 0.15); border: 1px solid var(--orange); border-radius: 8px; padding: 10px; margin-bottom: 12px; font-size: 11px;">
+          <div style="font-weight: 800; color: var(--orange); margin-bottom: 4px;">⚠️ AMARAN: PERTINDIHAN TARIKH CUTI DIKESAN</div>
+          <div style="color: var(--text-muted);">Rekod ini bertindih dengan cuti berikut bagi staff yang sama:</div>
+          <div style="margin-top: 4px; color: var(--text); font-weight: 600;">${overlapDetails}</div>
+        </div>`;
+    }
+
     document.getElementById("modalBodyContent").innerHTML = `
+      ${overlapAlertHTML}
       <div class="modal-row"><div class="modal-label">Nama Juruteknik</div><div class="modal-val">${log.name}</div></div>
       <div style="display: flex; gap: 15px;" class="modal-row">
         <div><div class="modal-label">Jenis Cuti</div><div style="margin-top:2px;"><span class="badge badge-${log.type}">${log.type}</span></div></div>
@@ -1226,8 +1254,20 @@
         if (log.durationOption === '1stHalf') extraTag = '<span class="halfday-tag">0.5H</span>';
         else if (log.durationOption === '2ndHalf') extraTag = '<span class="halfday-tag">0.5H</span>';
 
+        const overlaps = findOverlappingLeavesForRecord(log);
+        const hasOverlap = overlaps.length > 0;
+        const isMC = log.type === 'MC';
+
+        let itemClass = 'compact-item';
+        if (hasOverlap) {
+          itemClass += ' is-overlap';
+          extraTag += ' <span class="warning-badge">⚠️ Bertindih</span>';
+        } else if (isMC) {
+          itemClass += ' is-mc';
+        }
+
         container.innerHTML += `
-          <div class="compact-item" onclick="openModal('${log.id}')">
+          <div class="${itemClass}" onclick="openModal('${log.id}')">
             <div class="compact-name-wrap">
               ${shiftTag}
               <span class="compact-name">${log.name}</span>
