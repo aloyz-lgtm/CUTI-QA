@@ -806,24 +806,61 @@
     { type: 'free', start: 11, end: 11, label: '😴 Restday', emoji: '😴' }
   ];
 
-  function renderTodayShiftWidget() {
-    const todayStr = new Date().toISOString().split('T')[0];
-    const baseDate = new Date("2026-01-01"); baseDate.setHours(0,0,0,0);
-    const targetDate = new Date(todayStr); targetDate.setHours(0,0,0,0);
-    const diffDays = Math.round((targetDate - baseDate) / (1000 * 60 * 60 * 24));
-    const dayInCycle = ((diffDays % 12) + 12) % 12;
+  function getDayInCycle(dateObj) {
+    const baseDate = new Date("2026-01-01"); baseDate.setHours(0, 0, 0, 0);
+    const d = new Date(dateObj); d.setHours(0, 0, 0, 0);
+    const diffDays = Math.round((d - baseDate) / (1000 * 60 * 60 * 24));
+    return ((diffDays % 12) + 12) % 12;
+  }
 
+  function formatDurationMs(ms) {
+    const totalMinutes = Math.max(0, Math.round(ms / 60000));
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    if (hours >= 24) {
+      const days = Math.floor(hours / 24);
+      const remHours = hours % 24;
+      return `${days} hari ${remHours} jam`;
+    }
+    if (hours >= 1) return `${hours} jam ${minutes} minit`;
+    return `${minutes} minit`;
+  }
+
+  function renderTodayShiftWidget() {
+    const now = new Date();
+
+    // Shift malam berjalan 7mlm - 7pg (merentasi 2 tarikh kalendar), jadi
+    // sempadan "hari" bagi pattern shift ditetapkan pada pukul 7 pagi, bukan tengah malam.
+    // Sebelum 7 pagi, kita masih dianggap dalam "hari shift" semalam.
+    const effectiveDate = new Date(now);
+    if (now.getHours() < 7) {
+      effectiveDate.setDate(effectiveDate.getDate() - 1);
+    }
+    effectiveDate.setHours(0, 0, 0, 0);
+
+    const dayInCycle = getDayInCycle(effectiveDate);
     const segIndex = shiftCycleSegments.findIndex(s => dayInCycle >= s.start && dayInCycle <= s.end);
     const seg = shiftCycleSegments[segIndex];
-    const daysLeft = seg.end - dayInCycle + 1;
     const nextSeg = shiftCycleSegments[(segIndex + 1) % shiftCycleSegments.length];
+
+    // Tarikh efektif bagi hari TERAKHIR dalam blok semasa
+    const blockEndDate = new Date(effectiveDate);
+    blockEndDate.setDate(blockEndDate.getDate() + (seg.end - dayInCycle));
+
+    // Peralihan status sentiasa berlaku pukul 7 pagi (sempadan shift malam/siang)
+    const transitionAt = new Date(blockEndDate);
+    transitionAt.setDate(transitionAt.getDate() + 1);
+    transitionAt.setHours(7, 0, 0, 0);
+
+    const msRemaining = transitionAt - now;
+    const todayStr = getLocalDateStr(now);
     const holidayToday = publicHolidaysKedah2026[todayStr];
 
     document.getElementById("todayShiftLabel").innerText = seg.label;
     document.getElementById("todayShiftEmoji").innerText = seg.emoji;
     document.getElementById("todayShiftSub").innerText = holidayToday
       ? `🎉 ${holidayToday}`
-      : `${daysLeft} hari lagi → bertukar ke ${nextSeg.label}`;
+      : `${formatDurationMs(msRemaining)} lagi → bertukar ke ${nextSeg.label}`;
 
     const ring = document.getElementById("todayShiftRing");
     ring.classList.remove('ring-siang', 'ring-malam', 'ring-free');
@@ -933,7 +970,7 @@
     document.getElementById("bulkLeaveForm").addEventListener("submit", async function(e) {
       e.preventDefault();
       const inputs = document.querySelectorAll('.bulk-input');
-      const todayStr = new Date().toISOString().split('T')[0];
+      const todayStr = getLocalDateStr();
 
       try {
         const oldPastRecords = leaveLogs.filter(l => l.isPastRecord);
@@ -988,6 +1025,13 @@
       reader.onerror = reject;
       reader.readAsDataURL(file);
     });
+  }
+
+  function getLocalDateStr(d = new Date()) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
   }
 
   function formatDateHuman(dateStr) {
@@ -1330,7 +1374,7 @@
     const daysInMonth = lastDay.getDate();
     const prevMonthLastDate = new Date(currentCalYear, currentCalMonth, 0).getDate();
 
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = getLocalDateStr();
     let cells = [];
 
     for (let i = startWeekday - 1; i >= 0; i--) {
@@ -1411,6 +1455,7 @@
   })();
   updateDayCountBadge();
   renderTodayShiftWidget();
+  setInterval(renderTodayShiftWidget, 60000);
 </script>
 </body>
 </html>
