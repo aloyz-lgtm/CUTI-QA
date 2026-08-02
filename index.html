@@ -374,8 +374,9 @@
       border-color: rgba(236, 72, 153, 0.4);
     }
     .compact-item.is-overlap {
-      background: rgba(249, 115, 22, 0.1);
-      border-color: rgba(249, 115, 22, 0.5);
+      background: rgba(249, 115, 22, 0.12);
+      border: 2px solid var(--orange) !important;
+      box-shadow: 0 0 12px rgba(249, 115, 22, 0.3);
     }
 
     .compact-name-wrap { display: flex; align-items: center; gap: 8px; }
@@ -386,7 +387,13 @@
     .shift-tag-s { background: rgba(245, 158, 11, 0.15); color: var(--shift-siang); font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--shift-siang); }
     .shift-tag-m { background: rgba(20, 184, 166, 0.15); color: var(--shift-malam); font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--shift-malam); }
     .halfday-tag { background: rgba(20, 184, 166, 0.15); color: var(--teal); font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--teal); }
-    .warning-badge { background: var(--orange); color: #000; font-size: 9px; font-weight: 900; padding: 1px 5px; border-radius: 4px; display: inline-flex; align-items: center; gap: 2px; }
+    .warning-badge { background: var(--orange); color: #000; font-size: 9px; font-weight: 900; padding: 2px 6px; border-radius: 4px; display: inline-flex; align-items: center; gap: 3px; animation: pulseWarning 1.5s infinite; }
+
+    @keyframes pulseWarning {
+      0% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.7; transform: scale(1.05); }
+      100% { opacity: 1; transform: scale(1); }
+    }
 
     .modal-overlay {
       position: fixed;
@@ -1249,7 +1256,6 @@
 
       container.innerHTML += `<div style="font-size:11px; font-weight:800; color:var(--accent); margin:12px 0 6px 0; text-transform:uppercase;">📅 ${monthLabel}</div>`;
 
-      groupedByNodeLoop:
       groupedByMonth[monthKey].forEach(log => {
         const formattedStart = formatDateDDMMYY(log.startDate);
         const formattedEnd = formatDateDDMMYY(log.endDate);
