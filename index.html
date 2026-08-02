@@ -210,7 +210,7 @@
       padding-right: 32px;
     }
     input:focus, select:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
-    input[type="date"], input[type="file"] { background-image: none; padding-right: 12px; }
+    input[type="date"], input[type="file"], input[type="number"] { background-image: none; padding-right: 12px; }
     select option { background-color: #131c2e; color: var(--text); padding: 10px; }
 
     .day-count-badge {
@@ -685,7 +685,7 @@
     }
   });
 
-  // Fungsi Khas Penyelia untuk Tambah Cuti Lepas / Awal Tahun
+  // Fungsi Khas Penyelia untuk Masuk Num Cuti Lepas / Awal Tahun Terus
   window.promptAddPastLeave = function() {
     const pin = prompt("🔐 Sila masukkan PIN Penyelia untuk menambah rekod cuti lepas:");
     if (pin !== SUPERVISOR_PIN) {
@@ -699,14 +699,14 @@
     modalBody.innerHTML = `
       <form id="pastLeaveForm">
         <div class="form-group">
-          <label>Nama Juruteknik:</label>
+          <label>NAMA JURUTEKNIK:</label>
           <select id="pastTechName" required>
             <option value="" disabled selected>-- Pilih Nama --</option>
             ${technicianList.map(t => `<option value="${t}">${t}</option>`).join('')}
           </select>
         </div>
         <div class="form-group">
-          <label>Jenis Cuti:</label>
+          <label>JENIS CUTI:</label>
           <select id="pastLeaveType" required>
             <option value="AL">Cuti Tahunan (AL)</option>
             <option value="EL">Cuti Kecemasan (EL)</option>
@@ -716,18 +716,12 @@
             <option value="PH">Cuti Umum (Public Holiday)</option>
           </select>
         </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>Tarikh Mula:</label>
-            <input type="date" id="pastStartDate" required>
-          </div>
-          <div class="form-group">
-            <label>Tarikh Tamat:</label>
-            <input type="date" id="pastEndDate" required>
-          </div>
+        <div class="form-group">
+          <label>JUMLAH HARI CUTI:</label>
+          <input type="number" id="pastLeaveDays" step="0.5" min="0.5" placeholder="Cth: 3" required style="background:#090d16; color:var(--text); border:1px solid var(--border); border-radius:10px; padding:11px 12px; width:100%;">
         </div>
         <div class="form-group">
-          <label>Sebab / Catatan (Cth: Cuti Awal Tahun):</label>
+          <label>SEBAB / CATATAN (CTH: CUTI AWAL TAHUN):</label>
           <input type="text" id="pastLeaveReason" value="Rekod Cuti Lepas / Awal Tahun" required>
         </div>
         <button type="submit" class="btn-submit">💾 Simpan Rekod Cuti</button>
@@ -739,25 +733,24 @@
       e.preventDefault();
       const name = document.getElementById("pastTechName").value;
       const type = document.getElementById("pastLeaveType").value;
-      const startDate = document.getElementById("pastStartDate").value;
-      const endDate = document.getElementById("pastEndDate").value;
+      const days = parseFloat(document.getElementById("pastLeaveDays").value);
       const reason = document.getElementById("pastLeaveReason").value;
 
-      const d1 = new Date(startDate);
-      const d2 = new Date(endDate);
-      if (d2 < d1) {
-        alert("❌ Tarikh Tamat tidak sah!");
+      if (isNaN(days) || days <= 0) {
+        alert("❌ Sila masukkan jumlah hari yang sah!");
         return;
       }
-      let days = Math.ceil(Math.abs(d2 - d1) / (1000 * 60 * 60 * 24)) + 1;
+
+      // Guna tarikh rujukan semasa untuk simpan rekod dalam pangkalan data
+      const todayStr = new Date().toISOString().split('T')[0];
 
       try {
         await addDoc(collection(db, "leaves"), {
-          name, type, startDate, endDate, days, reason,
+          name, type, startDate: todayStr, endDate: todayStr, days, reason,
           timestamp: Date.now(),
           isOverlap: false
         });
-        alert("✅ Rekod cuti lepas berjaya ditambah!");
+        alert("✅ Rekod cuti lepas berjaya ditambah & baki dikemaskini!");
         document.getElementById("detailModal").classList.remove("active");
       } catch (err) {
         alert("❌ Ralat: " + err.message);
@@ -944,11 +937,11 @@
           <div class="compact-item ${isOverlapClass}" onclick="openDetailModal('${log.id}')">
             <div class="compact-name-wrap">
               <span class="badge badge-${log.type}">${log.type}</span>
-              <span class="compact-name">${log.name}</span>
+              <span class="compact-name">${log.name} (${log.days} Hari)</span>
               ${warningBadge}
             </div>
             <div class="compact-right">
-              <span class="compact-date">${formatDateDDMMYY(log.startDate)} ➔ ${formatDateDDMMYY(log.endDate)}</span>
+              <span class="compact-date">${formatDateDDMMYY(log.startDate)}</span>
             </div>
           </div>`;
       });
@@ -972,7 +965,7 @@
     modalBody.innerHTML = `
       <div class="modal-row"><div class="modal-label">Nama Juruteknik</div><div class="modal-val">${log.name}</div></div>
       <div class="modal-row"><div class="modal-label">Jenis Cuti</div><div class="modal-val"><span class="badge badge-${log.type}">${log.type}</span></div></div>
-      <div class="modal-row"><div class="modal-label">Tarikh Cuti</div><div class="modal-val">${formatDateDDMMYY(log.startDate)} hingga ${formatDateDDMMYY(log.endDate)} (${log.days} Hari)</div></div>
+      <div class="modal-row"><div class="modal-label">Jumlah Hari Cuti</div><div class="modal-val">${log.days} Hari</div></div>
       <div class="modal-row"><div class="modal-label">Sebab / Catatan</div><div class="modal-val">${log.reason || '-'}</div></div>
       <button type="button" class="btn-edit" onclick="promptEditLeave('${log.id}')">🔑 Edit Cuti (Mod Penyelia)</button>
       <button type="button" class="btn-delete" onclick="deleteLeave('${log.id}')">🗑️ Padam Permohonan Cuti</button>
@@ -995,13 +988,13 @@
     modalBody.innerHTML = `
       <form id="editLeaveForm">
         <div class="form-group">
-          <label>Nama Juruteknik:</label>
+          <label>NAMA JURUTEKNIK:</label>
           <select id="editTechName" required>
             ${technicianList.map(t => `<option value="${t}" ${t === log.name ? 'selected' : ''}>${t}</option>`).join('')}
           </select>
         </div>
         <div class="form-group">
-          <label>Jenis Cuti:</label>
+          <label>JENIS CUTI:</label>
           <select id="editLeaveType" required>
             <option value="AL" ${log.type === 'AL' ? 'selected' : ''}>Cuti Tahunan (AL)</option>
             <option value="EL" ${log.type === 'EL' ? 'selected' : ''}>Cuti Kecemasan (EL)</option>
@@ -1011,18 +1004,12 @@
             <option value="PH" ${log.type === 'PH' ? 'selected' : ''}>Cuti Umum (Public Holiday)</option>
           </select>
         </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>Tarikh Mula:</label>
-            <input type="date" id="editStartDate" value="${log.startDate}" required>
-          </div>
-          <div class="form-group">
-            <label>Tarikh Tamat:</label>
-            <input type="date" id="editEndDate" value="${log.endDate}" required>
-          </div>
+        <div class="form-group">
+          <label>JUMLAH HARI CUTI:</label>
+          <input type="number" id="editLeaveDays" step="0.5" min="0.5" value="${log.days}" required style="background:#090d16; color:var(--text); border:1px solid var(--border); border-radius:10px; padding:11px 12px; width:100%;">
         </div>
         <div class="form-group">
-          <label>Sebab / Catatan:</label>
+          <label>SEBAB / CATATAN:</label>
           <input type="text" id="editLeaveReason" value="${log.reason || ''}" required>
         </div>
         <button type="submit" class="btn-save-edit">💾 Simpan Perubahan</button>
@@ -1034,29 +1021,17 @@
       e.preventDefault();
       const name = document.getElementById("editTechName").value;
       const type = document.getElementById("editLeaveType").value;
-      const startDate = document.getElementById("editStartDate").value;
-      const endDate = document.getElementById("editEndDate").value;
+      const days = parseFloat(document.getElementById("editLeaveDays").value);
       const reason = document.getElementById("editLeaveReason").value;
 
-      const d1 = new Date(startDate);
-      const d2 = new Date(endDate);
-      if (d2 < d1) {
-        alert("❌ Tarikh Tamat tidak sah!");
+      if (isNaN(days) || days <= 0) {
+        alert("❌ Sila masukkan jumlah hari yang sah!");
         return;
-      }
-      let days = Math.ceil(Math.abs(d2 - d1) / (1000 * 60 * 60 * 24)) + 1;
-
-      let hasOverlap = false;
-      for (let l of leaveLogs) {
-        if (l.id !== id && isDateOverlapping(startDate, endDate, l.startDate, l.endDate)) {
-          hasOverlap = true;
-          break;
-        }
       }
 
       try {
         await updateDoc(doc(db, "leaves", id), {
-          name, type, startDate, endDate, days, reason, isOverlap
+          name, type, days, reason
         });
         alert("✅ Maklumat cuti berjaya dikemaskini!");
         document.getElementById("detailModal").classList.remove("active");
@@ -1213,7 +1188,7 @@
     } else {
       matchedLeaves.forEach(l => {
         html += `<div style="background:#090d16; border:1px solid var(--border); padding:8px; border-radius:8px; margin-top:6px;">
-          <span class="badge badge-${l.type}">${l.type}</span> <b>${l.name}</b><br>
+          <span class="badge badge-${l.type}">${l.type}</span> <b>${l.name}</b> (${l.days} Hari)<br>
           <span style="font-size:11px; color:var(--text-muted);">${l.reason || '-'}</span>
         </div>`;
       });
