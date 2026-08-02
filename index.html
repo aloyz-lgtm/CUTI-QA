@@ -357,7 +357,6 @@
     }
     .shift-badge-siang { background: rgba(245, 158, 11, 0.2); color: var(--shift-siang); border: 1px solid var(--shift-siang); }
     .shift-badge-malam { background: rgba(20, 184, 166, 0.2); color: var(--shift-malam); border: 1px solid var(--shift-malam); }
-    .shift-badge-halfday { background: rgba(168, 85, 247, 0.2); color: var(--purple); border: 1px solid var(--purple); }
 
     .warning-badge { 
       background: var(--orange); 
@@ -507,15 +506,6 @@
               <label>Tarikh Tamat:</label>
               <input type="date" id="endDate" required>
             </div>
-          </div>
-
-          <div class="form-group">
-            <label>Tempoh Cuti:</label>
-            <select id="durationOption" required>
-              <option value="Full">Penuh (Full Day)</option>
-              <option value="1stHalf">1st Half (0.5 Hari)</option>
-              <option value="2ndHalf">2nd Half (0.5 Hari)</option>
-            </select>
           </div>
 
           <div class="day-count-badge" id="dayCountBadge">Jumlah Hari: 1 Hari</div>
@@ -756,10 +746,10 @@
       tableRows += `
         <tr>
           <td style="text-align:left; font-weight:700; color:var(--text);">${tech}</td>
-          <td><input type="number" step="0.5" min="0" class="bulk-input" data-tech="${tech}" data-type="AL" value="${existingAL}"></td>
-          <td><input type="number" step="0.5" min="0" class="bulk-input" data-tech="${tech}" data-type="MC" value="${existingMC}"></td>
-          <td><input type="number" step="0.5" min="0" class="bulk-input" data-tech="${tech}" data-type="EL" value="${existingEL}"></td>
-          <td><input type="number" step="0.5" min="0" class="bulk-input" data-tech="${tech}" data-type="PL" value="${existingPL}"></td>
+          <td><input type="number" step="1" min="0" class="bulk-input" data-tech="${tech}" data-type="AL" value="${existingAL}"></td>
+          <td><input type="number" step="1" min="0" class="bulk-input" data-tech="${tech}" data-type="MC" value="${existingMC}"></td>
+          <td><input type="number" step="1" min="0" class="bulk-input" data-tech="${tech}" data-type="EL" value="${existingEL}"></td>
+          <td><input type="number" step="1" min="0" class="bulk-input" data-tech="${tech}" data-type="PL" value="${existingPL}"></td>
         </tr>
       `;
     });
@@ -800,7 +790,7 @@
         }
 
         for (let input of inputs) {
-          const val = parseFloat(input.value);
+          const val = parseInt(input.value, 10);
           if (!isNaN(val) && val > 0) {
             const name = input.getAttribute('data-tech');
             const type = input.getAttribute('data-type');
@@ -890,7 +880,6 @@
   function calculateDays() {
     const startInput = document.getElementById('startDate').value;
     const endInput = document.getElementById('endDate').value;
-    const duration = document.getElementById('durationOption').value;
     const badge = document.getElementById('dayCountBadge');
 
     if (!startInput || !endInput) {
@@ -911,17 +900,12 @@
     const diffTime = Math.abs(e - s);
     let diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24)) + 1;
 
-    if (duration !== "Full" && diffDays === 1) {
-      diffDays = 0.5;
-    }
-
     badge.innerText = `Jumlah Hari: ${diffDays} Hari`;
     return diffDays;
   }
 
   document.getElementById('startDate').addEventListener('change', calculateDays);
   document.getElementById('endDate').addEventListener('change', calculateDays);
-  document.getElementById('durationOption').addEventListener('change', calculateDays);
 
   document.getElementById('leaveForm').addEventListener('submit', async function(e) {
     e.preventDefault();
@@ -929,7 +913,6 @@
     const type = document.getElementById('leaveType').value;
     const startDate = document.getElementById('startDate').value;
     const endDate = document.getElementById('endDate').value;
-    const duration = document.getElementById('durationOption').value;
     const reason = document.getElementById('leaveReason').value;
     const days = calculateDays();
 
@@ -949,7 +932,7 @@
 
     try {
       await addDoc(collection(db, "leaves"), {
-        name, type, startDate, endDate, duration, reason, days,
+        name, type, startDate, endDate, reason, days,
         timestamp: Date.now(),
         isOverlap,
         isPastRecord: false
@@ -1015,10 +998,8 @@
       return;
     }
 
-    // Disusun mengikut tarikh yang terdekat (paling awal di atas)
     activeLeaves.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
 
-    // Dikumpul mengikut Bulan
     let monthsMap = {};
     activeLeaves.forEach(log => {
       const parts = log.startDate.split("-");
@@ -1044,7 +1025,7 @@
         let shiftBadgeClass = "shift-badge-main ";
         if (shiftInfo.type === 'siang') shiftBadgeClass += "shift-badge-siang";
         else if (shiftInfo.type === 'malam') shiftBadgeClass += "shift-badge-malam";
-        else shiftBadgeClass += "shift-badge-halfday";
+        else shiftBadgeClass += "shift-badge-siang";
 
         let overlapClass = log.isOverlap ? "is-overlap" : "";
         let warningBadge = log.isOverlap ? `<span class="warning-badge">⚠️ Pertindihan</span>` : "";
@@ -1113,7 +1094,7 @@
 
     leaveLogs.forEach(l => {
       if (l.type === 'MC' && mcCounts[l.name] !== undefined) {
-        mcCounts[l.name] += (parseFloat(l.days) || 0);
+        mcCounts[l.name] += (parseInt(l.days, 10) || 0);
       }
     });
 
@@ -1148,7 +1129,7 @@
 
     leaveLogs.forEach(l => {
       if (selectedTech === "ALL" || l.name === selectedTech) {
-        const d = parseFloat(l.days) || 0;
+        const d = parseInt(l.days, 10) || 0;
         if (l.type === 'AL') totalAL += d;
         if (l.type === 'MC') totalMC += d;
         if (l.type === 'EL') totalEL += d;
