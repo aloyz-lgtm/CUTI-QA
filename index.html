@@ -671,17 +671,9 @@
     if (diffDays < 0) return { type: 'free', label: 'Free / Tiada Rekod' };
 
     const cycleLength = 12;
-    const offsets = {
-      "Muhammad Adib Bin Noordin": 0,
-      "Abu Hanifah Bin Muhamdhazir": 2,
-      "Muhamad Fadli Bin Zolkifli": 4,
-      "Mohd Syazwan Bin Abdul Rahim": 6,
-      "Muhammad Daniel Bin Zul Karnain": 8,
-      "Muhammad Aniff Izzat Akmal Bin Abu Hassan": 10,
-      "Muhamad Fakhrul Imran Bin Mohamad Khairi": 1
-    };
+    // Kesemua 7 orang pekerja menggunakan offset 0 (Shift C yang sama dan serentak)
+    const techOffset = 0;
 
-    const techOffset = offsets[techName] || 0;
     const dayInCycle = (diffDays + techOffset) % cycleLength;
 
     if (dayInCycle >= 0 && dayInCycle <= 3) {
@@ -1152,27 +1144,38 @@
 
     let daysHtml = '';
     
-    // Hari bulan sebelumnya
     for (let i = firstDayIndex; i > 0; i--) {
       let dayNum = prevMonthDays - i + 1;
       daysHtml += `<div class="cal-day-cell other-month"><span class="cal-day-num">${dayNum}</span></div>`;
     }
 
-    // Hari bulan semasa
     for (let d = 1; d <= totalDaysInMonth; d++) {
       let mm = (currentCalMonth + 1).toString().padStart(2, '0');
       let dd = d.toString().padStart(2, '0');
       let dateStr = `${currentCalYear}-${mm}-${dd}`;
 
       let holidayName = publicHolidaysKedah2026[dateStr];
+      
+      // Ambil status shift kumpulan C (menggunakan technician pertama sebagai rujukan group)
+      let groupShift = getShiftStatusForDate(technicianList[0], dateStr);
+      
       let dayCellClass = "cal-day-cell";
       let cellBgStyle = "";
 
-      if (holidayName) {
-        cellBgStyle = "background: rgba(236, 72, 153, 0.12); border-bottom: 3px solid var(--pink);";
+      if (groupShift.type === 'malam') {
+        dayCellClass += " shift-malam";
+      } else if (groupShift.type === 'siang') {
+        dayCellClass += " shift-siang";
+      } else {
+        dayCellClass += " shift-free";
       }
 
-      let shiftIndicatorHtml = `<div style="font-size:8px; color:var(--text-muted); font-weight:700;">Shift C</div>`;
+      if (holidayName) {
+        cellBgStyle = "border: 2px solid var(--pink);";
+      }
+
+      let shiftLabelShort = groupShift.type === 'malam' ? 'Malam' : (groupShift.type === 'siang' ? 'Siang' : 'Free');
+      let shiftIndicatorHtml = `<div style="font-size:9px; font-weight:800; color:var(--text);">${shiftLabelShort}</div>`;
 
       daysHtml += `
         <div class="${dayCellClass}" style="${cellBgStyle}" onclick="openCalendarDayModal('${dateStr}')">
@@ -1200,7 +1203,7 @@
 
     modalBody.innerHTML = `
       <div class="modal-row"><div class="modal-label">Cuti Am Negeri Kedah</div><div class="modal-val" style="color:var(--pink);">${holidayName}</div></div>
-      <div class="modal-row" style="margin-top:10px;"><div class="modal-label">Status Shift Kitaran Staf</div></div>
+      <div class="modal-row" style="margin-top:10px;"><div class="modal-label">Status Shift Kitaran Staf (Group C)</div></div>
       <div style="max-height:200px; overflow-y:auto; background:#090d16; padding:8px; border-radius:8px; border:1px solid var(--border);">${shiftsHtml}</div>
     `;
     document.getElementById("detailModal").classList.add("active");
