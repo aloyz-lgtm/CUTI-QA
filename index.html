@@ -357,10 +357,8 @@
     }
     .shift-badge-siang { background: rgba(245, 158, 11, 0.2); color: var(--shift-siang); border: 1px solid var(--shift-siang); }
     .shift-badge-malam { background: rgba(20, 184, 166, 0.2); color: var(--shift-malam); border: 1px solid var(--shift-malam); }
-    .shift-badge-free { background: rgba(148, 163, 184, 0.2); color: var(--shift-free); border: 1px solid var(--shift-free); }
-    
-    /* Marking untuk Halfday - Warna berbeza (Magenta / Ungu) di sebelah marking shift[span_0](start_span)[span_0](end_span) */
-    .shift-badge-halfday { background: rgba(236, 72, 153, 0.2); color: var(--pink); border: 1px solid var(--pink); }
+    /* Marking untuk Halfday - Reka bentuk serupa shift malam tetapi warna berbeza (cth: ungu/magenta) */
+    .shift-badge-halfday { background: rgba(168, 85, 247, 0.2); color: var(--purple); border: 1px solid var(--purple); }
 
     .warning-badge { 
       background: var(--orange); 
@@ -423,7 +421,7 @@
 
 <div class="login-overlay" id="loginOverlay">
   <div class="login-card">
-    <h2>🔒 Akses Terhad</h2>
+    <h2>🔐 Akses Terhad</h2>
     <p>Sila masukkan Kata Laluan Portal QA (Shift C) untuk meneruskan.</p>
     <input type="password" id="passInput" class="login-input" placeholder="••••••••">
     <button type="button" id="loginBtn" class="login-btn">Masuk Portal</button>
@@ -445,7 +443,7 @@
     
     <div class="card">
       <h2>
-        📌 Pengumuman Terkini & Info Kilang
+        📢 Pengumuman Terkini & Info Kilang
         <button type="button" class="btn-toggle-supervisor" id="toggleSupAnnounceBtn">⚙️ Mod Penyelia</button>
       </h2>
       
@@ -541,7 +539,7 @@
 
         <div class="card">
           <h2 id="statTitle">
-            <span>📈 Ringkasan Baki Cuti</span>
+            <span>📉 Ringkasan Baki Cuti</span>
             <select id="statFilterTech" style="width: 160px; font-size: 11px; padding: 4px 8px; background:#090d16; color:var(--accent); border:1px solid var(--border); border-radius:6px; display:inline-block;">
               <option value="ALL">-- Semua Staf --</option>
               <option value="Muhammad Adib Bin Noordin">Muhammad Adib Bin Noordin</option>
@@ -893,4 +891,9 @@
   function calculateDays() {
     const startInput = document.getElementById('startDate').value;
     const endInput = document.getElementById('endDate').value;
-    const duration = document.getElementById('durationOption
+    const duration = document.getElementById('durationOption').value;
+    const badge = document.getElementById('dayCountBadge');
+
+    if (!startInput || !endInput) {
+      badge.innerText = "Jumlah Hari: 1 Hari";
+      re
