@@ -24,7 +24,11 @@
     * { box-sizing: border-box; }
 
     body {
-      background-color: var(--bg);
+      background-image: url('images/image1.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
       color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       margin: 0;
@@ -34,7 +38,7 @@
     .login-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: var(--bg);
+      background: rgba(13, 17, 23, 0.9);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -83,7 +87,7 @@
 
     .login-error { color: var(--red); font-size: 11px; margin-top: 10px; display: none; }
 
-    .container { max-width: 1200px; margin: 0 auto; }
+    .container { max-width: 1200px; margin: 0 auto; background: rgba(13, 17, 23, 0.85); padding: 20px; border-radius: 12px; }
     
     /* PENGESAHAN DESIGN TAJUK DI TENGAH & EKSKLUSIF */
     .header { 
@@ -376,7 +380,7 @@
 
 <div class="login-overlay" id="loginOverlay">
   <div class="login-card">
-    <h2> Akses Terhad</h2>
+    <h2>🔒 Akses Terhad</h2>
     <p>Sila masukkan Kata Laluan Portal QA (Shift C) untuk teruskan.</p>
     <input type="password" id="passInput" class="login-input" placeholder="••••••••">
     <button type="button" id="loginBtn" class="login-btn">Masuk Portal</button>
@@ -393,7 +397,7 @@
 
   <div class="grid-top">
     <div class="card">
-      <h2> Borang Permohonan / Rekod Cuti</h2>
+      <h2>📋 Borang Permohonan / Rekod Cuti</h2>
       <form id="leaveForm">
         <div class="form-group">
           <label>Pilih Nama Technician:</label>
@@ -462,7 +466,7 @@
     </div>
 
     <div class="card">
-      <h2> Carta Ranking MC (Shift C)</h2>
+      <h2>📊 Carta Ranking MC (Shift C)</h2>
       <p class="sub-text">Jumlah hari MC mengikut juruteknik</p>
       <div class="ranking-list" id="mcRankingList"></div>
     </div>
@@ -470,7 +474,7 @@
 
   <div class="grid-middle">
     <div class="card">
-      <h2 id="statTitle"> Ringkasan Baki Cuti</h2>
+      <h2 id="statTitle">📈 Ringkasan Baki Cuti</h2>
       <div class="stat-boxes">
         <div class="s-box al-box"><span class="s-label">AL Taken (Termasuk EL)</span><span class="s-count" id="countAL">0 Hari</span></div>
         <div class="s-box mc-box"><span class="s-label">MC Taken</span><span class="s-count" id="countMC">0 / 18</span></div>
@@ -480,7 +484,7 @@
     </div>
 
     <div class="card">
-      <button type="button" class="btn-toggle-supervisor" id="toggleSupBtn"> Mod Penyelia</button>
+      <button type="button" class="btn-toggle-supervisor" id="toggleSupBtn">🔑 Mod Penyelia</button>
       <h2>⚙️ Pelarasan Cuti</h2>
       <p class="sub-text">Kemaskini rekod terdahulu</p>
       
@@ -511,7 +515,7 @@
   </div>
 
   <div class="card">
-    <h2> Senarai Plan Cuti (Mengikut Bulan)</h2>
+    <h2>📅 Senarai Plan Cuti (Mengikut Bulan)</h2>
     <p class="sub-text">Disusun mengikut bulan dan tarikh. Simbol [S] Siang, [M] Malam. Tekan untuk perincian.</p>
     <div id="leaveCardsContainer" class="compact-leave-list"></div>
   </div>
@@ -520,7 +524,7 @@
 <div class="modal-overlay" id="detailModal">
   <div class="modal-card">
     <div class="modal-header">
-      <h3> Maklumat Terperinci Cuti</h3>
+      <h3>🔍 Maklumat Terperinci Cuti</h3>
       <button type="button" class="close-btn" id="closeModalBtn">✕</button>
     </div>
     <div id="modalClashContainer"></div>
@@ -533,7 +537,7 @@
     <div class="modal-row"><div class="modal-label">Tarikh Cuti</div><div class="modal-val" id="mDates">-</div></div>
     <div class="modal-row" id="mHalfDayRow" style="display:none;"><div class="modal-label">Maklumat Half Day</div><div class="modal-val" id="mHalfDayVal" style="color: var(--teal); font-weight: bold;">-</div></div>
     <div class="modal-row"><div class="modal-label">Sebab / Catatan</div><div class="modal-val" id="mReason">-</div></div>
-    <button type="button" class="btn-delete" id="deleteLeaveBtn">️ Padam Rekod Ini</button>
+    <button type="button" class="btn-delete" id="deleteLeaveBtn">🗑️ Padam Rekod Ini</button>
   </div>
 </div>
 
@@ -618,7 +622,7 @@
   document.getElementById("toggleSupBtn").addEventListener("click", function() {
     const section = document.getElementById("supervisorSection");
     if (section.style.display === "none") {
-      const pin = prompt(" Sila masukkan PIN Penyelia untuk melaraskan cuti:");
+      const pin = prompt("🔐 Sila masukkan PIN Penyelia untuk melaraskan cuti:");
       if (pin === SUPERVISOR_PIN) {
         section.style.display = "block";
         alert("✅ Akses Penyelia Dibenarkan.");
@@ -754,7 +758,7 @@
     const tech = technicians.find(t => t.name === name);
     if (tech) {
       const firstName = tech.name.split(' ')[0];
-      document.getElementById("statTitle").innerText = ` Rekod: ${firstName}`;
+      document.getElementById("statTitle").innerText = `📈 Rekod: ${firstName}`;
       
       let cAL = tech.AL || 0; 
       let cMC = tech.MC || 0; 
@@ -853,7 +857,7 @@
         monthLabel = `${monthNames[parts[1]] || parts[1]} ${parts[0]}`;
       }
 
-      container.innerHTML += `<div class="month-group-title"> ${monthLabel}</div>`;
+      container.innerHTML += `<div class="month-group-title">📅 ${monthLabel}</div>`;
 
       groupedByMonth[monthKey].forEach(log => {
         const hasClash = leaveLogs.some(other => 
@@ -1026,7 +1030,7 @@
           }, { merge: true });
         }
       }
-      alert("️ Rekod telah berjaya dipadam.");
+      alert("🗑️ Rekod telah berjaya dipadam.");
       closeModal();
     } catch (error) {
       alert("❌ Ralat semasa memadam: " + error.message);
