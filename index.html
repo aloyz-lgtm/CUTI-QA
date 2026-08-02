@@ -695,7 +695,8 @@
 
       <div class="cal-legend">
         <div class="legend-item"><div class="legend-box" style="background:var(--shift-siang)"></div> Shift Siang (4 Hari)</div>
-        <div class="legend-item"><div class="legend-box" style="background:var(--shift-free)"></div> Free Shift (2 Hari)</div>
+        <div class="legend-item"><div class="legend-box" style="background:var(--shift-free)"></div> Offday (1 Hari)</div>
+        <div class="legend-item"><div class="legend-box" style="background:var(--shift-free)"></div> Restday (1 Hari)</div>
         <div class="legend-item"><div class="legend-box" style="background:var(--shift-malam)"></div> Shift Malam (4 Hari)</div>
         <div class="legend-item"><div class="legend-box" style="background:var(--accent)"></div> Cuti Staff</div>
         <div class="legend-item"><div class="legend-box" style="background:var(--pink)"></div> Cuti Am (Kedah)</div>
@@ -785,8 +786,10 @@
 
     if (dayInCycle >= 0 && dayInCycle <= 3) {
       return { type: 'siang', label: '☀️ Shift Siang' };
-    } else if (dayInCycle >= 4 && dayInCycle <= 5) {
-      return { type: 'free', label: '💤 Free Shift' };
+    } else if (dayInCycle === 4 || dayInCycle === 10) {
+      return { type: 'free', kind: 'offday', label: '🏠 Offday' };
+    } else if (dayInCycle === 5 || dayInCycle === 11) {
+      return { type: 'free', kind: 'restday', label: '😴 Restday' };
     } else if (dayInCycle >= 6 && dayInCycle <= 9) {
       return { type: 'malam', label: '🌙 Shift Malam' };
     } else {
@@ -796,9 +799,11 @@
 
   const shiftCycleSegments = [
     { type: 'siang', start: 0, end: 3, label: '☀️ Shift Siang', emoji: '☀️' },
-    { type: 'free', start: 4, end: 5, label: '💤 Free Shift', emoji: '💤' },
+    { type: 'free', start: 4, end: 4, label: '🏠 Offday', emoji: '🏠' },
+    { type: 'free', start: 5, end: 5, label: '😴 Restday', emoji: '😴' },
     { type: 'malam', start: 6, end: 9, label: '🌙 Shift Malam', emoji: '🌙' },
-    { type: 'free', start: 10, end: 11, label: '💤 Free Shift', emoji: '💤' }
+    { type: 'free', start: 10, end: 10, label: '🏠 Offday', emoji: '🏠' },
+    { type: 'free', start: 11, end: 11, label: '😴 Restday', emoji: '😴' }
   ];
 
   function renderTodayShiftWidget() {
