@@ -50,7 +50,7 @@
     .login-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(11, 15, 25, 0.92);
+      background: rgba(11, 15, 25, 0.95);
       backdrop-filter: blur(10px);
       display: flex;
       align-items: center;
@@ -67,7 +67,7 @@
       width: 100%;
       max-width: 360px;
       text-align: center;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(56, 189, 248, 0.1);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
     }
 
     .login-card h2 { font-size: 18px; color: var(--accent); margin-top: 0; margin-bottom: 8px; }
@@ -301,9 +301,7 @@
     .cal-day-cell.shift-free { border-bottom: 3px solid var(--shift-free); background: rgba(148, 163, 184, 0.08); }
 
     .cal-indicators { display: flex; gap: 2px; flex-wrap: wrap; justify-content: center; margin-top: 2px; }
-    .cal-dot { width: 5px; height: 5px; border-radius: 50%; }
-    .dot-leave { background: var(--accent); }
-    .dot-ph { background: var(--pink); }
+    .cal-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
 
     .cal-legend { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; font-size: 10px; justify-content: center; border-top: 1px solid var(--border); padding-top: 10px; color: var(--text-muted); }
     .legend-item { display: flex; align-items: center; gap: 4px; }
@@ -327,6 +325,10 @@
     .rank-bar-bg { width: 100%; background: #1e293b; height: 5px; border-radius: 3px; overflow: hidden; }
     .rank-bar-fill { height: 100%; background: var(--red); border-radius: 3px; }
 
+    /* Pengelompokan Cuti Mengikut Bulan */
+    .month-group-container { margin-bottom: 14px; }
+    .month-group-title { font-size: 12px; font-weight: 800; color: var(--accent); margin-bottom: 6px; padding-left: 4px; display: flex; align-items: center; gap: 6px; }
+    
     .compact-leave-list { display: flex; flex-direction: column; gap: 8px; }
     .compact-item {
       background: #090d16;
@@ -533,7 +535,7 @@
     <div class="card" style="margin-top: 16px;">
       <h2>📋 Senarai Plan Cuti Mengikut Bulan</h2>
       <p class="sub-text">Tekan pada mana-mana senarai cuti untuk perincian atau pemadaman.</p>
-      <div id="leaveCardsContainer" class="compact-leave-list"></div>
+      <div id="leaveCardsContainer"></div>
     </div>
   </div>
 
@@ -560,7 +562,6 @@
         <div class="legend-item"><div class="legend-box" style="background:var(--shift-malam)"></div> Shift Malam</div>
         <div class="legend-item"><div class="legend-box" style="background:var(--shift-free)"></div> Free Shift</div>
         <div class="legend-item"><div class="legend-box" style="background:var(--accent)"></div> Cuti Staff</div>
-        <div class="legend-item"><div class="legend-box" style="background:var(--pink)"></div> Cuti Umum</div>
       </div>
     </div>
   </div>
@@ -594,7 +595,6 @@
 
   const SECRET_PASSWORD = "QA2026";
   const SUPERVISOR_PIN = "9988";
-  let activeLeaveId = null;
   let leaveLogs = [];
   let announcementsList = [];
 
@@ -607,6 +607,8 @@
     "Muhammad Aniff Izzat Akmal Bin Abu Hassan",
     "Muhamad Fakhrul Imran Bin Mohamad Khairi"
   ];
+
+  const monthNames = ["Januari", "Februari", "Mac", "April", "Mei", "Jun", "Julai", "Ogos", "September", "Oktober", "November", "Disember"];
 
   window.switchSubPage = function(pageId, btnElement) {
     document.querySelectorAll('.sub-page').forEach(p => p.classList.remove('active'));
@@ -784,6 +786,7 @@
     }
   });
 
+  // Render senarai cuti dikelompokkan mengikut Bulan & Tahun
   function renderLogs() {
     const container = document.getElementById("leaveCardsContainer");
     if (!container) return;
@@ -794,9 +797,13 @@
       return;
     }
 
+    // Susun cuti mengikut tarikh mula (paling awal ke lewat)
     leaveLogs.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
 
     let totalAL = 0, totalMC = 0, totalEL = 0, totalPL = 0;
+
+    // Kumpulkan rekod mengikut kunci "Bulan Tahun" (Contoh: "Ogos 2026")
+    let groupedByMonth = {};
 
     leaveLogs.forEach(log => {
       if (log.type === 'AL') totalAL += log.days;
@@ -804,21 +811,45 @@
       if (log.type === 'EL') totalEL += log.days;
       if (log.type === 'PL') totalPL += log.days;
 
-      let isOverlapClass = log.isOverlap ? 'is-overlap' : '';
-      let warningBadge = log.isOverlap ? '<span class="warning-badge">⚠️ Bertindih</span>' : '';
+      const dateObj = new Date(log.startDate);
+      const mName = monthNames[dateObj.getMonth()];
+      const yNum = dateObj.getFullYear();
+      const groupKey = `${mName} ${yNum}`;
 
-      container.innerHTML += `
-        <div class="compact-item ${isOverlapClass}" onclick="openDetailModal('${log.id}')">
-          <div class="compact-name-wrap">
-            <span class="badge badge-${log.type}">${log.type}</span>
-            <span class="compact-name">${log.name}</span>
-            ${warningBadge}
-          </div>
-          <div class="compact-right">
-            <span class="compact-date">${formatDateDDMMYY(log.startDate)} ➔ ${formatDateDDMMYY(log.endDate)}</span>
-          </div>
-        </div>`;
+      if (!groupedByMonth[groupKey]) {
+        groupedByMonth[groupKey] = [];
+      }
+      groupedByMonth[groupKey].push(log);
     });
+
+    // Paparkan mengikut kumpulan bulan
+    for (let groupKey in groupedByMonth) {
+      let groupHtml = `
+        <div class="month-group-container">
+          <div class="month-group-title">📅 ${groupKey}</div>
+          <div class="compact-leave-list">
+      `;
+
+      groupedByMonth[groupKey].forEach(log => {
+        let isOverlapClass = log.isOverlap ? 'is-overlap' : '';
+        let warningBadge = log.isOverlap ? '<span class="warning-badge">⚠️ Bertindih</span>' : '';
+
+        groupHtml += `
+          <div class="compact-item ${isOverlapClass}" onclick="openDetailModal('${log.id}')">
+            <div class="compact-name-wrap">
+              <span class="badge badge-${log.type}">${log.type}</span>
+              <span class="compact-name">${log.name}</span>
+              ${warningBadge}
+            </div>
+            <div class="compact-right">
+              <span class="compact-date">${formatDateDDMMYY(log.startDate)} ➔ ${formatDateDDMMYY(log.endDate)}</span>
+            </div>
+          </div>`;
+      });
+
+      groupHtml += `</div></div>`;
+      container.innerHTML += groupHtml;
+    }
 
     document.getElementById("countAL").innerText = `${totalAL} Hari`;
     document.getElementById("countMC").innerText = `${totalMC} / 18`;
@@ -829,7 +860,6 @@
   window.openDetailModal = function(id) {
     const log = leaveLogs.find(l => l.id === id);
     if (!log) return;
-    activeLeaveId = id;
 
     const modalBody = document.getElementById("modalBodyContent");
     modalBody.innerHTML = `
@@ -908,7 +938,6 @@
     });
   }
 
-  // Logik Pengiraan Kitaran Shift (Contoh rujukan asas: 1 Ogos 2026 sebagai titik mula kitaran)
   function getShiftTypeForDate(dateStr) {
     const baseDate = new Date("2026-08-01");
     baseDate.setHours(0,0,0,0);
@@ -916,10 +945,9 @@
     targetDate.setHours(0,0,0,0);
     
     const diffDays = Math.floor((targetDate - baseDate) / (1000 * 60 * 60 * 24));
-    if (diffDays < 0) return 'free'; // Default jika sebelum tarikh asas
+    if (diffDays < 0) return 'free';
     
     const cyclePos = diffDays % 4; 
-    // Kitaran contoh: 0=Siang, 1=Siang, 2=Malam, 3=Malam (atau Free)
     if (cyclePos === 0 || cyclePos === 1) return 'siang';
     if (cyclePos === 2 || cyclePos === 3) return 'malam';
     return 'free';
@@ -927,8 +955,6 @@
 
   let calCurrentYear = 2026;
   let calCurrentMonth = 7; // Ogos
-
-  const monthNames = ["Januari", "Februari", "Mac", "April", "Mei", "Jun", "Julai", "Ogos", "September", "Oktober", "November", "Disember"];
 
   function renderInteractiveCalendar() {
     const container = document.getElementById("calGridDaysContainer");
@@ -962,7 +988,7 @@
 
       let dotsHtml = '';
       if (hasLeave) {
-        dotsHtml += `<div class="cal-indicators"><div class="cal-dot dot-leave" title="Ada Cuti Staff"></div></div>`;
+        dotsHtml += `<div class="cal-indicators"><div class="cal-dot" title="Ada Cuti Staff"></div></div>`;
       }
 
       container.innerHTML += `
