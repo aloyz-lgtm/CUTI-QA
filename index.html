@@ -590,7 +590,7 @@
   <div id="calendarPage" class="sub-page animate-fade">
     <div class="card">
       <h2>🗓️ Kalendar Interaktif & Kitaran Shift</h2>
-      <p class="sub-text">Paparan lengkap shift kerja, cuti am, dan cuti staff.</p>
+      <p class="sub-text">Paparan lengkap shift kerja, cuti am, dan cuti staff (Kitaran 4-2 berterusan).</p>
       
       <div class="calendar-container">
         <div class="cal-header-nav">
@@ -606,9 +606,9 @@
       </div>
 
       <div class="cal-legend">
-        <div class="legend-item"><div class="legend-box" style="background:var(--shift-siang)"></div> Shift Siang</div>
-        <div class="legend-item"><div class="legend-box" style="background:var(--shift-malam)"></div> Shift Malam</div>
-        <div class="legend-item"><div class="legend-box" style="background:var(--shift-free)"></div> Free Shift</div>
+        <div class="legend-item"><div class="legend-box" style="background:var(--shift-siang)"></div> Shift Siang (2 Hari)</div>
+        <div class="legend-item"><div class="legend-box" style="background:var(--shift-malam)"></div> Shift Malam (2 Hari)</div>
+        <div class="legend-item"><div class="legend-box" style="background:var(--shift-free)"></div> Free Shift (Rehat)</div>
         <div class="legend-item"><div class="legend-box" style="background:var(--accent)"></div> Cuti Staff</div>
       </div>
     </div>
@@ -1155,16 +1155,24 @@
     });
   }
 
+  // LOGIK KITARAN SHIFT 4-2 (2 Siang, 2 Malam, 2 Free Shift) - Berterusan Merentasi Bulan & Tahun
   function getShiftTypeForDate(dateStr) {
     const baseDate = new Date("2026-08-01");
     baseDate.setHours(0,0,0,0);
     const targetDate = new Date(dateStr);
     targetDate.setHours(0,0,0,0);
     
-    const diffDays = Math.floor((targetDate - baseDate) / (1000 * 60 * 60 * 24));
-    if (diffDays < 0) return 'free';
+    // Kira perbezaan hari secara tepat menggunakan Math.round untuk mengelakkan isu daylight saving
+    const diffTime = targetDate - baseDate;
+    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
     
-    const cyclePos = diffDays % 4; 
+    // Kitaran 6 hari (0, 1 = Siang; 2, 3 = Malam; 4, 5 = Free/Rehat)
+    const cycleLength = 6;
+    let cyclePos = diffDays % cycleLength;
+    if (cyclePos < 0) {
+      cyclePos = (cyclePos + cycleLength) % cycleLength;
+    }
+    
     if (cyclePos === 0 || cyclePos === 1) return 'siang';
     if (cyclePos === 2 || cyclePos === 3) return 'malam';
     return 'free';
@@ -1187,7 +1195,15 @@
 
     for (let i = firstDayIndex; i > 0; i--) {
       let dayNum = prevTotalDays - i + 1;
-      container.innerHTML += `<div class="cal-day-cell other-month"><span class="cal-day-num">${dayNum}</span></div>`;
+      // Mengira tarikh untuk bulan sebelumnya bagi paparan sel kelabu
+      let prevMonth = calCurrentMonth - 1;
+      let prevYear = calCurrentYear;
+      if (prevMonth < 0) { prevMonth = 11; prevYear--; }
+      let dateStr = `${prevYear}-${(prevMonth + 1).toString().padStart(2, '0')}-${dayNum.toString().padStart(2, '0')}`;
+      let shift = getShiftTypeForDate(dateStr);
+      let shiftClass = shift === 'siang' ? 'shift-siang' : (shift === 'malam' ? 'shift-malam' : 'shift-free');
+      
+      container.innerHTML += `<div class="cal-day-cell other-month ${shiftClass}"><span class="cal-day-num">${dayNum}</span></div>`;
     }
 
     for (let d = 1; d <= totalDays; d++) {
@@ -1215,6 +1231,20 @@
           ${dotsHtml}
         </div>`;
     }
+
+    // Mengisi ruang kosong baki petak di hujung bulan berikutnya
+    const totalCellsRendered = firstDayIndex + totalDays;
+    const nextMonthDaysToAdd = totalCellsRendered % 7 === 0 ? 0 : 7 - (totalCellsRendered % 7);
+    for (let nd = 1; nd <= nextMonthDaysToAdd; nd++) {
+      let nextMonth = calCurrentMonth + 1;
+      let nextYear = calCurrentYear;
+      if (nextMonth > 11) { nextMonth = 0; nextYear++; }
+      let dateStr = `${nextYear}-${(nextMonth + 1).toString().padStart(2, '0')}-${nd.toString().padStart(2, '0')}`;
+      let shift = getShiftTypeForDate(dateStr);
+      let shiftClass = shift === 'siang' ? 'shift-siang' : (shift === 'malam' ? 'shift-malam' : 'shift-free');
+
+      container.innerHTML += `<div class="cal-day-cell other-month ${shiftClass}"><span class="cal-day-num">${nd}</span></div>`;
+    }
   }
 
   window.openCalendarDayDetail = function(dateStr) {
@@ -1229,8 +1259,10 @@
     const modalBody = document.getElementById("modalBodyContent");
     document.getElementById("modalHeaderTitle").innerText = `📌 Tarikh: ${formatDateDDMMYY(dateStr)}`;
 
-    let shift = getShiftTypeForDate(dateStr).toUpperCase();
-    let html = `<div class="modal-row"><div class="modal-label">Status Shift Kerja</div><div class="modal-val">Shift ${shift}</div></div>`;
+    let shiftRaw = getShiftTypeForDate(dateStr);
+    let shiftText = shiftRaw === 'siang' ? 'Shift Siang' : (shiftRaw === 'malam' ? 'Shift Malam' : 'Free Shift (Rehat)');
+    
+    let html = `<div class="modal-row"><div class="modal-label">Status Shift Kerja</div><div class="modal-val">${shiftText}</div></div>`;
     
     html += `<div class="modal-row" style="margin-top:10px;"><div class="modal-label">Senarai Cuti Pada Tarikh Ini</div>`;
     if (matchedLeaves.length === 0) {
