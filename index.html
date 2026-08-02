@@ -8,19 +8,18 @@
   <style>
     :root {
       --bg: #07090e;
-      --card: rgba(15, 23, 42, 0.75);
-      --card-solid: #0f172a;
-      --border: rgba(56, 189, 248, 0.15);
-      --border-hover: rgba(56, 189, 248, 0.4);
+      --card: #101726;
+      --border: #1e293b;
+      --border-glow: rgba(56, 189, 248, 0.35);
       --text: #f8fafc;
       --text-muted: #94a3b8;
       --accent: #38bdf8;
-      --accent-glow: rgba(56, 189, 248, 0.35);
+      --accent-glow: rgba(56, 189, 248, 0.25);
       --green: #22c55e;
       --yellow: #eab308;
       --red: #ef4444;
       --orange: #f97316;
-      --purple: #a855f7;
+      --purple: #c084fc;
       --pink: #ec4899;
       --shift-siang: #f59e0b;
       --shift-malam: #14b8a6;
@@ -33,24 +32,18 @@
       background-color: var(--bg);
       background-image: 
         radial-gradient(circle at 15% 10%, rgba(56, 189, 248, 0.12) 0%, transparent 45%),
-        radial-gradient(circle at 85% 90%, rgba(168, 85, 247, 0.1) 0%, transparent 45%),
-        radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.5) 0%, transparent 100%);
+        radial-gradient(circle at 85% 90%, rgba(192, 132, 252, 0.1) 0%, transparent 45%);
       background-attachment: fixed;
       color: var(--text);
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       margin: 0;
       padding: 16px;
       min-height: 100vh;
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(12px); }
+      from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes pulseGlow {
-      0%, 100% { box-shadow: 0 0 15px rgba(56, 189, 248, 0.2); }
-      50% { box-shadow: 0 0 25px rgba(56, 189, 248, 0.4); }
     }
 
     .animate-fade { animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
@@ -58,9 +51,8 @@
     .login-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(7, 9, 14, 0.85);
+      background: rgba(7, 9, 14, 0.92);
       backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -69,24 +61,23 @@
     }
 
     .login-card {
-      background: linear-gradient(135deg, rgba(19, 28, 46, 0.9), rgba(11, 15, 25, 0.95));
-      border: 1px solid var(--border-hover);
+      background: linear-gradient(145deg, #101726, #0c1322);
+      border: 1px solid var(--border-glow);
       border-radius: 20px;
       padding: 32px 24px;
       width: 100%;
       max-width: 380px;
       text-align: center;
       box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(56, 189, 248, 0.15);
-      animation: fadeIn 0.5s ease;
     }
 
-    .login-card h2 { font-size: 20px; color: var(--accent); margin-top: 0; margin-bottom: 8px; font-weight: 800; letter-spacing: 0.5px; }
-    .login-card p { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; line-height: 1.6; }
+    .login-card h2 { font-size: 20px; color: var(--accent); margin-top: 0; margin-bottom: 8px; font-weight: 800; text-shadow: 0 0 10px rgba(56,189,248,0.4); }
+    .login-card p { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; line-height: 1.5; }
 
     .login-input {
       width: 100%;
       padding: 14px;
-      background: rgba(5, 8, 15, 0.8);
+      background: #05080f;
       border: 1px solid var(--border);
       border-radius: 12px;
       color: var(--text);
@@ -95,7 +86,7 @@
       letter-spacing: 4px;
       margin-bottom: 16px;
       outline: none;
-      transition: all 0.3s ease;
+      transition: all 0.3s;
     }
     .login-input:focus { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-glow); }
 
@@ -109,29 +100,33 @@
       font-weight: 800;
       font-size: 14px;
       cursor: pointer;
-      transition: transform 0.2s ease, filter 0.2s ease;
+      box-shadow: 0 4px 15px rgba(56, 189, 248, 0.35);
+      transition: transform 0.2s;
     }
-    .login-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+    .login-btn:active { transform: scale(0.98); }
 
-    .login-error { color: var(--red); font-size: 12px; margin-top: 14px; display: none; font-weight: 700; }
+    .login-error { color: var(--red); font-size: 12px; margin-top: 14px; display: none; font-weight: 700; text-shadow: 0 0 8px rgba(239,68,68,0.4); }
 
     .container { max-width: 1100px; margin: 0 auto; padding-bottom: 50px; }
     
     .header { 
       text-align: center; 
       padding: 20px 0 15px 0; 
-      margin-bottom: 20px; 
-      position: relative;
+      margin-bottom: 20px;
+      background: linear-gradient(180deg, rgba(56,189,248,0.08) 0%, transparent 100%);
+      border-bottom: 1px solid var(--border);
+      border-radius: 0 0 24px 24px;
     }
     .header h1 { 
       font-size: 24px; 
+      color: var(--text); 
+      margin: 0; 
+      font-weight: 900; 
+      letter-spacing: -0.5px;
       background: linear-gradient(135deg, #f8fafc, #38bdf8);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      margin: 0; 
-      font-weight: 900; 
-      letter-spacing: 0.5px;
-      text-shadow: 0 10px 30px rgba(56, 189, 248, 0.2);
+      text-shadow: 0 0 20px rgba(56,189,248,0.3);
     }
 
     .nav-tabs {
@@ -139,19 +134,17 @@
       grid-template-columns: repeat(2, 1fr);
       gap: 10px;
       background: var(--card);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
       padding: 8px;
       border-radius: 16px;
       border: 1px solid var(--border);
-      margin-bottom: 20px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      margin-bottom: 24px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
     }
 
     .nav-tab-btn {
       background: transparent;
       border: none;
-      padding: 12px;
+      padding: 13px;
       color: var(--text-muted);
       font-size: 13px;
       font-weight: 700;
@@ -161,33 +154,29 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
-      transition: all 0.3s ease;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
-
-    .nav-tab-btn:hover { color: var(--text); background: rgba(255, 255, 255, 0.03); }
 
     .nav-tab-btn.active {
       background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(2, 132, 199, 0.3));
       color: var(--accent);
-      border: 1px solid rgba(56, 189, 248, 0.4);
-      box-shadow: 0 4px 15px rgba(56, 189, 248, 0.2);
+      border: 1px solid var(--border-glow);
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
     }
 
     .sub-page { display: none; }
     .sub-page.active { display: block; }
 
     .card {
-      background: var(--card);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      background: linear-gradient(145deg, #101726, #0d1422);
       border: 1px solid var(--border);
       border-radius: 20px;
       padding: 20px;
       margin-bottom: 20px;
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
-      transition: border-color 0.3s ease;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      transition: border-color 0.3s;
     }
-    .card:hover { border-color: var(--border-hover); }
+    .card:hover { border-color: rgba(56, 189, 248, 0.2); }
 
     .card h2 { 
       font-size: 15px; 
@@ -200,20 +189,19 @@
       align-items: center;
       justify-content: space-between;
       font-weight: 800;
-      letter-spacing: 0.3px;
     }
 
-    .sub-text { font-size: 12px; color: var(--text-muted); margin-top: -6px; margin-bottom: 16px; line-height: 1.5; }
+    .sub-text { font-size: 12px; color: var(--text-muted); margin-top: -10px; margin-bottom: 16px; line-height: 1.5; }
 
     .announcement-box {
-      background: linear-gradient(145deg, rgba(19, 28, 46, 0.8), rgba(26, 38, 64, 0.6));
+      background: linear-gradient(145deg, #131c2e, #1a2640);
       border-left: 4px solid var(--accent);
       border: 1px solid var(--border);
       border-left-width: 4px;
       border-radius: 14px;
       padding: 16px;
       margin-bottom: 14px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
     }
     .announcement-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
     .announcement-author { font-size: 12px; font-weight: 800; color: var(--accent); }
@@ -222,11 +210,11 @@
     .announcement-img { width: 100%; max-height: 240px; object-fit: cover; border-radius: 10px; margin-top: 10px; border: 1px solid var(--border); }
 
     .supervisor-upload-panel {
-      background: rgba(5, 8, 15, 0.6);
-      border: 1px dashed var(--border-hover);
+      background: rgba(5, 8, 15, 0.7);
+      border: 1px dashed var(--border-glow);
       padding: 16px;
       border-radius: 14px;
-      margin-bottom: 16px;
+      margin-bottom: 18px;
     }
 
     .form-group { margin-bottom: 14px; }
@@ -237,11 +225,11 @@
     input, select, textarea {
       width: 100%;
       padding: 12px 14px;
-      background: rgba(5, 8, 15, 0.7);
+      background: #05080f;
       border: 1px solid var(--border);
       border-radius: 12px;
       color: var(--text);
-      font-size: 13px;
+      font-size: 14px;
       outline: none;
       appearance: none;
       -webkit-appearance: none;
@@ -250,14 +238,14 @@
       background-position: right 14px center;
       background-size: 14px;
       padding-right: 36px;
-      transition: all 0.3s ease;
+      transition: all 0.3s;
     }
-    input:focus, select:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); background-color: rgba(5, 8, 15, 0.9); }
+    input:focus, select:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
     input[type="date"], input[type="file"], input[type="number"] { background-image: none; padding-right: 14px; }
-    select option { background-color: #0f172a; color: var(--text); padding: 12px; }
+    select option { background-color: #101726; color: var(--text); padding: 12px; }
 
     .day-count-badge {
-      background: rgba(56, 189, 248, 0.1);
+      background: rgba(56, 189, 248, 0.08);
       color: var(--accent);
       padding: 12px;
       border-radius: 12px;
@@ -266,7 +254,7 @@
       text-align: center;
       border: 1px dashed rgba(56, 189, 248, 0.35);
       margin-bottom: 14px;
-      box-shadow: inset 0 0 10px rgba(56, 189, 248, 0.05);
+      box-shadow: inset 0 0 10px rgba(56,189,248,0.05);
     }
 
     .btn-submit {
@@ -280,9 +268,9 @@
       font-size: 14px;
       cursor: pointer;
       box-shadow: 0 6px 20px rgba(34, 197, 94, 0.35);
-      transition: all 0.2s ease;
+      transition: transform 0.2s, box-shadow 0.2s;
     }
-    .btn-submit:hover { filter: brightness(1.1); transform: translateY(-1px); }
+    .btn-submit:active { transform: scale(0.98); }
 
     .btn-action {
       background: linear-gradient(135deg, #38bdf8, #0284c7);
@@ -293,9 +281,8 @@
       font-weight: 800;
       font-size: 12px;
       cursor: pointer;
-      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(56,189,248,0.25);
     }
-    .btn-action:hover { filter: brightness(1.1); transform: translateY(-1px); }
 
     .btn-delete {
       width: 100%;
@@ -303,40 +290,38 @@
       color: #fff;
       border: none;
       padding: 12px;
-      border-radius: 10px;
+      border-radius: 12px;
       font-weight: 800;
-      font-size: 12px;
+      font-size: 13px;
       cursor: pointer;
       margin-top: 10px;
-      transition: filter 0.2s ease;
+      box-shadow: 0 4px 15px rgba(239,68,68,0.3);
     }
-    .btn-delete:hover { filter: brightness(1.1); }
 
     .btn-toggle-supervisor {
-      background: rgba(30, 41, 59, 0.8);
+      background: #1a2640;
       color: var(--accent);
-      border: 1px dashed var(--border-hover);
+      border: 1px solid var(--border-glow);
       padding: 6px 12px;
       border-radius: 8px;
       font-size: 11px;
       cursor: pointer;
       font-weight: 800;
-      transition: all 0.2s ease;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
     }
-    .btn-toggle-supervisor:hover { background: rgba(56, 189, 248, 0.1); }
 
-    .calendar-container { background: rgba(5, 8, 15, 0.6); border: 1px solid var(--border); border-radius: 16px; padding: 16px; }
+    .calendar-container { background: #05080f; border: 1px solid var(--border); border-radius: 16px; padding: 16px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); }
     .cal-header-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
     .cal-title { font-size: 15px; font-weight: 900; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px; }
-    .cal-nav-btn { background: var(--card-solid); border: 1px solid var(--border); color: var(--text); padding: 8px 14px; border-radius: 10px; font-weight: 800; font-size: 12px; cursor: pointer; transition: all 0.2s ease; }
-    .cal-nav-btn:hover { border-color: var(--accent); background: rgba(56, 189, 248, 0.1); }
+    .cal-nav-btn { background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 8px 14px; border-radius: 10px; font-weight: 800; font-size: 12px; cursor: pointer; transition: border-color 0.2s; }
+    .cal-nav-btn:hover { border-color: var(--accent); }
     
-    .cal-grid-header { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 11px; font-weight: 900; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; }
+    .cal-grid-header { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 11px; font-weight: 900; color: var(--text-muted); margin-bottom: 8px; }
     .cal-grid-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
     
     .cal-day-cell {
       min-height: 64px;
-      background: rgba(19, 28, 46, 0.6);
+      background: var(--card);
       border: 1px solid var(--border);
       border-radius: 10px;
       padding: 6px;
@@ -346,42 +331,42 @@
       align-items: center;
       cursor: pointer;
       position: relative;
-      transition: all 0.2s ease;
+      transition: all 0.2s;
     }
-    .cal-day-cell:hover { border-color: var(--accent); transform: scale(1.02); }
+    .cal-day-cell:hover { border-color: var(--accent); transform: translateY(-2px); }
     .cal-day-num { font-size: 12px; font-weight: 800; color: var(--text); }
     .cal-day-cell.other-month { opacity: 0.25; }
-    .cal-day-cell.shift-siang { border-bottom: 3px solid var(--shift-siang); background: rgba(245, 158, 11, 0.08); }
-    .cal-day-cell.shift-malam { border-bottom: 3px solid var(--shift-malam); background: rgba(20, 184, 166, 0.08); }
-    .cal-day-cell.shift-free { border-bottom: 3px solid var(--shift-free); background: rgba(100, 116, 139, 0.08); }
+    .cal-day-cell.shift-siang { border-bottom: 4px solid var(--shift-siang); background: rgba(245, 158, 11, 0.06); }
+    .cal-day-cell.shift-malam { border-bottom: 4px solid var(--shift-malam); background: rgba(20, 184, 166, 0.06); }
+    .cal-day-cell.shift-free { border-bottom: 4px solid var(--shift-free); background: rgba(100, 116, 139, 0.08); }
 
-    .cal-legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; font-size: 11px; justify-content: center; border-top: 1px solid var(--border); padding-top: 14px; color: var(--text-muted); font-weight: 600; }
+    .cal-legend { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; font-size: 11px; justify-content: center; border-top: 1px solid var(--border); padding-top: 14px; color: var(--text-muted); font-weight: 600; }
     .legend-item { display: flex; align-items: center; gap: 6px; }
-    .legend-box { width: 12px; height: 12px; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+    .legend-box { width: 12px; height: 12px; border-radius: 4px; box-shadow: 0 0 8px rgba(0,0,0,0.3); }
 
     .stat-boxes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-    .s-box { background: rgba(5, 8, 15, 0.6); border: 1px solid var(--border); padding: 14px; border-radius: 12px; text-align: center; box-shadow: inset 0 1px 3px rgba(0,0,0,0.3); }
+    .s-box { background: #05080f; border: 1px solid var(--border); padding: 14px; border-radius: 12px; text-align: center; box-shadow: inset 0 0 10px rgba(0,0,0,0.3); }
     .s-label { display: block; font-size: 11px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; }
-    .s-count { display: block; font-size: 16px; font-weight: 900; margin-top: 6px; }
+    .s-count { display: block; font-size: 16px; font-weight: 900; margin-top: 6px; text-shadow: 0 0 10px rgba(255,255,255,0.1); }
     .al-box .s-count { color: var(--accent); }
     .mc-box .s-count { color: var(--red); }
     .el-box .s-count { color: var(--yellow); }
     .pl-box .s-count { color: var(--purple); }
 
-    .ranking-list { display: flex; flex-direction: column; gap: 10px; }
-    .rank-item { background: rgba(5, 8, 15, 0.6); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; font-size: 12px; }
+    .ranking-list { display: flex; flex-direction: column; gap: 12px; }
+    .rank-item { background: #05080f; border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; font-size: 12px; box-shadow: inset 0 0 10px rgba(0,0,0,0.2); }
     .rank-top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
     .rank-num-name { display: flex; align-items: center; gap: 10px; font-weight: 800; color: var(--text); }
     .rank-val { font-weight: 900; color: var(--accent); font-size: 13px; }
-    .rank-bar-bg { width: 100%; background: rgba(30, 41, 59, 0.8); height: 6px; border-radius: 4px; overflow: hidden; }
-    .rank-bar-fill { height: 100%; background: linear-gradient(90deg, var(--red), var(--pink)); border-radius: 4px; }
+    .rank-bar-bg { width: 100%; background: #1e293b; height: 6px; border-radius: 4px; overflow: hidden; }
+    .rank-bar-fill { height: 100%; background: linear-gradient(90deg, var(--red), var(--orange)); border-radius: 4px; box-shadow: 0 0 8px rgba(239,68,68,0.5); }
 
-    .month-group-container { margin-bottom: 16px; }
-    .month-group-title { font-size: 13px; font-weight: 900; color: var(--accent); margin-bottom: 8px; padding-left: 4px; display: flex; align-items: center; gap: 8px; letter-spacing: 0.3px; }
+    .month-group-container { margin-bottom: 18px; }
+    .month-group-title { font-size: 13px; font-weight: 900; color: var(--accent); margin-bottom: 8px; padding-left: 4px; display: flex; align-items: center; gap: 8px; text-shadow: 0 0 10px rgba(56,189,248,0.3); }
     
     .compact-leave-list { display: flex; flex-direction: column; gap: 8px; }
     .compact-item {
-      background: rgba(5, 8, 15, 0.6);
+      background: #05080f;
       border: 1px solid var(--border);
       border-radius: 10px;
       padding: 10px 14px;
@@ -389,14 +374,14 @@
       justify-content: space-between;
       align-items: center;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all 0.2s;
     }
-    .compact-item:hover { border-color: var(--accent); background: rgba(5, 8, 15, 0.9); transform: translateX(2px); }
+    .compact-item:hover { border-color: var(--accent); background: #090e1a; transform: scale(1.005); }
     
     .compact-item.is-overlap {
-      background: rgba(249, 115, 22, 0.15);
+      background: rgba(249, 115, 22, 0.12);
       border: 2px solid var(--orange) !important;
-      box-shadow: 0 0 15px rgba(249, 115, 22, 0.4);
+      box-shadow: 0 0 15px rgba(249, 115, 22, 0.35);
     }
 
     .compact-name-wrap { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
@@ -407,16 +392,16 @@
     .shift-badge-main {
       font-size: 10px;
       font-weight: 900;
-      padding: 3px 6px;
+      padding: 3px 8px;
       border-radius: 6px;
       display: inline-block;
-      letter-spacing: 0.3px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
     .shift-badge-siang { background: rgba(245, 158, 11, 0.2); color: var(--shift-siang); border: 1px solid var(--shift-siang); }
     .shift-badge-malam { background: rgba(20, 184, 166, 0.2); color: var(--shift-malam); border: 1px solid var(--shift-malam); }
     .shift-badge-free { background: rgba(100, 116, 139, 0.2); color: var(--shift-free); border: 1px solid var(--shift-free); }
     
-    .shift-badge-halfday { background: rgba(236, 72, 153, 0.2); color: var(--pink); border: 1px solid var(--pink); font-size: 10px; font-weight: 900; padding: 3px 6px; border-radius: 6px; display: inline-block; }
+    .shift-badge-halfday { background: rgba(236, 72, 153, 0.2); color: var(--pink); border: 1px solid var(--pink); font-size: 10px; font-weight: 900; padding: 3px 8px; border-radius: 6px; display: inline-block; }
 
     .warning-badge { 
       background: var(--orange); 
@@ -429,7 +414,7 @@
       align-items: center; 
       gap: 4px; 
       animation: pulseWarning 1.5s infinite; 
-      box-shadow: 0 0 10px rgba(249, 115, 22, 0.5);
+      box-shadow: 0 0 10px rgba(249,115,22,0.6);
     }
 
     @keyframes pulseWarning {
@@ -440,16 +425,15 @@
 
     .bulk-table { width: 100%; border-collapse: collapse; margin-bottom: 14px; font-size: 12px; }
     .bulk-table th, .bulk-table td { border: 1px solid var(--border); padding: 10px; text-align: center; }
-    .bulk-table th { background: rgba(30, 41, 59, 0.8); color: var(--accent); font-weight: 900; }
-    .bulk-input { width: 70px; padding: 8px; background: rgba(5, 8, 15, 0.8); border: 1px solid var(--border); border-radius: 8px; color: var(--text); text-align: center; font-size: 13px; font-weight: 800; }
+    .bulk-table th { background: #1a2640; color: var(--accent); font-weight: 900; }
+    .bulk-input { width: 70px; padding: 8px; background: #05080f; border: 1px solid var(--border); border-radius: 8px; color: var(--text); text-align: center; font-size: 13px; font-weight: 700; }
     .bulk-input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-glow); }
 
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(7, 9, 14, 0.85);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      background: rgba(5, 8, 15, 0.85);
+      backdrop-filter: blur(8px);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -460,28 +444,28 @@
       transition: opacity 0.3s ease;
     }
     .modal-overlay.active { opacity: 1; pointer-events: auto; }
-    .modal-card { background: var(--card-solid); border: 1px solid var(--border-hover); border-radius: 20px; width: 100%; max-width: 520px; padding: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.8), 0 0 30px rgba(56, 189, 248, 0.1); max-height: 90vh; overflow-y: auto; }
+    .modal-card { background: linear-gradient(145deg, #101726, #0c1322); border: 1px solid var(--border-glow); border-radius: 20px; width: 100%; max-width: 520px; padding: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.8), 0 0 25px rgba(56,189,248,0.2); max-height: 90vh; overflow-y: auto; }
     .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 16px; }
-    .modal-header h3 { font-size: 16px; margin: 0; color: var(--accent); font-weight: 900; }
-    .close-btn { background: none; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer; transition: color 0.2s ease; }
+    .modal-header h3 { font-size: 15px; margin: 0; color: var(--accent); font-weight: 900; }
+    .close-btn { background: none; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer; transition: color 0.2s; }
     .close-btn:hover { color: var(--text); }
     .modal-row { margin-bottom: 14px; font-size: 13px; }
     .modal-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; font-weight: 800; letter-spacing: 0.5px; }
     .modal-val { font-size: 14px; color: var(--text); font-weight: 700; }
 
-    .badge { padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 900; display: inline-block; letter-spacing: 0.3px; }
-    .badge-AL { background: rgba(56,189,248,0.2); color: var(--accent); border: 1px solid rgba(56,189,248,0.3); }
-    .badge-MC { background: rgba(236,72,153,0.2); color: var(--pink); border: 1px solid var(--pink); }
-    .badge-EL { background: rgba(234,179,8,0.2); color: var(--yellow); border: 1px solid rgba(234,179,8,0.3); }
-    .badge-PL { background: rgba(168,85,247,0.2); color: var(--purple); border: 1px solid rgba(168,85,247,0.3); }
-    .badge-UL { background: rgba(148,163,184,0.2); color: var(--text-muted); border: 1px solid rgba(148,163,184,0.3); }
-    .badge-PH { background: rgba(236,72,153,0.2); color: var(--pink); border: 1px solid var(--pink); }
+    .badge { padding: 4px 10px; border-radius: 14px; font-size: 11px; font-weight: 900; display: inline-block; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+    .badge-AL { background: rgba(56,189,248,0.18); color: var(--accent); border: 1px solid rgba(56,189,248,0.3); }
+    .badge-MC { background: rgba(236,72,153,0.18); color: var(--pink); border: 1px solid var(--pink); }
+    .badge-EL { background: rgba(234,179,8,0.18); color: var(--yellow); border: 1px solid rgba(234,179,8,0.3); }
+    .badge-PL { background: rgba(192,132,252,0.18); color: var(--purple); border: 1px solid rgba(192,132,252,0.3); }
+    .badge-UL { background: rgba(148,163,184,0.18); color: var(--text-muted); border: 1px solid rgba(148,163,184,0.3); }
+    .badge-PH { background: rgba(236,72,153,0.18); color: var(--pink); border: 1px solid var(--pink); }
   </style>
 </head>
 <body>
 
 <div class="login-overlay" id="loginOverlay">
-  <div class="login-card">
+  <div class="login-card animate-fade">
     <h2>🔐 Akses Terhad</h2>
     <p>Sila masukkan Kata Laluan Portal QA (Shift C) untuk meneruskan.</p>
     <input type="password" id="passInput" class="login-input" placeholder="••••••••">
@@ -504,12 +488,12 @@
     
     <div class="card">
       <h2>
-        📢 Pengumuman Terkini & Info Kilang
+        <span>📢 Pengumuman Terkini & Info Kilang</span>
         <button type="button" class="btn-toggle-supervisor" id="toggleSupAnnounceBtn">⚙️ Mod Penyelia</button>
       </h2>
       
       <div style="margin-bottom: 14px;">
-        <button type="button" class="btn-action" style="width:100%; background:linear-gradient(135deg, #10b981, #059669); color:#fff;" onclick="promptAddPastLeave()">➕ Kemasukan Data Cuti Sekaligus (Bulk Edit Penyelia)</button>
+        <button type="button" class="btn-action" style="width:100%; background:linear-gradient(135deg, #10b981, #059669); color:#fff; font-size:13px; padding:13px;" onclick="promptAddPastLeave()">➕ Kemasukan Data Cuti Sekaligus (Bulk Edit Penyelia)</button>
       </div>
 
       <div id="supervisorAnnouncePanel" class="supervisor-upload-panel" style="display: none;">
@@ -587,7 +571,7 @@
             <input type="text" id="leaveReason" placeholder="Contoh: Demam / Urusan Keluarga" required>
           </div>
 
-          <button type="submit" class="btn-submit">Hantar Permohonan Cuti</button>
+          <button type="submit" class="btn-submit">✨ Hantar Permohonan Cuti</button>
         </form>
       </div>
 
@@ -600,8 +584,8 @@
 
         <div class="card">
           <h2 id="statTitle">
-            <span>📈 Ringkasan Baki Cuti</span>
-            <select id="statFilterTech" style="width: 170px; font-size: 11px; padding: 6px 10px; background:rgba(5, 8, 15, 0.8); color:var(--accent); border:1px solid var(--border); border-radius:8px; display:inline-block; font-weight:800;">
+            <span>📊 Ringkasan Baki Cuti</span>
+            <select id="statFilterTech" style="width: 170px; font-size: 11px; padding: 6px 10px; background:#05080f; color:var(--accent); border:1px solid var(--border); border-radius:8px; display:inline-block; font-weight:700;">
               <option value="ALL">-- Semua Staf --</option>
               <option value="Muhammad Adib Bin Noordin">Muhammad Adib Bin Noordin</option>
               <option value="Abu Hanifah Bin Muhamdhazir">Abu Hanifah Bin Muhamdhazir</option>
@@ -660,7 +644,7 @@
 </div>
 
 <div class="modal-overlay" id="detailModal">
-  <div class="modal-card">
+  <div class="modal-card animate-fade">
     <div class="modal-header">
       <h3 id="modalHeaderTitle">ℹ️ Maklumat Tarikh & Cuti</h3>
       <button type="button" class="close-btn" id="closeModalBtn">✕</button>
@@ -817,7 +801,7 @@
 
       tableRows += `
         <tr>
-          <td style="text-align:left; font-weight:800; color:var(--text);">${tech}</td>
+          <td style="text-align:left; font-weight:700; color:var(--text);">${tech}</td>
           <td><input type="number" step="0.5" min="0" class="bulk-input" data-tech="${tech}" data-type="AL" value="${existingAL}"></td>
           <td><input type="number" step="0.5" min="0" class="bulk-input" data-tech="${tech}" data-type="MC" value="${existingMC}"></td>
           <td><input type="number" step="0.5" min="0" class="bulk-input" data-tech="${tech}" data-type="EL" value="${existingEL}"></td>
@@ -996,27 +980,33 @@
     const days = calculateDays();
 
     if (days <= 0) {
-      alert("❌ Sila semak tarikh mula dan tamat cuti dengan betul.");
+      alert("Sila semak tarikh mula dan tamat cuti anda.");
       return;
     }
 
-    let overlapFound = false;
-    leaveLogs.forEach(l => {
-      if (!l.isPastRecord && l.name !== name) {
-        if (isDateOverlapping(startDate, endDate, l.startDate, l.endDate)) {
-          overlapFound = true;
+    let isOverlap = false;
+    for (let log of leaveLogs) {
+      if (!log.isPastRecord && log.name !== name) {
+        if (isDateOverlapping(startDate, endDate, log.startDate, log.endDate)) {
+          isOverlap = true;
+          break;
         }
       }
-    });
+    }
 
     try {
       await addDoc(collection(db, "leaves"), {
         name, type, startDate, endDate, duration, reason, days,
         timestamp: Date.now(),
-        isOverlap: overlapFound,
+        isOverlap,
         isPastRecord: false
       });
-      alert(overlapFound ? "⚠️ Cuti berjaya dipohon, TETAPI dikesan bertindih dengan cuti staff lain!" : "✅ Permohonan cuti berjaya dihantar!");
+
+      if (isOverlap) {
+        alert("⚠️ Amaran: Cuti anda bertindih dengan cuti staf lain! Sila rujuk penyelia.");
+      } else {
+        alert("✅ Permohonan cuti berjaya dihantar!");
+      }
       document.getElementById('leaveForm').reset();
       calculateDays();
     } catch(err) {
@@ -1033,9 +1023,11 @@
     }
 
     announcementsList.sort((a,b) => b.timestamp - a.timestamp);
-    let html = '';
+    let html = "";
     announcementsList.forEach(item => {
-      let imgTag = item.imageUrl ? `<img src="${item.imageUrl}" class="announcement-img">` : '';
+      let imgTag = item.imageUrl ? `<img src="${item.imageUrl}" class="announcement-img">` : "";
+      let deleteBtnHtml = sessionStorage.getItem("qa_authenticated") === "true" ? `<button type="button" class="btn-action" style="background:var(--red); color:#fff; padding:4px 8px; font-size:10px; margin-top:8px;" onclick="deleteAnnouncement('${item.id}')">🗑️ Padam</button>` : "";
+      
       html += `
         <div class="announcement-box">
           <div class="announcement-header">
@@ -1044,9 +1036,7 @@
           </div>
           <div class="announcement-content">${item.text}</div>
           ${imgTag}
-          <div style="text-align:right; margin-top:8px;">
-            <button class="btn-action" style="background:rgba(239,68,68,0.2); color:var(--red); border:1px solid var(--red); padding:4px 8px; font-size:10px;" onclick="deleteAnnouncement('${item.id}')">Padam</button>
-          </div>
+          ${deleteBtnHtml}
         </div>
       `;
     });
@@ -1054,13 +1044,130 @@
   }
 
   window.deleteAnnouncement = async function(id) {
-    const pin = document.getElementById("supervisorAnnouncePanel").style.display === "block" ? SUPERVISOR_PIN : prompt("🔐 Masukkan PIN Penyelia untuk padam:");
+    const pin = prompt("🔐 Sila masukkan PIN Penyelia untuk memadam pengumuman:");
     if (pin === SUPERVISOR_PIN) {
-      if (confirm("Adakah anda pasti mahu memadam pengumuman ini?")) {
+      try {
         await deleteDoc(doc(db, "announcements", id));
+        alert("✅ Pengumuman berjaya dipadam.");
+      } catch (err) {
+        alert("❌ Ralat: " + err.message);
       }
     } else if (pin !== null) {
-      alert("❌ PIN Salah!");
+      alert("❌ PIN Penyelia Salah!");
+    }
+  };
+
+  function renderLogs() {
+    const container = document.getElementById("leaveCardsContainer");
+    if (!container) return;
+
+    const validLogs = leaveLogs.filter(l => !l.isPastRecord);
+    if (validLogs.length === 0) {
+      container.innerHTML = `<p style="font-size:12px; color:var(--text-muted); text-align:center; padding:15px;">Tiada permohonan cuti dalam rekod.</p>`;
+      return;
+    }
+
+    // Susun tarikh terdekat di atas
+    validLogs.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+
+    const grouped = {};
+    validLogs.forEach(log => {
+      if (!log.startDate) return;
+      const mKey = log.startDate.substring(0, 7); // YYYY-MM
+      if (!grouped[mKey]) grouped[mKey] = [];
+      grouped[mKey].push(log);
+    });
+
+    let finalHtml = "";
+    const sortedMonths = Object.keys(grouped).sort();
+
+    sortedMonths.forEach(mKey => {
+      const parts = mKey.split("-");
+      const year = parts[0];
+      const monthIdx = parseInt(parts[1], 10) - 1;
+      const monthName = monthNames[monthIdx] || mKey;
+
+      finalHtml += `
+        <div class="month-group-container">
+          <div class="month-group-title">📅 ${monthName} ${year}</div>
+          <div class="compact-leave-list">
+      `;
+
+      grouped[mKey].forEach(log => {
+        const overlapClass = log.isOverlap ? "is-overlap" : "";
+        const warningTag = log.isOverlap ? `<span class="warning-badge">⚠️ BERTINDIH</span>` : "";
+        
+        const shiftInfo = getShiftStatusForDate(log.name, log.startDate);
+        let shiftBadgeClass = "shift-badge-free";
+        if(shiftInfo.type === 'siang') shiftBadgeClass = "shift-badge-siang";
+        if(shiftInfo.type === 'malam') shiftBadgeClass = "shift-badge-malam";
+
+        const halfDayTag = (log.duration && log.duration !== "Full") ? `<span class="shift-badge-halfday">${log.duration === "1stHalf" ? "1st Half" : "2nd Half"}</span>` : "";
+
+        // Paparkan hanya 2 nama hadapan sahaja
+        const nameWords = log.name.split(" ");
+        const shortName = nameWords.slice(0, 2).join(" ");
+
+        finalHtml += `
+          <div class="compact-item ${overlapClass}" onclick="openDetailModal('${log.id}')">
+            <div class="compact-name-wrap">
+              <span class="badge badge-${log.type}">${log.type}</span>
+              <span class="compact-name">${shortName}</span>
+              <span class="shift-badge-main ${shiftBadgeClass}">${shiftInfo.label}</span>
+              ${halfDayTag}
+              ${warningTag}
+            </div>
+            <div class="compact-right">
+              <span class="compact-date">${formatDateDDMMYY(log.startDate)}${log.startDate !== log.endDate ? ' - ' + formatDateDDMMYY(log.endDate) : ''}</span>
+            </div>
+          </div>
+        `;
+      });
+
+      finalHtml += `
+          </div>
+        </div>
+      `;
+    });
+
+    container.innerHTML = finalHtml;
+  }
+
+  window.openDetailModal = function(id) {
+    const log = leaveLogs.find(l => l.id === id);
+    if (!log) return;
+
+    const modalBody = document.getElementById("modalBodyContent");
+    document.getElementById("modalHeaderTitle").innerText = "ℹ️ Perincian Permohonan Cuti";
+
+    const shiftInfo = getShiftStatusForDate(log.name, log.startDate);
+
+    modalBody.innerHTML = `
+      <div class="modal-row"><div class="modal-label">Nama Penuh Juruteknik</div><div class="modal-val">${log.name}</div></div>
+      <div class="modal-row"><div class="modal-label">Jenis Cuti</div><div class="modal-val"><span class="badge badge-${log.type}">${log.type}</span></div></div>
+      <div class="modal-row"><div class="modal-label">Tarikh Mula & Tamat</div><div class="modal-val">${formatDateDDMMYY(log.startDate)} hingga ${formatDateDDMMYY(log.endDate)} (${log.days} Hari)</div></div>
+      <div class="modal-row"><div class="modal-label">Tempoh / Sesi</div><div class="modal-val">${log.duration || 'Full'}</div></div>
+      <div class="modal-row"><div class="modal-label">Status Shift Pada Tarikh Tersebut</div><div class="modal-val">${shiftInfo.label}</div></div>
+      <div class="modal-row"><div class="modal-label">Sebab / Catatan</div><div class="modal-val">${log.reason || '-'}</div></div>
+      <div class="modal-row"><div class="modal-label">Status Pertindihan Cuti</div><div class="modal-val">${log.isOverlap ? '<span style="color:var(--orange); font-weight:800;">⚠️ Bertindih dengan cuti staf lain</span>' : '<span style="color:var(--green); font-weight:800;">✅ Tiada pertindihan</span>'}</div></div>
+      
+      <button type="button" class="btn-delete" onclick="deleteLeaveRecord('${log.id}')">🗑️ Padam Rekod Ini (Penyelia)</button>
+    `;
+    document.getElementById("detailModal").classList.add("active");
+  };
+
+  window.deleteLeaveRecord = async function(id) {
+    const pin = prompt("🔐 Sila masukkan PIN Penyelia untuk memadam rekod cuti ini:");
+    if (pin === SUPERVISOR_PIN) {
+      try {
+        await deleteDoc(doc(db, "leaves", id));
+        alert("✅ Rekod cuti berjaya dipadam.");
+        document.getElementById("detailModal").classList.remove("active");
+      } catch (err) {
+        alert("❌ Ralat: " + err.message);
+      }
+    } else if (pin !== null) {
+      alert("❌ PIN Penyelia Salah!");
     }
   };
 
@@ -1068,32 +1175,35 @@
     const container = document.getElementById("mcRankingList");
     if (!container) return;
 
-    let mcMap = {};
-    technicianList.forEach(t => mcMap[t] = 0);
+    const mcCounts = {};
+    technicianList.forEach(t => mcCounts[t] = 0);
 
-    leaveLogs.forEach(l => {
-      if (l.type === 'MC' && mcMap[l.name] !== undefined) {
-        mcMap[l.name] += Number(l.days || 0);
+    leaveLogs.forEach(log => {
+      if (log.type === 'MC' && mcCounts.hasOwnProperty(log.name)) {
+        mcCounts[log.name] += (parseFloat(log.days) || 0);
       }
     });
 
-    let ranked = technicianList.map(t => ({ name: t, days: mcMap[t] })).sort((a,b) => b.days - a.days);
-    let maxDays = Math.max(...ranked.map(r => r.days), 1);
+    const sortedTechs = technicianList.map(name => ({ name, days: mcCounts[name] })).sort((a,b) => b.days - a.days);
+    const maxDays = Math.max(...sortedTechs.map(t => t.days), 5);
 
-    let html = '';
-    ranked.forEach((r, idx) => {
-      let percent = Math.min((r.days / maxDays) * 100, 100);
+    let html = "";
+    sortedTechs.forEach((item, index) => {
+      const percentage = Math.min(100, Math.round((item.days / maxDays) * 100));
+      const nameWords = item.name.split(" ");
+      const shortName = nameWords.slice(0, 2).join(" ");
+
       html += `
         <div class="rank-item">
           <div class="rank-top-row">
             <div class="rank-num-name">
-              <span style="color:var(--accent);">#${idx+1}</span>
-              <span>${r.name}</span>
+              <span style="color:var(--text-muted); font-size:10px;">#${index+1}</span>
+              <span>${shortName}</span>
             </div>
-            <div class="rank-val">${r.days} Hari</div>
+            <div class="rank-val">${item.days} Hari</div>
           </div>
           <div class="rank-bar-bg">
-            <div class="rank-bar-fill" style="width: ${percent}%;"></div>
+            <div class="rank-bar-fill" style="width: ${percentage}%"></div>
           </div>
         </div>
       `;
@@ -1101,19 +1211,20 @@
     container.innerHTML = html;
   }
 
-  document.getElementById("statFilterTech").addEventListener("change", updateStats);
-
   function updateStats() {
-    const filterTech = document.getElementById("statFilterTech").value;
+    const techFilterSelect = document.getElementById("statFilterTech");
+    if (!techFilterSelect) return;
+    const selectedTech = techFilterSelect.value;
+
     let totalAL = 0, totalMC = 0, totalEL = 0, totalPL = 0;
 
-    leaveLogs.forEach(l => {
-      if (filterTech === "ALL" || l.name === filterTech) {
-        let d = Number(l.days || 0);
-        if (l.type === 'AL') totalAL += d;
-        if (l.type === 'MC') totalMC += d;
-        if (l.type === 'EL') totalEL += d;
-        if (l.type === 'PL') totalPL += d;
+    leaveLogs.forEach(log => {
+      if (selectedTech === "ALL" || log.name === selectedTech) {
+        const d = parseFloat(log.days) || 0;
+        if (log.type === 'AL') totalAL += d;
+        if (log.type === 'MC') totalMC += d;
+        if (log.type === 'EL') totalEL += d;
+        if (log.type === 'PL') totalPL += d;
       }
     });
 
@@ -1123,108 +1234,12 @@
     document.getElementById("countPL").innerText = `${totalPL} Hari`;
   }
 
-  function renderLogs() {
-    const container = document.getElementById("leaveCardsContainer");
-    if (!container) return;
-
-    let activeLeaves = leaveLogs.filter(l => !l.isPastRecord);
-    if (activeLeaves.length === 0) {
-      container.innerHTML = `<p style="font-size:12px; color:var(--text-muted); text-align:center; padding:10px;">Tiada permohonan cuti aktif.</p>`;
-      return;
-    }
-
-    let grouped = {};
-    activeLeaves.forEach(l => {
-      let mKey = l.startDate ? l.startDate.substring(0, 7) : "2026-01";
-      if (!grouped[mKey]) grouped[mKey] = [];
-      grouped[mKey].push(l);
-    });
-
-    let sortedMonths = Object.keys(grouped).sort();
-    let html = '';
-
-    sortedMonths.forEach(mKey => {
-      let parts = mKey.split("-");
-      let mName = monthNames[parseInt(parts[1], 10) - 1] || parts[1];
-      let year = parts[0];
-
-      html += `
-        <div class="month-group-container">
-          <div class="month-group-title">📅 ${mName} ${year}</div>
-          <div class="compact-leave-list">
-      `;
-
-      grouped[mKey].forEach(l => {
-        let shiftInfo = getShiftStatusForDate(l.name, l.startDate);
-        let shiftBadgeClass = `shift-badge-${shiftInfo.type}`;
-        let overlapClass = l.isOverlap ? "is-overlap" : "";
-        let warningBadge = l.isOverlap ? `<span class="warning-badge">⚠️ Bertindih</span>` : "";
-        let halfDayBadge = (l.duration && l.duration !== 'Full') ? `<span class="shift-badge-halfday">${l.duration}</span>` : "";
-
-        html += `
-          <div class="compact-item ${overlapClass}" onclick="openDetailModal('${l.id}')">
-            <div class="compact-name-wrap">
-              <span class="badge badge-${l.type}">${l.type}</span>
-              <span class="compact-name">${l.name}</span>
-              <span class="shift-badge-main ${shiftBadgeClass}">${shiftInfo.label}</span>
-              ${halfDayBadge}
-              ${warningBadge}
-            </div>
-            <div class="compact-right">
-              <span class="compact-date">${formatDateDDMMYY(l.startDate)} ${l.startDate !== l.endDate ? 's/d ' + formatDateDDMMYY(l.endDate) : ''}</span>
-            </div>
-          </div>
-        `;
-      });
-
-      html += `</div></div>`;
-    });
-
-    container.innerHTML = html;
-  }
-
-  window.openDetailModal = function(id) {
-    let l = leaveLogs.find(item => item.id === id);
-    if (!l) return;
-
-    let shiftInfo = getShiftStatusForDate(l.name, l.startDate);
-    const modalBody = document.getElementById("modalBodyContent");
-    document.getElementById("modalHeaderTitle").innerText = `ℹ️ Maklumat Cuti - ${l.name}`;
-
-    modalBody.innerHTML = `
-      <div class="modal-row"><div class="modal-label">Nama Juruteknik</div><div class="modal-val">${l.name}</div></div>
-      <div class="modal-row"><div class="modal-label">Jenis Cuti & Tempoh</div><div class="modal-val"><span class="badge badge-${l.type}">${l.type}</span> (${l.days} Hari - ${l.duration || 'Full'})</div></div>
-      <div class="modal-row"><div class="modal-label">Tarikh</div><div class="modal-val">${formatDateDDMMYY(l.startDate)} hingga ${formatDateDDMMYY(l.endDate)}</div></div>
-      <div class="modal-row"><div class="modal-label">Status Shift Pada Tarikh Mula</div><div class="modal-val">${shiftInfo.label}</div></div>
-      <div class="modal-row"><div class="modal-label">Sebab / Catatan</div><div class="modal-val">${l.reason || '-'}</div></div>
-      <div class="modal-row"><div class="modal-label">Status Pertindihan Cuti</div><div class="modal-val">${l.isOverlap ? '<span style="color:var(--orange);">⚠️ Bertindih dengan staff lain</span>' : '<span style="color:var(--green);">✅ Tiada Pertindihan</span>'}</div></div>
-      
-      <button type="button" class="btn-delete" onclick="deleteLeaveItem('${l.id}')">🗑️ Padam / Batalkan Cuti Ini</button>
-    `;
-    document.getElementById("detailModal").classList.add("active");
-  };
-
-  window.deleteLeaveItem = async function(id) {
-    const pin = prompt("🔐 Sila masukkan PIN Penyelia untuk memadam rekod cuti ini:");
-    if (pin === SUPERVISOR_PIN) {
-      if (confirm("Adakah anda pasti mahu memadam cuti ini?")) {
-        try {
-          await deleteDoc(doc(db, "leaves", id));
-          document.getElementById("detailModal").classList.remove("active");
-          alert("✅ Rekod cuti berjaya dipadam.");
-        } catch(err) {
-          alert("❌ Ralat: " + err.message);
-        }
-      }
-    } else if (pin !== null) {
-      alert("❌ PIN Penyelia Salah!");
-    }
-  };
+  document.getElementById("statFilterTech").addEventListener("change", updateStats);
 
   function renderInteractiveCalendar() {
-    const container = document.getElementById("calGridDaysContainer");
     const titleEl = document.getElementById("calMonthYearTitle");
-    if (!container || !titleEl) return;
+    const container = document.getElementById("calGridDaysContainer");
+    if (!titleEl || !container) return;
 
     titleEl.innerText = `${monthNames[currentCalMonth]} ${currentCalYear}`;
 
@@ -1232,67 +1247,46 @@
     const totalDaysInMonth = new Date(currentCalYear, currentCalMonth + 1, 0).getDate();
     const prevMonthDays = new Date(currentCalYear, currentCalMonth, 0).getDate();
 
-    let html = '';
+    let daysHtml = "";
 
+    // Hari bulan sebelumnya
     for (let i = firstDayIndex; i > 0; i--) {
-      let dayNum = prevMonthDays - i + 1;
-      html += `<div class="cal-day-cell other-month"><div class="cal-day-num">${dayNum}</div></div>`;
+      const dayNum = prevMonthDays - i + 1;
+      daysHtml += `<div class="cal-day-cell other-month"><div class="cal-day-num">${dayNum}</div></div>`;
     }
 
+    // Hari bulan semasa
     for (let d = 1; d <= totalDaysInMonth; d++) {
-      let mStr = (currentCalMonth + 1).toString().padStart(2, '0');
-      let dStr = d.toString().padStart(2, '0');
-      let dateKey = `${currentCalYear}-${mStr}-${dStr}`;
+      const mStr = (currentCalMonth + 1).toString().padStart(2, '0');
+      const dStr = d.toString().padStart(2, '0');
+      const dateKey = `${currentCalYear}-${mStr}-${dStr}`;
 
-      let shiftStatus = getShiftStatusForDate(technicianList[0], dateKey);
-      let cellClass = `shift-${shiftStatus.type}`;
+      const shiftInfo = getShiftStatusForDate(technicianList[0], dateKey);
+      let shiftClass = "shift-free";
+      if (shiftInfo.type === 'siang') shiftClass = "shift-siang";
+      if (shiftInfo.type === 'malam') shiftClass = "shift-malam";
 
       let holidayName = publicHolidaysKedah2026[dateKey];
-      let holidayIndicator = holidayName ? `<div style="width:6px; height:6px; background:var(--pink); border-radius:50%; margin:2px auto;" title="${holidayName}"></div>` : '';
+      let indicatorHtml = "";
+      if (holidayName) {
+        indicatorHtml = `<div style="width:6px; height:6px; background:var(--pink); border-radius:50%; box-shadow:0 0 6px var(--pink);" title="${holidayName}"></div>`;
+      } else {
+        const hasLeave = leaveLogs.some(l => !l.isPastRecord && l.startDate <= dateKey && l.endDate >= dateKey);
+        if (hasLeave) {
+          indicatorHtml = `<div style="width:6px; height:6px; background:var(--accent); border-radius:50%; box-shadow:0 0 6px var(--accent);" title="Cuti Staf"></div>`;
+        }
+      }
 
-      let dayLeaves = leaveLogs.filter(l => !l.isPastRecord && l.startDate <= dateKey && l.endDate >= dateKey);
-      let leaveIndicator = dayLeaves.length > 0 ? `<div style="font-size:9px; background:rgba(56,189,248,0.2); color:var(--accent); border-radius:4px; padding:1px 3px; font-weight:800; margin-top:2px;">${dayLeaves.length} Cuti</div>` : '';
-
-      html += `
-        <div class="cal-day-cell ${cellClass}" onclick="openCalendarDayModal('${dateKey}')">
+      daysHtml += `
+        <div class="cal-day-cell ${shiftClass}" onclick="openCalendarDayModal('${dateKey}')">
           <div class="cal-day-num">${d}</div>
-          <div>
-            ${holidayIndicator}
-            ${leaveIndicator}
-          </div>
+          <div style="display:flex; gap:3px; align-items:center;">${indicatorHtml}</div>
         </div>
       `;
     }
 
-    let remainingCells = (7 - ((firstDayIndex + totalDaysInMonth) % 7)) % 7;
-    for (let i = 1; i <= remainingCells; i++) {
-      html += `<div class="cal-day-cell other-month"><div class="cal-day-num">${i}</div></div>`;
-    }
-
-    container.innerHTML = html;
+    container.innerHTML = daysHtml;
   }
-
-  window.openCalendarDayModal = function(dateKey) {
-    const modalBody = document.getElementById("modalBodyContent");
-    document.getElementById("modalHeaderTitle").innerText = `📅 Tarikh: ${formatDateDDMMYY(dateKey)}`;
-
-    let holiday = publicHolidaysKedah2026[dateKey] || "Tiada Cuti Am";
-    let dayLeaves = leaveLogs.filter(l => !l.isPastRecord && l.startDate <= dateKey && l.endDate >= dateKey);
-
-    let leavesHtml = dayLeaves.length > 0 ? dayLeaves.map(l => `<div style="margin-top:6px; font-size:12px; background:rgba(5,8,15,0.6); padding:8px; border-radius:8px; border:1px solid var(--border);"><b>${l.name}</b> - <span class="badge badge-${l.type}">${l.type}</span> (${l.reason || '-'})</div>`).join('') : '<p style="font-size:12px; color:var(--text-muted);">Tiada cuti staff pada tarikh ini.</p>';
-
-    let shiftsHtml = technicianList.map(tech => {
-      let st = getShiftStatusForDate(tech, dateKey);
-      return `<div style="font-size:11px; display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.03);"><span>${tech}</span><span class="shift-badge-main shift-badge-${st.type}">${st.label}</span></div>`;
-    }).join('');
-
-    modalBody.innerHTML = `
-      <div class="modal-row"><div class="modal-label">Cuti Am / Perayaan (Kedah)</div><div class="modal-val" style="color:var(--pink);">${holiday}</div></div>
-      <div class="modal-row"><div class="modal-label">Senarai Staff Cuti</div>${leavesHtml}</div>
-      <div class="modal-row" style="margin-top:14px;"><div class="modal-label">Status Shift Semua Juruteknik</div><div style="max-height:150px; overflow-y:auto; margin-top:6px;">${shiftsHtml}</div></div>
-    `;
-    document.getElementById("detailModal").classList.add("active");
-  };
 
   document.getElementById("prevMonthBtn").addEventListener("click", () => {
     currentCalMonth--;
@@ -1305,6 +1299,43 @@
     if (currentCalMonth > 11) { currentCalMonth = 0; currentCalYear++; }
     renderInteractiveCalendar();
   });
+
+  window.openCalendarDayModal = function(dateStr) {
+    const modalBody = document.getElementById("modalBodyContent");
+    document.getElementById("modalHeaderTitle").innerText = `📅 Maklumat Tarikh: ${formatDateDDMMYY(dateStr)}`;
+
+    const holiday = publicHolidaysKedah2026[dateStr];
+    let holidayInfo = holiday ? `<p style="color:var(--pink); font-weight:800;">🎉 Cuti Am: ${holiday}</p>` : `<p style="color:var(--text-muted);">Tiada Cuti Am.</p>`;
+
+    let techShiftsHtml = "";
+    technicianList.forEach(tech => {
+      const shift = getShiftStatusForDate(tech, dateStr);
+      const nameWords = tech.split(" ");
+      const shortName = nameWords.slice(0, 2).join(" ");
+      techShiftsHtml += `<div style="display:flex; justify-content:space-between; font-size:12px; padding:4px 0; border-bottom:1px solid var(--border);"><span>${shortName}</span><span style="font-weight:700; color:var(--accent);">${shift.label}</span></div>`;
+    });
+
+    let dayLeaves = leaveLogs.filter(l => !l.isPastRecord && l.startDate <= dateStr && l.endDate >= dateStr);
+    let leavesHtml = "";
+    if (dayLeaves.length > 0) {
+      dayLeaves.forEach(l => {
+        const nameWords = l.name.split(" ");
+        const shortName = nameWords.slice(0, 2).join(" ");
+        leavesHtml += `<div style="font-size:12px; color:var(--pink); margin-top:4px;">• ${shortName} (${l.type} - ${l.reason})</div>`;
+      });
+    } else {
+      leavesHtml = `<div style="font-size:12px; color:var(--text-muted); margin-top:4px;">Tiada staf cuti pada hari ini.</div>`;
+    }
+
+    modalBody.innerHTML = `
+      <div class="modal-row">${holidayInfo}</div>
+      <div class="modal-row"><div class="modal-label">Status Cuti Staf</div>${leavesHtml}</div>
+      <div class="modal-row" style="margin-top:12px;"><div class="modal-label">Status Shift Semua Staf</div><div style="max-height:160px; overflow-y:auto; background:#05080f; padding:8px; border-radius:8px; border:1px solid var(--border);">${techShiftsHtml}</div></div>
+    `;
+    document.getElementById("detailModal").classList.add("active");
+  };
+
+  calculateDays();
 </script>
 </body>
 </html>
