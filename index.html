@@ -634,13 +634,7 @@
             <label>Pilih Nama Juruteknik:</label>
             <select id="techName" required>
               <option value="" disabled selected>-- Pilih Nama Anda --</option>
-              <option value="Muhammad Adib Bin Noordin">Muhammad Adib Bin Noordin (#00071)</option>
-              <option value="Abu Hanifah Bin Muhamdhazir">Abu Hanifah Bin Muhamdhazir (#00072)</option>
-              <option value="Muhamad Fadli Bin Zolkifli">Muhamad Fadli Bin Zolkifli (#00165)</option>
-              <option value="Mohd Syazwan Bin Abdul Rahim">Mohd Syazwan Bin Abdul Rahim (#00287)</option>
-              <option value="Muhammad Daniel Bin Zul Karnain">Muhammad Daniel Bin Zul Karnain (#00513)</option>
-              <option value="Muhammad Aniff Izzat Akmal Bin Abu Hassan">Muhammad Aniff Izzat Akmal Bin Abu Hassan (#00981)</option>
-              <option value="Muhamad Fakhrul Imran Bin Mohamad Khairi">Muhamad Fakhrul Imran Bin Mohamad Khairi (#01086)</option>
+              <!-- Senarai juruteknik dijana secara automatik dari technicianRoster (JS) -->
             </select>
           </div>
 
@@ -699,13 +693,7 @@
             <span> Ringkasan Baki Cuti</span>
             <select id="statFilterTech" style="width: 170px; font-size: 11px; padding: 6px 10px; background:#030712; color:var(--accent); border:1px solid var(--border); border-radius:8px; display:inline-block; font-weight:800;">
               <option value="ALL">-- Semua Staf --</option>
-              <option value="Muhammad Adib Bin Noordin">Muhammad Adib Bin Noordin</option>
-              <option value="Abu Hanifah Bin Muhamdhazir">Abu Hanifah Bin Muhamdhazir</option>
-              <option value="Muhamad Fadli Bin Zolkifli">Muhamad Fadli Bin Zolkifli</option>
-              <option value="Mohd Syazwan Bin Abdul Rahim">Mohd Syazwan Bin Abdul Rahim</option>
-              <option value="Muhammad Daniel Bin Zul Karnain">Muhammad Daniel Bin Zul Karnain</option>
-              <option value="Muhammad Aniff Izzat Akmal Bin Abu Hassan">Muhammad Aniff Izzat Akmal Bin Abu Hassan</option>
-              <option value="Muhamad Fakhrul Imran Bin Mohamad Khairi">Muhamad Fakhrul Imran Bin Mohamad Khairi</option>
+              <!-- Senarai juruteknik dijana secara automatik dari technicianRoster (JS) -->
             </select>
           </h2>
           <div class="stat-boxes">
@@ -770,8 +758,17 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
   import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+  import { getStorage, ref, uploadString, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-storage.js";
+  import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
 
   const firebaseConfig = {
+    // ⚠️ PENTING: Konfigurasi Firebase di client memang lumrah (bukan rahsia),
+    // TAPI keselamatan sebenar data bergantung pada Firestore & Storage
+    // Security Rules yang ditetapkan di Firebase Console — bukan kod ini.
+    // Sila tampal kandungan firestore.rules & storage.rules (disertakan
+    // berasingan) ke: Firebase Console → Firestore Database → Rules, dan
+    // Firebase Console → Storage → Rules. Rules tersebut memerlukan
+    // Anonymous Authentication diaktifkan di: Authentication → Sign-in method.
     apiKey: "AIzaSyCjefti7PCPCQncKEdve5GZUecWDNnH3l8",
     authDomain: "qa-attendance-e9de0.firebaseapp.com",
     projectId: "qa-attendance-e9de0",
@@ -782,6 +779,23 @@
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
+  const storage = getStorage(app);
+  const auth = getAuth(app);
+
+  // Firestore Security Rules (lihat firestore.rules) memerlukan request.auth != null
+  // untuk sebarang baca/tulis. App ini guna Firebase Anonymous Auth semata-mata
+  // sebagai "tiket" supaya bot/scraper luar tidak boleh terus curi/rosak data
+  // secara terus melalui REST API tanpa melalui app langsung.
+  let authReady = false;
+  const authReadyPromise = new Promise((resolve) => {
+    onAuthStateChanged(auth, (user) => {
+      if (user) { authReady = true; resolve(); }
+    });
+  });
+  signInAnonymously(auth).catch((err) => {
+    console.error("Ralat auth anonymous:", err);
+  });
+
 
   const SECRET_PASSWORD = "QA2026";
   const LEADER_PASSWORD = "9988"; // Kata laluan Mod Leader (dimasukkan sekali sahaja semasa log masuk)
@@ -844,15 +858,43 @@
   // Gabungan semua tahun - digunakan di seluruh sistem (kalendar, carry-forward, dsb.)
   const publicHolidaysKedah = { ...publicHolidaysKedah2026, ...publicHolidaysKedah2027 };
 
-  const technicianList = [
-    "Muhammad Adib Bin Noordin",
-    "Abu Hanifah Bin Muhamdhazir",
-    "Muhamad Fadli Bin Zolkifli",
-    "Mohd Syazwan Bin Abdul Rahim",
-    "Muhammad Daniel Bin Zul Karnain",
-    "Muhammad Aniff Izzat Akmal Bin Abu Hassan",
-    "Muhamad Fakhrul Imran Bin Mohamad Khairi"
+  // ============================================================
+  // SUMBER TUNGGAL SENARAI JURUTEKNIK (Single Source of Truth)
+  // ============================================================
+  // Tambah / keluar / tukar nama staff HANYA di sini. Kedua-dua dropdown
+  // (Borang Permohonan Cuti & Penapis Ringkasan Baki Cuti) dijana secara
+  // automatik dari senarai ini semasa app dimuatkan.
+  const technicianRoster = [
+    { name: "Muhammad Adib Bin Noordin", id: "00071" },
+    { name: "Abu Hanifah Bin Muhamdhazir", id: "00072" },
+    { name: "Muhamad Fadli Bin Zolkifli", id: "00165" },
+    { name: "Mohd Syazwan Bin Abdul Rahim", id: "00287" },
+    { name: "Muhammad Daniel Bin Zul Karnain", id: "00513" },
+    { name: "Muhammad Aniff Izzat Akmal Bin Abu Hassan", id: "00981" },
+    { name: "Muhamad Fakhrul Imran Bin Mohamad Khairi", id: "01086" }
   ];
+  // Dikekalkan sebagai array nama sahaja supaya semua kod sedia ada
+  // (yang rujuk technicianList) tetap berfungsi tanpa perlu ubah suai lagi.
+  const technicianList = technicianRoster.map(t => t.name);
+
+  function populateTechnicianDropdowns() {
+    const techSelect = document.getElementById("techName");
+    technicianRoster.forEach(t => {
+      const opt = document.createElement("option");
+      opt.value = t.name;
+      opt.textContent = `${t.name} (#${t.id})`;
+      techSelect.appendChild(opt);
+    });
+
+    const filterSelect = document.getElementById("statFilterTech");
+    technicianRoster.forEach(t => {
+      const opt = document.createElement("option");
+      opt.value = t.name;
+      opt.textContent = t.name;
+      filterSelect.appendChild(opt);
+    });
+  }
+  populateTechnicianDropdowns();
 
   const monthNames = ["Januari", "Februari", "Mac", "April", "Mei", "Jun", "Julai", "Ogos", "September", "Oktober", "November", "Disember"];
 
@@ -1018,6 +1060,42 @@
   // Log masuk Leader: kata laluan leader dimasukkan SEKALI sahaja semasa log
   // masuk; selepas itu semua feature edit (pengumuman, bulk edit, padam rekod)
   // terus tersedia tanpa PIN berulang.
+  //
+  // SESI TAMAT TEMPOH (expiry/rotation):
+  // - Had mutlak sesi: 12 jam dari masa log masuk (meliputi 1 syif penuh + rehat).
+  // - Had idle Leader: 15 minit tanpa aktiviti → auto log keluar dari Mod Leader
+  //   (kembali ke skrin log masuk) supaya sesi berkuasa tinggi tidak dibiar terbuka
+  //   di skrin awam / peranti dikongsi.
+  const SESSION_MAX_AGE_MS = 12 * 60 * 60 * 1000; // 12 jam
+  const LEADER_IDLE_TIMEOUT_MS = 15 * 60 * 1000;  // 15 minit
+  let leaderIdleTimer = null;
+
+  function clearSession(reason) {
+    sessionStorage.removeItem("qa_authenticated");
+    sessionStorage.removeItem("qa_role");
+    sessionStorage.removeItem("qa_login_time");
+    currentRole = null;
+    if (leaderIdleTimer) { clearTimeout(leaderIdleTimer); leaderIdleTimer = null; }
+    document.getElementById("loginOverlay").style.display = "flex";
+    document.getElementById("roleBadge").classList.remove('active');
+    document.querySelectorAll('.leader-only').forEach(el => { el.style.display = 'none'; });
+    const errorEl = document.getElementById("loginError");
+    if (reason && errorEl) {
+      errorEl.innerText = reason;
+      errorEl.style.display = "block";
+    }
+  }
+
+  function resetLeaderIdleTimer() {
+    if (currentRole !== 'leader') return;
+    if (leaderIdleTimer) clearTimeout(leaderIdleTimer);
+    leaderIdleTimer = setTimeout(() => {
+      clearSession("⏳ Sesi Leader tamat kerana tiada aktiviti (15 minit). Sila log masuk semula.");
+    }, LEADER_IDLE_TIMEOUT_MS);
+  }
+  ["mousemove", "keydown", "click", "touchstart", "scroll"].forEach(evt => {
+    document.addEventListener(evt, resetLeaderIdleTimer, { passive: true });
+  });
 
   function applyRoleUI() {
     const badge = document.getElementById("roleBadge");
@@ -1029,11 +1107,13 @@
       badge.classList.add('active');
       badge.classList.remove('role-tech');
       badgeText.innerText = '🔐 Mod Leader Aktif';
+      resetLeaderIdleTimer();
     } else {
       leaderEls.forEach(el => { el.style.display = 'none'; });
       badge.classList.add('active');
       badge.classList.add('role-tech');
       badgeText.innerText = '👷 Juruteknik';
+      if (leaderIdleTimer) { clearTimeout(leaderIdleTimer); leaderIdleTimer = null; }
     }
     // render semula supaya butang padam dalam modal ikut peranan terkini
     renderAll();
@@ -1051,11 +1131,13 @@
       currentRole = role;
       sessionStorage.setItem("qa_authenticated", "true");
       sessionStorage.setItem("qa_role", role);
+      sessionStorage.setItem("qa_login_time", String(Date.now()));
+      inputEl.value = "";
       if (errorEl) errorEl.style.display = "none";
       if (overlayEl) overlayEl.style.display = "none";
       applyRoleUI();
     } else {
-      if (errorEl) errorEl.style.display = "block";
+      if (errorEl) { errorEl.innerText = "❌ Kata Laluan Salah! Sila cuba lagi."; errorEl.style.display = "block"; }
     }
   }
   window.loginAs = loginAs;
@@ -1066,20 +1148,31 @@
     if (e.key === "Enter") { e.preventDefault(); loginAs('technician'); }
   });
 
-  document.getElementById("logoutLink").addEventListener("click", () => {
-    sessionStorage.removeItem("qa_authenticated");
-    sessionStorage.removeItem("qa_role");
-    currentRole = null;
-    document.getElementById("loginOverlay").style.display = "flex";
-    document.getElementById("roleBadge").classList.remove('active');
-    document.querySelectorAll('.leader-only').forEach(el => { el.style.display = 'none'; });
-  });
+  document.getElementById("logoutLink").addEventListener("click", () => clearSession());
 
-  if (sessionStorage.getItem("qa_authenticated") === "true") {
-    currentRole = sessionStorage.getItem("qa_role") === 'leader' ? 'leader' : 'technician';
-    document.getElementById("loginOverlay").style.display = "none";
-    applyRoleUI();
-  }
+  (function restoreSession() {
+    const isAuthed = sessionStorage.getItem("qa_authenticated") === "true";
+    const loginTime = parseInt(sessionStorage.getItem("qa_login_time") || "0", 10);
+    const age = Date.now() - loginTime;
+
+    if (isAuthed && loginTime && age < SESSION_MAX_AGE_MS) {
+      currentRole = sessionStorage.getItem("qa_role") === 'leader' ? 'leader' : 'technician';
+      document.getElementById("loginOverlay").style.display = "none";
+      applyRoleUI();
+    } else if (isAuthed) {
+      // Sesi lama wujud tapi sudah lapuk (> 12 jam) - paksa log masuk semula
+      clearSession("⏳ Sesi anda telah tamat tempoh. Sila log masuk semula.");
+    }
+  })();
+
+  // Semak setiap minit sekiranya had 12 jam mutlak sudah dicapai semasa app dibuka
+  setInterval(() => {
+    if (!currentRole) return;
+    const loginTime = parseInt(sessionStorage.getItem("qa_login_time") || "0", 10);
+    if (loginTime && (Date.now() - loginTime) >= SESSION_MAX_AGE_MS) {
+      clearSession("⏳ Sesi anda telah tamat tempoh (12 jam). Sila log masuk semula.");
+    }
+  }, 60 * 1000);
 
   document.getElementById("closeModalBtn").addEventListener("click", () => {
     document.getElementById("detailModal").classList.remove("active");
@@ -1209,6 +1302,29 @@
     return `${y}-${m}-${day}`;
   }
 
+  // Muat naik gambar pengumuman (yang sudah dimampatkan sebagai data URL) ke
+  // Firebase Storage, bukan terus simpan base64 dalam dokumen Firestore.
+  // Firestore document had ialah 1MB - gambar base64 boleh cepat capai had itu
+  // dan buat pembacaan/carian data jadi perlahan. Storage jauh lebih sesuai
+  // untuk fail media & ada had percuma yang lebih besar (5GB storan, 1GB/hari turun).
+  async function uploadAnnouncementImage(dataUrl) {
+    const path = `announcements/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.jpg`;
+    const storageRef = ref(storage, path);
+    await uploadString(storageRef, dataUrl, "data_url");
+    const url = await getDownloadURL(storageRef);
+    return { url, path };
+  }
+
+  async function deleteAnnouncementImage(path) {
+    if (!path) return;
+    try {
+      await deleteObject(ref(storage, path));
+    } catch (err) {
+      // Fail mungkin sudah dipadam / tak wujud - selamat untuk diabaikan
+      console.warn("Gagal padam fail storage (mungkin sudah tiada):", err.message);
+    }
+  }
+
   function formatDateHuman(dateStr) {
     if (!dateStr) return "-";
     const d = new Date(dateStr + "T00:00:00");
@@ -1251,6 +1367,27 @@
     return overlapNames.size;
   }
 
+  // Semak jika JURUTEKNIK YANG SAMA sudah ada rekod cuti (bukan past-record) yang
+  // bertindih dengan tempoh baharu ini. Ini menghalang satu orang ada 2 permohonan
+  // cuti berlainan pada tarikh yang sama (data konflik/duplicate).
+  function findSelfOverlap(name, startDate, endDate, excludeId = null) {
+    const s = new Date(startDate + "T00:00:00");
+    const e = new Date(endDate + "T00:00:00");
+    const clashes = [];
+
+    for (let log of leaveLogs) {
+      if (log.isPastRecord) continue;
+      if (excludeId && log.id === excludeId) continue;
+      if (log.name !== name) continue;
+
+      const ls = new Date(log.startDate + "T00:00:00");
+      const le = new Date(log.endDate + "T00:00:00");
+      const hasDateOverlap = ls <= e && le >= s;
+      if (hasDateOverlap) clashes.push(log);
+    }
+    return clashes;
+  }
+
   // ============================================================
   // BORANG PERMOHONAN CUTI
   // ============================================================
@@ -1286,6 +1423,14 @@
     }
 
     const days = calcLeaveDays(startDate, endDate, durationOption);
+
+    const selfClashes = findSelfOverlap(name, startDate, endDate);
+    if (selfClashes.length) {
+      const clashList = selfClashes.map(l => `• ${formatDateHuman(l.startDate)} — ${formatDateHuman(l.endDate)} (${l.type})`).join('\n');
+      alert(`❌ Anda sudah mempunyai rekod cuti pada tempoh ini. Permohonan tidak boleh dihantar.\n\nRekod sedia ada:\n${clashList}`);
+      return;
+    }
+
     const overlapCount = findOverlapCount(name, startDate, endDate);
     const isOverlap = overlapCount > 0;
 
@@ -1328,17 +1473,23 @@
     const fileEl = document.getElementById("announcementImgFile");
     const submitBtn = e.target.querySelector('button[type="submit"]');
     submitBtn.disabled = true;
-    submitBtn.innerText = "⏳ Menyiarkan...";
 
     try {
-      let imageBase64 = null;
+      let imageUrl = null;
+      let imagePath = null;
       if (fileEl.files && fileEl.files[0]) {
-        imageBase64 = await compressImageToBase64(fileEl.files[0]);
+        submitBtn.innerText = "⏳ Memuat naik gambar...";
+        const compressedDataUrl = await compressImageToBase64(fileEl.files[0]);
+        const uploaded = await uploadAnnouncementImage(compressedDataUrl);
+        imageUrl = uploaded.url;
+        imagePath = uploaded.path;
       }
+      submitBtn.innerText = "⏳ Menyiarkan...";
       await addDoc(collection(db, "announcements"), {
         text: textEl.value.trim(),
         author: "Leader",
-        image: imageBase64,
+        image: imageUrl,       // URL Firebase Storage sahaja (bukan base64)
+        imagePath: imagePath,  // path storan - diperlukan untuk padam fail nanti
         timestamp: Date.now()
       });
       e.target.reset();
@@ -1356,7 +1507,11 @@
     if (currentRole !== 'leader') return;
     if (!confirm("Padam pengumuman ini?")) return;
     try {
+      const ann = announcementsList.find(a => a.id === id);
       await deleteDoc(doc(db, "announcements", id));
+      if (ann && ann.imagePath) {
+        await deleteAnnouncementImage(ann.imagePath);
+      }
     } catch (err) {
       alert("❌ Ralat: " + err.message);
     }
@@ -1622,17 +1777,21 @@
     }
   }
 
-  onSnapshot(collection(db, "leaves"), (snapshot) => {
-    leaveLogs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderAll();
-  }, (err) => console.error("Ralat memuatkan data cuti:", err));
+  // Tunggu Firebase Anonymous Auth siap dahulu (selaras dengan Firestore Rules
+  // yang memerlukan request.auth != null) sebelum melanggan data secara real-time.
+  authReadyPromise.then(() => {
+    onSnapshot(collection(db, "leaves"), (snapshot) => {
+      leaveLogs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderAll();
+    }, (err) => console.error("Ralat memuatkan data cuti:", err));
 
-  onSnapshot(collection(db, "announcements"), (snapshot) => {
-    announcementsList = snapshot.docs
-      .map(d => ({ id: d.id, ...d.data() }))
-      .sort((a, b) => b.timestamp - a.timestamp);
-    renderAnnouncements();
-  }, (err) => console.error("Ralat memuatkan pengumuman:", err));
+    onSnapshot(collection(db, "announcements"), (snapshot) => {
+      announcementsList = snapshot.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .sort((a, b) => b.timestamp - a.timestamp);
+      renderAnnouncements();
+    }, (err) => console.error("Ralat memuatkan pengumuman:", err));
+  });
 
   // Paparan awal kalendar pada bulan/tahun semasa
   (function initCalendarToToday() {
