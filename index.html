@@ -107,7 +107,50 @@
     }
     .login-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
 
+    .login-btn-leader {
+      width: 100%;
+      background: transparent;
+      color: var(--purple);
+      border: 1px dashed rgba(168, 85, 247, 0.5);
+      padding: 12px;
+      border-radius: 12px;
+      font-weight: 800;
+      font-size: 13px;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: all 0.2s;
+    }
+    .login-btn-leader:hover { background: rgba(168, 85, 247, 0.1); }
+
+    .login-divider { display:flex; align-items:center; gap:10px; margin: 16px 0 4px; color: var(--text-muted); font-size: 11px; font-weight:700; text-transform:uppercase; }
+    .login-divider::before, .login-divider::after { content:""; flex:1; height:1px; background: var(--border); }
+
     .login-error { color: var(--red); font-size: 12px; margin-top: 14px; display: none; font-weight: 700; }
+
+    .leader-only { display: none; }
+
+    .role-badge {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      z-index: 500;
+      background: rgba(168, 85, 247, 0.15);
+      border: 1px solid rgba(168, 85, 247, 0.4);
+      color: var(--purple);
+      font-size: 11px;
+      font-weight: 800;
+      padding: 7px 12px;
+      border-radius: 20px;
+      display: none;
+      align-items: center;
+      gap: 8px;
+      backdrop-filter: blur(8px);
+    }
+    .role-badge.active { display: inline-flex; }
+    .role-badge .logout-link { color: var(--text-muted); cursor: pointer; text-decoration: underline; font-weight: 700; }
+    .role-badge.role-tech { background: rgba(56, 189, 248, 0.1); border-color: rgba(56, 189, 248, 0.35); color: var(--accent); }
+
+    .shift-badge-ot { background: rgba(249, 115, 22, 0.15); color: var(--orange); border: 1px solid rgba(249, 115, 22, 0.35); }
 
     .container { max-width: 1100px; margin: 0 auto; padding-bottom: 50px; }
     
@@ -344,6 +387,7 @@
     .cal-day-cell.shift-siang { border-bottom: 3px solid var(--shift-siang); background: rgba(245, 158, 11, 0.06); }
     .cal-day-cell.shift-malam { border-bottom: 3px solid var(--shift-malam); background: rgba(20, 184, 166, 0.06); }
     .cal-day-cell.shift-free { border-bottom: 3px solid var(--shift-free); background: rgba(100, 116, 139, 0.08); }
+    .cal-day-cell.has-carry-ot { box-shadow: inset 0 0 0 2px var(--orange); }
 
     .cal-legend { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; font-size: 11px; justify-content: center; border-top: 1px solid var(--border); padding-top: 14px; color: var(--text-muted); font-weight: 700; }
     .legend-item { display: flex; align-items: center; gap: 6px; }
@@ -519,9 +563,16 @@
     <h2> Akses Terhad 🔐 </h2>
     <p>Sila masukkan Kata Laluan Portal QA (Shift C) untuk meneruskan.</p>
     <input type="password" id="passInput" class="login-input" placeholder="••••••••">
-    <button type="button" id="loginBtn" class="login-btn">Masuk Portal</button>
+    <button type="button" id="loginBtn" class="login-btn">👷 Masuk (Juruteknik)</button>
+    <div class="login-divider">atau</div>
+    <button type="button" id="loginLeaderBtn" class="login-btn-leader">🔐 Masuk sebagai Leader</button>
     <div class="login-error" id="loginError">❌ Kata Laluan Salah! Sila cuba lagi.</div>
   </div>
+</div>
+
+<div class="role-badge" id="roleBadge">
+  <span id="roleBadgeText">👷 Juruteknik</span>
+  <span class="logout-link" id="logoutLink">Log Keluar</span>
 </div>
 
 <div class="container animate-fade">
@@ -550,10 +601,10 @@
     <div class="card">
       <h2>
          Pengumuman Terkini & Info Kilang
-        <button type="button" class="btn-toggle-supervisor" id="toggleSupAnnounceBtn">⚙️ Mod Leader</button>
+        <button type="button" class="btn-toggle-supervisor leader-only" id="toggleSupAnnounceBtn">⚙️ Tulis Pengumuman</button>
       </h2>
       
-      <div style="margin-bottom: 14px;">
+      <div style="margin-bottom: 14px;" class="leader-only">
         <button type="button" class="btn-action" style="width:100%; background:linear-gradient(135deg, #10b981, #059669); color:#fff; padding: 13px;" onclick="promptAddPastLeave()">➕ Kemasukan Data Cuti Sekaligus (Bulk Edit Leader)</button>
       </div>
 
@@ -700,6 +751,7 @@
         <div class="legend-item"><div class="legend-box" style="background:var(--shift-malam)"></div> Shift Malam (4 Hari)</div>
         <div class="legend-item"><div class="legend-box" style="background:var(--accent)"></div> Cuti Juruteknik</div>
         <div class="legend-item"><div class="legend-box" style="background:var(--pink)"></div> Cuti Am (Kedah)</div>
+        <div class="legend-item"><div class="legend-box" style="background:var(--orange)"></div> Hari Ganti OT (Carry Forward Cuti Am)</div>
       </div>
     </div>
   </div>
@@ -732,13 +784,15 @@
   const db = getFirestore(app);
 
   const SECRET_PASSWORD = "QA2026";
-  const SUPERVISOR_PIN = "9988";
+  const LEADER_PASSWORD = "9988"; // Kata laluan Mod Leader (dimasukkan sekali sahaja semasa log masuk)
   let leaveLogs = [];
   let announcementsList = [];
+  let currentRole = null; // 'leader' atau 'technician'
 
   let currentCalYear = 2026;
   let currentCalMonth = 7; // August (0-indexed)
 
+  // Cuti umum Persekutuan + Negeri Kedah, tahun 2026.
   const publicHolidaysKedah2026 = {
     "2026-01-01": "Tahun Baru 2026",
     "2026-01-15": "Israk dan Mikraj",
@@ -759,6 +813,36 @@
     "2026-11-08": "Hari Keputeraan Sultan Kedah",
     "2026-12-25": "Hari Krismas"
   };
+
+  // Cuti umum Persekutuan + Negeri Kedah, tahun 2027.
+  // ⚠️ NOTA: Tarikh cuti berasaskan Takwim Hijrah (Awal Ramadan, Raya, Maulidur Rasul, dsb.)
+  // bagi 2027 masih unjuran awal dari sumber tidak rasmi (belum disahkan Kabinet/Kerajaan
+  // Negeri Kedah). Sila semak & kemas kini semula apabila pengumuman rasmi dikeluarkan.
+  const publicHolidaysKedah2027 = {
+    "2027-01-01": "Tahun Baru 2027",
+    "2027-01-06": "Israk dan Mikraj",
+    "2027-01-22": "Hari Thaipusam",
+    "2027-02-06": "Tahun Baru Cina",
+    "2027-02-07": "Tahun Baru Cina (Hari Kedua)",
+    "2027-02-08": "Awal Ramadan",
+    "2027-02-24": "Hari Nuzul Al-Quran",
+    "2027-03-10": "Hari Raya Aidilfitri",
+    "2027-03-11": "Hari Raya Aidilfitri (Hari Kedua)",
+    "2027-05-01": "Hari Pekerja",
+    "2027-05-17": "Hari Raya Haji",
+    "2027-05-18": "Hari Raya Haji (Cuti Tambahan Negeri Kedah)",
+    "2027-05-20": "Hari Wesak",
+    "2027-06-06": "Awal Muharram (Maal Hijrah)",
+    "2027-06-20": "Hari Keputeraan Sultan Kedah",
+    "2027-08-15": "Hari Keputeraan Nabi Muhammad SAW (Maulidur Rasul)",
+    "2027-08-31": "Hari Kebangsaan",
+    "2027-09-16": "Hari Malaysia",
+    "2027-12-25": "Hari Krismas",
+    "2027-12-26": "Israk dan Mikraj"
+  };
+
+  // Gabungan semua tahun - digunakan di seluruh sistem (kalendar, carry-forward, dsb.)
+  const publicHolidaysKedah = { ...publicHolidaysKedah2026, ...publicHolidaysKedah2027 };
 
   const technicianList = [
     "Muhammad Adib Bin Noordin",
@@ -813,6 +897,58 @@
     return ((diffDays % 12) + 12) % 12;
   }
 
+  // ============================================================
+  // CARRY-FORWARD CUTI UMUM (Offday/Restday → Hari Ganti OT)
+  // ============================================================
+  // Peraturan kilang: Jika cuti umum jatuh pada Offday atau Restday, cuti itu
+  // "dibawa" (carry forward) ke hari bekerja PERTAMA selepasnya (ikut giliran/
+  // bilangan cuti berturutan). Hari bekerja yang menerima carry ini dikira OT.
+  // Tarikh SEBENAR cuti umum tetap ditanda seperti biasa di kalendar; hari ganti
+  // OT ditanda berasingan dengan warna/label berbeza.
+  function buildHolidayCarryForwardMap(holidaysObj) {
+    const sortedDates = Object.keys(holidaysObj).sort();
+    const usedTargets = new Set();
+    const carryMap = {}; // targetDateStr -> { originalDate, holidayName }
+
+    sortedDates.forEach(dateStr => {
+      const shiftInfo = getShiftStatusForDate(null, dateStr);
+      if (shiftInfo.type !== 'free') return; // cuti umum jatuh pada hari bekerja, tiada carry
+
+      const cursor = new Date(dateStr + "T00:00:00");
+      let target = null;
+      for (let guard = 0; guard < 30; guard++) {
+        cursor.setDate(cursor.getDate() + 1);
+        const cursorStr = getLocalDateStr(cursor);
+        const cursorShift = getShiftStatusForDate(null, cursorStr);
+        if (cursorShift.type !== 'free' && !usedTargets.has(cursorStr)) {
+          target = cursorStr;
+          break;
+        }
+      }
+      if (target) {
+        usedTargets.add(target);
+        carryMap[target] = { originalDate: dateStr, holidayName: holidaysObj[dateStr] };
+      }
+    });
+
+    return carryMap;
+  }
+
+  const holidayCarryForwardMap = buildHolidayCarryForwardMap(publicHolidaysKedah);
+
+  // Cari carry-forward berkaitan bagi satu tarikh (sama ada ia tarikh SASARAN OT,
+  // atau tarikh ASAL cuti umum yang telah dibawa ke hadapan).
+  function getCarryForwardInfoForDate(dateStr) {
+    if (holidayCarryForwardMap[dateStr]) {
+      return { role: 'target', ...holidayCarryForwardMap[dateStr] };
+    }
+    const originalHit = Object.entries(holidayCarryForwardMap).find(([, v]) => v.originalDate === dateStr);
+    if (originalHit) {
+      return { role: 'original', targetDate: originalHit[0], holidayName: originalHit[1].holidayName };
+    }
+    return null;
+  }
+
   function formatDurationMs(ms) {
     const totalMinutes = Math.max(0, Math.round(ms / 60000));
     const hours = Math.floor(totalMinutes / 60);
@@ -854,7 +990,7 @@
 
     const msRemaining = transitionAt - now;
     const todayStr = getLocalDateStr(now);
-    const holidayToday = publicHolidaysKedah2026[todayStr];
+    const holidayToday = publicHolidaysKedah[todayStr];
 
     document.getElementById("todayShiftLabel").innerText = seg.label;
     document.getElementById("todayShiftEmoji").innerText = seg.emoji;
@@ -875,25 +1011,74 @@
     if(pageId === 'calendarPage') renderInteractiveCalendar();
   };
 
-  function checkPassword() {
+  // ============================================================
+  // LOG MASUK & PERANAN (Juruteknik vs Leader)
+  // ============================================================
+  // Log masuk Juruteknik: akses paparan sahaja, UI bersih, tiada butang edit.
+  // Log masuk Leader: kata laluan leader dimasukkan SEKALI sahaja semasa log
+  // masuk; selepas itu semua feature edit (pengumuman, bulk edit, padam rekod)
+  // terus tersedia tanpa PIN berulang.
+
+  function applyRoleUI() {
+    const badge = document.getElementById("roleBadge");
+    const badgeText = document.getElementById("roleBadgeText");
+    const leaderEls = document.querySelectorAll('.leader-only');
+
+    if (currentRole === 'leader') {
+      leaderEls.forEach(el => { el.style.display = ''; });
+      badge.classList.add('active');
+      badge.classList.remove('role-tech');
+      badgeText.innerText = '🔐 Mod Leader Aktif';
+    } else {
+      leaderEls.forEach(el => { el.style.display = 'none'; });
+      badge.classList.add('active');
+      badge.classList.add('role-tech');
+      badgeText.innerText = '👷 Juruteknik';
+    }
+    // render semula supaya butang padam dalam modal ikut peranan terkini
+    renderAll();
+  }
+
+  function loginAs(role) {
     const inputEl = document.getElementById("passInput");
     const errorEl = document.getElementById("loginError");
     const overlayEl = document.getElementById("loginOverlay");
     if (!inputEl) return;
-    if (inputEl.value.trim() === SECRET_PASSWORD) {
+    const val = inputEl.value.trim();
+    const expected = role === 'leader' ? LEADER_PASSWORD : SECRET_PASSWORD;
+
+    if (val === expected) {
+      currentRole = role;
       sessionStorage.setItem("qa_authenticated", "true");
+      sessionStorage.setItem("qa_role", role);
+      if (errorEl) errorEl.style.display = "none";
       if (overlayEl) overlayEl.style.display = "none";
+      applyRoleUI();
     } else {
       if (errorEl) errorEl.style.display = "block";
     }
   }
-  window.checkPassword = checkPassword;
-  document.getElementById("loginBtn").addEventListener("click", checkPassword);
+  window.loginAs = loginAs;
+
+  document.getElementById("loginBtn").addEventListener("click", () => loginAs('technician'));
+  document.getElementById("loginLeaderBtn").addEventListener("click", () => loginAs('leader'));
   document.getElementById("passInput").addEventListener("keypress", (e) => {
-    if (e.key === "Enter") { e.preventDefault(); checkPassword(); }
+    if (e.key === "Enter") { e.preventDefault(); loginAs('technician'); }
   });
+
+  document.getElementById("logoutLink").addEventListener("click", () => {
+    sessionStorage.removeItem("qa_authenticated");
+    sessionStorage.removeItem("qa_role");
+    currentRole = null;
+    document.getElementById("loginOverlay").style.display = "flex";
+    document.getElementById("roleBadge").classList.remove('active');
+    document.querySelectorAll('.leader-only').forEach(el => { el.style.display = 'none'; });
+  });
+
   if (sessionStorage.getItem("qa_authenticated") === "true") {
+    currentRole = sessionStorage.getItem("qa_role") === 'leader' ? 'leader' : 'technician';
     document.getElementById("loginOverlay").style.display = "none";
+    applyRoleUI();
   }
 
   document.getElementById("closeModalBtn").addEventListener("click", () => {
@@ -901,24 +1086,14 @@
   });
 
   document.getElementById("toggleSupAnnounceBtn").addEventListener("click", () => {
+    if (currentRole !== 'leader') return;
     const panel = document.getElementById("supervisorAnnouncePanel");
-    if (panel.style.display === "none") {
-      const pin = prompt(" Sila masukkan PIN Leader:");
-      if (pin === SUPERVISOR_PIN) {
-        panel.style.display = "block";
-        alert("✅ Akses Leader Dibenarkan.");
-      } else if (pin !== null) {
-        alert("❌ PIN Leader Salah!");
-      }
-    } else {
-      panel.style.display = "none";
-    }
+    panel.style.display = panel.style.display === "none" ? "block" : "none";
   });
 
   window.promptAddPastLeave = function() {
-    const pin = prompt(" Sila masukkan PIN Leader untuk kemasukan data cuti sekaligus:");
-    if (pin !== SUPERVISOR_PIN) {
-      if (pin !== null) alert("❌ PIN Leader Salah!");
+    if (currentRole !== 'leader') {
+      alert("❌ Hanya Leader boleh mengakses kemasukan data cuti sekaligus.");
       return;
     }
 
@@ -1178,11 +1353,7 @@
   });
 
   window.deleteAnnouncement = async function(id) {
-    const pin = prompt(" Sila masukkan PIN Leader untuk padam pengumuman ini:");
-    if (pin !== SUPERVISOR_PIN) {
-      if (pin !== null) alert("❌ PIN Leader Salah!");
-      return;
-    }
+    if (currentRole !== 'leader') return;
     if (!confirm("Padam pengumuman ini?")) return;
     try {
       await deleteDoc(doc(db, "announcements", id));
@@ -1205,9 +1376,10 @@
         </div>
         <div class="announcement-content">${(a.text || '').replace(/</g, "&lt;")}</div>
         ${a.image ? `<img src="${a.image}" class="announcement-img" alt="Lampiran">` : ''}
+        ${currentRole === 'leader' ? `
         <div style="text-align:right; margin-top:10px;">
           <button type="button" class="btn-toggle-supervisor" onclick="deleteAnnouncement('${a.id}')">🗑️ Padam</button>
-        </div>
+        </div>` : ''}
       </div>
     `).join('');
   }
@@ -1229,17 +1401,13 @@
       <div class="modal-row"><div class="modal-label">Shift Berkaitan</div><div class="modal-val">${shiftInfo.label}</div></div>
       <div class="modal-row"><div class="modal-label">Sebab / Catatan</div><div class="modal-val">${(log.reason || '-').replace(/</g, "&lt;")}</div></div>
       ${log.isOverlap ? `<div class="modal-row"><span class="warning-badge">⚠️ Bertindih dengan cuti rakan</span></div>` : ''}
-      <button type="button" class="btn-delete" onclick="deleteLeaveRecord('${log.id}')">🗑️ Padam Rekod Ini (Perlu PIN Leader)</button>
+      ${currentRole === 'leader' ? `<button type="button" class="btn-delete" onclick="deleteLeaveRecord('${log.id}')">🗑️ Padam Rekod Ini</button>` : ''}
     `;
     document.getElementById("detailModal").classList.add("active");
   };
 
   window.deleteLeaveRecord = async function(id) {
-    const pin = prompt(" Sila masukkan PIN Leader untuk padam rekod cuti ini:");
-    if (pin !== SUPERVISOR_PIN) {
-      if (pin !== null) alert("❌ PIN Leader Salah!");
-      return;
-    }
+    if (currentRole !== 'leader') return;
     if (!confirm("Padam rekod cuti ini secara kekal?")) return;
     try {
       await deleteDoc(doc(db, "leaves", id));
@@ -1348,11 +1516,28 @@
   window.showDayDetail = function(dateStr, holidayName) {
     const shiftInfo = getShiftStatusForDate(null, dateStr);
     const leavesOnDay = leaveLogs.filter(l => !l.isPastRecord && dateStr >= l.startDate && dateStr <= l.endDate);
+    const carryInfo = getCarryForwardInfoForDate(dateStr);
+
+    let carryRow = '';
+    if (carryInfo && carryInfo.role === 'target') {
+      carryRow = `
+        <div class="modal-row">
+          <div class="modal-label">Hari Ganti OT (Carry Forward)</div>
+          <div class="modal-val">🔶 Ganti cuti umum <b>${carryInfo.holidayName}</b> (${formatDateHuman(carryInfo.originalDate)}) — dikira sebagai OT</div>
+        </div>`;
+    } else if (carryInfo && carryInfo.role === 'original') {
+      carryRow = `
+        <div class="modal-row">
+          <div class="modal-label">Status Carry Forward</div>
+          <div class="modal-val">🔶 Cuti umum ini jatuh pada Offday/Restday — dibawa ke ${formatDateHuman(carryInfo.targetDate)} (OT)</div>
+        </div>`;
+    }
 
     document.getElementById("modalHeaderTitle").innerText = `ℹ️ ${formatDateHuman(dateStr)}`;
     document.getElementById("modalBodyContent").innerHTML = `
       <div class="modal-row"><div class="modal-label">Status Shift</div><div class="modal-val">${shiftInfo.label}</div></div>
       ${holidayName ? `<div class="modal-row"><div class="modal-label">Cuti Am</div><div class="modal-val">🎉 ${holidayName}</div></div>` : ''}
+      ${carryRow}
       <div class="modal-row">
         <div class="modal-label">Juruteknik Bercuti (${leavesOnDay.length})</div>
         <div class="modal-val">
@@ -1393,16 +1578,18 @@
       }
       const dateStr = `${currentCalYear}-${String(currentCalMonth + 1).padStart(2, '0')}-${String(cell.day).padStart(2, '0')}`;
       const shiftInfo = getShiftStatusForDate(null, dateStr);
-      const holidayName = publicHolidaysKedah2026[dateStr];
+      const holidayName = publicHolidaysKedah[dateStr];
+      const carryInfo = getCarryForwardInfoForDate(dateStr);
       const leavesOnDay = leaveLogs.filter(l => !l.isPastRecord && dateStr >= l.startDate && dateStr <= l.endDate);
       const isToday = dateStr === todayStr;
 
       let dots = '';
       if (leavesOnDay.length) dots += `<div style="width:6px;height:6px;border-radius:50%;background:var(--accent);"></div>`;
       if (holidayName) dots += `<div style="width:6px;height:6px;border-radius:50%;background:var(--pink);"></div>`;
+      if (carryInfo) dots += `<div style="width:6px;height:6px;border-radius:50%;background:var(--orange);"></div>`;
 
       return `
-        <div class="cal-day-cell shift-${shiftInfo.type}" style="${isToday ? 'box-shadow: 0 0 0 2px var(--accent);' : ''}" onclick="showDayDetail('${dateStr}', ${holidayName ? `'${holidayName.replace(/'/g, "\\'")}'` : 'null'})">
+        <div class="cal-day-cell shift-${shiftInfo.type} ${carryInfo && carryInfo.role === 'target' ? 'has-carry-ot' : ''}" style="${isToday ? 'box-shadow: 0 0 0 2px var(--accent);' : ''}" onclick="showDayDetail('${dateStr}', ${holidayName ? `'${holidayName.replace(/'/g, "\\'")}'` : 'null'})">
           <span class="cal-day-num">${cell.day}</span>
           <div style="display:flex; gap:3px;">${dots}</div>
         </div>
