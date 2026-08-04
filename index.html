@@ -254,7 +254,69 @@
     .announcement-author { font-size: 12px; font-weight: 800; color: var(--accent); }
     .announcement-date { font-size: 11px; color: var(--text-muted); }
     .announcement-content { font-size: 13px; color: var(--text); line-height: 1.6; white-space: pre-wrap; }
-    .announcement-img { width: 100%; max-height: 260px; object-fit: cover; border-radius: 10px; margin-top: 12px; border: 1px solid var(--border); }
+    .announcement-img { width: 100%; max-height: 260px; object-fit: cover; border-radius: 10px; margin-top: 12px; border: 1px solid var(--border); cursor: zoom-in; transition: filter 0.2s; }
+    .announcement-img:hover { filter: brightness(1.08); }
+
+    /* ===== Lightbox untuk zoom gambar pengumuman ===== */
+    .image-lightbox-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(3, 7, 18, 0.94);
+      backdrop-filter: blur(6px);
+      z-index: 20000;
+      align-items: center;
+      justify-content: center;
+      overflow: auto;
+      cursor: zoom-out;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .image-lightbox-overlay.active { display: flex; }
+    .image-lightbox-overlay img {
+      max-width: 92vw;
+      max-height: 88vh;
+      object-fit: contain;
+      border-radius: 10px;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.7), 0 0 30px var(--accent-glow);
+      transition: transform 0.25s ease;
+      transform-origin: center center;
+      touch-action: pinch-zoom;
+    }
+    .image-lightbox-close {
+      position: fixed;
+      top: 14px;
+      right: 16px;
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--text);
+      background: var(--card-solid);
+      border: 1px solid var(--border);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 20001;
+      line-height: 1;
+      user-select: none;
+    }
+    .image-lightbox-hint {
+      position: fixed;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 700;
+      background: var(--card-solid);
+      border: 1px solid var(--border);
+      padding: 7px 16px;
+      border-radius: 20px;
+      z-index: 20001;
+      white-space: nowrap;
+    }
 
     .supervisor-upload-panel {
       background: rgba(3, 7, 18, 0.7);
@@ -757,6 +819,12 @@
   </div>
 </div>
 
+<div class="image-lightbox-overlay" id="imageLightboxOverlay">
+  <span class="image-lightbox-close" id="imageLightboxCloseBtn">✕</span>
+  <img id="imageLightboxImg" src="" alt="Lampiran pengumuman (zoom)">
+  <div class="image-lightbox-hint">Ketik gambar untuk zoom • Ketik luar / ESC untuk tutup</div>
+</div>
+
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
   import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
@@ -1200,6 +1268,45 @@
     document.getElementById("detailModal").classList.remove("active");
   });
 
+  // ============================================================
+  // LIGHTBOX GAMBAR PENGUMUMAN (popup + zoom)
+  // ============================================================
+  let lightboxZoomed = false;
+
+  window.openImageLightbox = function(src) {
+    const overlay = document.getElementById("imageLightboxOverlay");
+    const img = document.getElementById("imageLightboxImg");
+    img.src = src;
+    img.style.transform = "scale(1)";
+    lightboxZoomed = false;
+    overlay.classList.add("active");
+    document.body.style.overflow = "hidden";
+  };
+
+  function closeImageLightbox() {
+    document.getElementById("imageLightboxOverlay").classList.remove("active");
+    document.body.style.overflow = "";
+  }
+
+  document.getElementById("imageLightboxCloseBtn").addEventListener("click", closeImageLightbox);
+
+  document.getElementById("imageLightboxOverlay").addEventListener("click", (e) => {
+    const img = document.getElementById("imageLightboxImg");
+    if (e.target === img) {
+      // Ketik pada gambar = toggle zoom in/out
+      lightboxZoomed = !lightboxZoomed;
+      img.style.transform = lightboxZoomed ? "scale(2)" : "scale(1)";
+      img.style.cursor = lightboxZoomed ? "zoom-out" : "zoom-in";
+    } else if (e.target.id !== "imageLightboxCloseBtn") {
+      // Ketik kawasan gelap luar gambar = tutup
+      closeImageLightbox();
+    }
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeImageLightbox();
+  });
+
   document.getElementById("toggleSupAnnounceBtn").addEventListener("click", () => {
     if (currentRole !== 'leader') return;
     const panel = document.getElementById("supervisorAnnouncePanel");
@@ -1519,7 +1626,7 @@
           <span class="announcement-date">${new Date(a.timestamp).toLocaleString('ms-MY')}</span>
         </div>
         <div class="announcement-content">${(a.text || '').replace(/</g, "&lt;")}</div>
-        ${a.image ? `<img src="${a.image}" class="announcement-img" alt="Lampiran">` : ''}
+        ${a.image ? `<img src="${a.image}" class="announcement-img" alt="Lampiran" onclick="openImageLightbox('${a.image}')">` : ''}
         ${currentRole === 'leader' ? `
         <div style="text-align:right; margin-top:10px;">
           <button type="button" class="btn-toggle-supervisor" onclick="deleteAnnouncement('${a.id}')">🗑️ Padam</button>
