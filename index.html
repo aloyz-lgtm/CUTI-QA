@@ -758,17 +758,19 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
   import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
-  import { getStorage, ref, uploadString, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-storage.js";
   import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
 
   const firebaseConfig = {
     // ⚠️ PENTING: Konfigurasi Firebase di client memang lumrah (bukan rahsia),
-    // TAPI keselamatan sebenar data bergantung pada Firestore & Storage
-    // Security Rules yang ditetapkan di Firebase Console — bukan kod ini.
-    // Sila tampal kandungan firestore.rules & storage.rules (disertakan
-    // berasingan) ke: Firebase Console → Firestore Database → Rules, dan
-    // Firebase Console → Storage → Rules. Rules tersebut memerlukan
-    // Anonymous Authentication diaktifkan di: Authentication → Sign-in method.
+    // TAPI keselamatan sebenar data bergantung pada Firestore Security Rules
+    // yang ditetapkan di Firebase Console — bukan kod ini.
+    // Sila tampal kandungan firestore.rules (disertakan berasingan) ke:
+    // Firebase Console → Firestore Database → Rules. Rules tersebut
+    // memerlukan Anonymous Authentication diaktifkan di:
+    // Authentication → Sign-in method.
+    // (Nota: sistem TIDAK guna Firebase Storage — gambar pengumuman disimpan
+    // terus sebagai base64 dalam Firestore, supaya tak perlu upgrade pelan
+    // Blaze. Jadi storage.rules TIDAK diperlukan.)
     apiKey: "AIzaSyCjefti7PCPCQncKEdve5GZUecWDNnH3l8",
     authDomain: "qa-attendance-e9de0.firebaseapp.com",
     projectId: "qa-attendance-e9de0",
@@ -779,7 +781,6 @@
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
-  const storage = getStorage(app);
   const auth = getAuth(app);
 
   // Firestore Security Rules (lihat firestore.rules) memerlukan request.auth != null
@@ -1322,29 +1323,6 @@
     return `${y}-${m}-${day}`;
   }
 
-  // Muat naik gambar pengumuman (yang sudah dimampatkan sebagai data URL) ke
-  // Firebase Storage, bukan terus simpan base64 dalam dokumen Firestore.
-  // Firestore document had ialah 1MB - gambar base64 boleh cepat capai had itu
-  // dan buat pembacaan/carian data jadi perlahan. Storage jauh lebih sesuai
-  // untuk fail media & ada had percuma yang lebih besar (5GB storan, 1GB/hari turun).
-  async function uploadAnnouncementImage(dataUrl) {
-    const path = `announcements/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.jpg`;
-    const storageRef = ref(storage, path);
-    await uploadString(storageRef, dataUrl, "data_url");
-    const url = await getDownloadURL(storageRef);
-    return { url, path };
-  }
-
-  async function deleteAnnouncementImage(path) {
-    if (!path) return;
-    try {
-      await deleteObject(ref(storage, path));
-    } catch (err) {
-      // Fail mungkin sudah dipadam / tak wujud - selamat untuk diabaikan
-      console.warn("Gagal padam fail storage (mungkin sudah tiada):", err.message);
-    }
-  }
-
   function formatDateHuman(dateStr) {
     if (!dateStr) return "-";
     const d = new Date(dateStr + "T00:00:00");
@@ -1493,23 +1471,17 @@
     const fileEl = document.getElementById("announcementImgFile");
     const submitBtn = e.target.querySelector('button[type="submit"]');
     submitBtn.disabled = true;
+    submitBtn.innerText = "⏳ Menyiarkan...";
 
     try {
-      let imageUrl = null;
-      let imagePath = null;
+      let imageBase64 = null;
       if (fileEl.files && fileEl.files[0]) {
-        submitBtn.innerText = "⏳ Memuat naik gambar...";
-        const compressedDataUrl = await compressImageToBase64(fileEl.files[0]);
-        const uploaded = await uploadAnnouncementImage(compressedDataUrl);
-        imageUrl = uploaded.url;
-        imagePath = uploaded.path;
+        imageBase64 = await compressImageToBase64(fileEl.files[0]);
       }
-      submitBtn.innerText = "⏳ Menyiarkan...";
       await addDoc(collection(db, "announcements"), {
         text: textEl.value.trim(),
         author: "Leader",
-        image: imageUrl,       // URL Firebase Storage sahaja (bukan base64)
-        imagePath: imagePath,  // path storan - diperlukan untuk padam fail nanti
+        image: imageBase64,   // Gambar dimampat & disimpan terus sebagai base64
         timestamp: Date.now()
       });
       e.target.reset();
@@ -1527,11 +1499,7 @@
     if (currentRole !== 'leader') return;
     if (!confirm("Padam pengumuman ini?")) return;
     try {
-      const ann = announcementsList.find(a => a.id === id);
       await deleteDoc(doc(db, "announcements", id));
-      if (ann && ann.imagePath) {
-        await deleteAnnouncementImage(ann.imagePath);
-      }
     } catch (err) {
       alert("❌ Ralat: " + err.message);
     }
