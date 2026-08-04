@@ -786,15 +786,35 @@
   // untuk sebarang baca/tulis. App ini guna Firebase Anonymous Auth semata-mata
   // sebagai "tiket" supaya bot/scraper luar tidak boleh terus curi/rosak data
   // secara terus melalui REST API tanpa melalui app langsung.
+  //
+  // PENTING (fallback): Jika anonymous sign-in gagal/lambat (contoh disekat
+  // ad-blocker/extension, atau internet perlahan), app TIDAK boleh dibiar
+  // "senyap" tanpa data. Selepas 4 saat, cuba muatkan data JUGA walaupun auth
+  // belum sah — jika rules Firestore masih terbuka (belum publish rules ketat)
+  // ini akan berjaya seperti biasa; jika rules sudah ketat & auth gagal, error
+  // sebenar akan dipaparkan kepada pengguna (bukan senyap dalam console sahaja).
   let authReady = false;
   const authReadyPromise = new Promise((resolve) => {
     onAuthStateChanged(auth, (user) => {
       if (user) { authReady = true; resolve(); }
     });
+    setTimeout(() => resolve(), 4000); // fallback - jangan block selama-lamanya
   });
   signInAnonymously(auth).catch((err) => {
     console.error("Ralat auth anonymous:", err);
+    showDataLoadWarning("Log masuk sistem (anonymous auth) gagal: " + err.code + ". Data mungkin tidak dapat dimuatkan sepenuhnya. Sila semak sambungan internet / ad-blocker, atau hubungi pentadbir sistem.");
   });
+
+  function showDataLoadWarning(msg) {
+    let el = document.getElementById("dataLoadWarning");
+    if (!el) {
+      el = document.createElement("div");
+      el.id = "dataLoadWarning";
+      el.style.cssText = "position:fixed;top:0;left:0;right:0;z-index:9999;background:#dc2626;color:#fff;padding:10px 16px;font-size:12px;font-weight:800;text-align:center;";
+      document.body.prepend(el);
+    }
+    el.innerText = "⚠️ " + msg;
+  }
 
 
   const SECRET_PASSWORD = "QA2026";
@@ -1777,20 +1797,29 @@
     }
   }
 
-  // Tunggu Firebase Anonymous Auth siap dahulu (selaras dengan Firestore Rules
-  // yang memerlukan request.auth != null) sebelum melanggan data secara real-time.
+  // Tunggu Firebase Anonymous Auth siap dahulu (atau timeout 4 saat sebagai
+  // fallback) sebelum melanggan data secara real-time.
   authReadyPromise.then(() => {
+    if (!authReady) {
+      console.warn("Anonymous auth belum sah selepas 4 saat - cuba muat data tanpa auth (bergantung pada rules semasa).");
+    }
     onSnapshot(collection(db, "leaves"), (snapshot) => {
       leaveLogs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
       renderAll();
-    }, (err) => console.error("Ralat memuatkan data cuti:", err));
+    }, (err) => {
+      console.error("Ralat memuatkan data cuti:", err);
+      showDataLoadWarning("Gagal muatkan data cuti (" + err.code + "). Cuba refresh page. Jika berterusan, semak Firestore Rules / Anonymous Auth di Firebase Console.");
+    });
 
     onSnapshot(collection(db, "announcements"), (snapshot) => {
       announcementsList = snapshot.docs
         .map(d => ({ id: d.id, ...d.data() }))
         .sort((a, b) => b.timestamp - a.timestamp);
       renderAnnouncements();
-    }, (err) => console.error("Ralat memuatkan pengumuman:", err));
+    }, (err) => {
+      console.error("Ralat memuatkan pengumuman:", err);
+      showDataLoadWarning("Gagal muatkan pengumuman (" + err.code + "). Cuba refresh page.");
+    });
   });
 
   // Paparan awal kalendar pada bulan/tahun semasa
