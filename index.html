@@ -568,6 +568,92 @@
     .modal-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; font-weight: 800; letter-spacing: 0.5px; }
     .modal-val { font-size: 14px; color: var(--text); font-weight: 700; }
 
+    /* ============ TOAST NOTIFICATIONS (ganti alert()) ============ */
+    .toast-stack {
+      position: fixed;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 20000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+      max-width: 420px;
+      padding: 0 16px;
+      pointer-events: none;
+    }
+    .toast-item {
+      pointer-events: auto;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      background: var(--card-solid);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      border-radius: 14px;
+      padding: 14px 16px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      backdrop-filter: blur(10px);
+      animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .toast-item.toast-success { border-left-color: var(--green); }
+    .toast-item.toast-error { border-left-color: var(--red); }
+    .toast-item.toast-out { animation: toastOut 0.25s ease forwards; }
+    .toast-msg { flex: 1; line-height: 1.5; white-space: pre-line; }
+    .toast-close { cursor: pointer; color: var(--text-muted); font-size: 15px; line-height: 1; flex-shrink: 0; }
+    .toast-close:hover { color: var(--text); }
+    @keyframes toastIn { from { opacity: 0; transform: translateY(-14px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    @keyframes toastOut { from { opacity: 1; transform: translateY(0) scale(1); } to { opacity: 0; transform: translateY(-10px) scale(0.96); } }
+
+    /* ============ CONFIRM MODAL (ganti confirm()) ============ */
+    .confirm-card { max-width: 380px; text-align: center; }
+    .confirm-icon { font-size: 30px; margin-bottom: 10px; }
+    .confirm-msg { font-size: 13px; color: var(--text); line-height: 1.6; white-space: pre-line; margin-bottom: 22px; font-weight: 600; }
+    .confirm-btn-row { display: flex; gap: 10px; }
+    .confirm-btn-row button { flex: 1; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 13px; cursor: pointer; border: none; transition: filter 0.2s, transform 0.2s; }
+    .confirm-btn-row button:hover { filter: brightness(1.1); transform: translateY(-1px); }
+    .confirm-btn-cancel { background: rgba(148,163,184,0.15); color: var(--text-muted); border: 1px solid var(--border) !important; }
+    .confirm-btn-ok { background: linear-gradient(135deg, #38bdf8, #0284c7); color: #030712; }
+    .confirm-btn-ok.danger { background: linear-gradient(135deg, #ef4444, #b91c1c); color: #fff; }
+
+    /* ============ SKELETON LOADING ============ */
+    .skeleton-shimmer {
+      background: linear-gradient(90deg, rgba(148,163,184,0.08) 25%, rgba(148,163,184,0.18) 37%, rgba(148,163,184,0.08) 63%);
+      background-size: 400% 100%;
+      animation: skeletonShimmer 1.4s ease infinite;
+      border-radius: 10px;
+    }
+    @keyframes skeletonShimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+    .skeleton-line { height: 14px; margin-bottom: 10px; }
+    .skeleton-box { border-radius: 14px; padding: 16px; background: var(--card); border: 1px solid var(--border); margin-bottom: 12px; }
+
+    /* ============ PASSWORD TOGGLE ============ */
+    .login-input-wrap { position: relative; }
+    .login-input-wrap .login-input { padding-right: 44px; }
+    .pass-toggle-btn {
+      position: absolute;
+      right: 6px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 17px;
+      cursor: pointer;
+      padding: 8px;
+      line-height: 1;
+    }
+    .pass-toggle-btn:hover { color: var(--accent); }
+
+    /* ============ CHAR COUNTER ============ */
+    .char-counter { text-align: right; font-size: 11px; color: var(--text-muted); font-weight: 700; margin-top: 4px; }
+    .char-counter.char-counter-warn { color: var(--orange); }
+    .char-counter.char-counter-limit { color: var(--red); }
+
     .today-shift-card {
       display: flex;
       align-items: center;
@@ -626,13 +712,18 @@
   <div class="login-card">
     <h2> Akses Terhad 🔐 </h2>
     <p>Sila masukkan Kata Laluan Portal QA (Shift C) untuk meneruskan.</p>
-    <input type="password" id="passInput" class="login-input" placeholder="••••••••">
+    <div class="login-input-wrap">
+      <input type="password" id="passInput" class="login-input" placeholder="••••••••">
+      <button type="button" class="pass-toggle-btn" id="passToggleBtn" aria-label="Tunjuk kata laluan">👁️</button>
+    </div>
     <button type="button" id="loginBtn" class="login-btn">👷 Masuk (Juruteknik)</button>
     <div class="login-divider">atau</div>
     <button type="button" id="loginLeaderBtn" class="login-btn-leader">🔐 Masuk sebagai Leader</button>
     <div class="login-error" id="loginError">❌ Kata Laluan Salah! Sila cuba lagi.</div>
   </div>
 </div>
+
+<div class="toast-stack" id="toastStack"></div>
 
 <div class="role-badge" id="roleBadge">
   <span id="roleBadgeText">👷 Juruteknik</span>
@@ -676,7 +767,8 @@
         <form id="announcementForm">
           <div class="form-group">
             <label>Tajuk / Catatan Pengumuman:</label>
-            <textarea id="announcementText" rows="3" placeholder="Tulis pengumuman, isu disiplin atau info penting kilang di sini..." required></textarea>
+            <textarea id="announcementText" rows="3" maxlength="1000" placeholder="Tulis pengumuman, isu disiplin atau info penting kilang di sini..." required></textarea>
+            <div class="char-counter" id="announceCharCounter">0 / 1000</div>
           </div>
           <div class="form-group">
             <label>Lampiran Gambar (Pilihan):</label>
@@ -685,7 +777,9 @@
           <button type="submit" class="btn-action" style="width:100%;"> Siarkan Pengumuman</button>
         </form>
       </div>
-      <div id="announcementContainer"></div>
+      <div id="announcementContainer">
+        <div class="skeleton-box"><div class="skeleton-shimmer skeleton-line" style="width:40%;"></div><div class="skeleton-shimmer skeleton-line" style="width:90%;"></div><div class="skeleton-shimmer skeleton-line" style="width:65%;"></div></div>
+      </div>
     </div>
 
     <div style="display: grid; grid-template-columns: 1fr; gap: 20px;">
@@ -775,7 +869,10 @@
     <div class="card" style="margin-top: 20px;">
       <h2> Senarai Plan Cuti Shift C</h2>
       <p class="sub-text">Tekan pada mana-mana senarai cuti untuk perincian atau pengurusan oleh Leader.</p>
-      <div id="leaveCardsContainer"></div>
+      <div id="leaveCardsContainer">
+        <div class="skeleton-box"><div class="skeleton-shimmer skeleton-line" style="width:55%;"></div><div class="skeleton-shimmer skeleton-line" style="width:35%;"></div></div>
+        <div class="skeleton-box"><div class="skeleton-shimmer skeleton-line" style="width:45%;"></div><div class="skeleton-shimmer skeleton-line" style="width:30%;"></div></div>
+      </div>
     </div>
   </div>
 
@@ -806,6 +903,17 @@
         <div class="legend-item"><div class="legend-box" style="background:var(--pink)"></div> Cuti Am (Kedah)</div>
         <div class="legend-item"><div class="legend-box" style="background:var(--orange)"></div> Hari Ganti OT (Carry Forward Cuti Am)</div>
       </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="confirmModalOverlay">
+  <div class="modal-card confirm-card">
+    <div class="confirm-icon" id="confirmModalIcon">❓</div>
+    <div class="confirm-msg" id="confirmModalMsg"></div>
+    <div class="confirm-btn-row">
+      <button type="button" class="confirm-btn-cancel" id="confirmModalCancelBtn">Batal</button>
+      <button type="button" class="confirm-btn-ok" id="confirmModalOkBtn">Ya, Teruskan</button>
     </div>
   </div>
 </div>
@@ -888,6 +996,56 @@
     el.innerText = "⚠️ " + msg;
   }
 
+
+  // ============================================================
+  // TOAST & CONFIRM MODAL CUSTOM (ganti alert()/confirm() native)
+  // ============================================================
+  function showToast(message, type = 'info', duration = 4000) {
+    const stack = document.getElementById("toastStack");
+    if (!stack) { console.log(message); return; }
+    const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
+    const el = document.createElement("div");
+    el.className = `toast-item toast-${type}`;
+    el.innerHTML = `<span class="toast-msg">${escapeHtml(message)}</span><span class="toast-close">✕</span>`;
+    stack.appendChild(el);
+
+    const remove = () => {
+      el.classList.add("toast-out");
+      setTimeout(() => el.remove(), 250);
+    };
+    el.querySelector(".toast-close").addEventListener("click", remove);
+    if (duration > 0) setTimeout(remove, duration);
+  }
+  window.showToast = showToast;
+
+  function showConfirm(message, options = {}) {
+    return new Promise((resolve) => {
+      const overlay = document.getElementById("confirmModalOverlay");
+      const msgEl = document.getElementById("confirmModalMsg");
+      const okBtn = document.getElementById("confirmModalOkBtn");
+      const cancelBtn = document.getElementById("confirmModalCancelBtn");
+      const iconEl = document.getElementById("confirmModalIcon");
+
+      msgEl.innerText = message;
+      iconEl.innerText = options.danger ? "⚠️" : "❓";
+      okBtn.innerText = options.okText || "Ya, Teruskan";
+      cancelBtn.innerText = options.cancelText || "Batal";
+      okBtn.classList.toggle("danger", !!options.danger);
+      overlay.classList.add("active");
+
+      function cleanup(result) {
+        overlay.classList.remove("active");
+        okBtn.removeEventListener("click", onOk);
+        cancelBtn.removeEventListener("click", onCancel);
+        resolve(result);
+      }
+      function onOk() { cleanup(true); }
+      function onCancel() { cleanup(false); }
+      okBtn.addEventListener("click", onOk);
+      cancelBtn.addEventListener("click", onCancel);
+    });
+  }
+  window.showConfirm = showConfirm;
 
   const SECRET_PASSWORD = "QA2026";
   const LEADER_PASSWORD = "9988"; // Kata laluan Mod Leader (dimasukkan sekali sahaja semasa log masuk)
@@ -990,9 +1148,14 @@
 
   const monthNames = ["Januari", "Februari", "Mac", "April", "Mei", "Jun", "Julai", "Ogos", "September", "Oktober", "November", "Disember"];
 
+  // Tarikh rujukan (anchor) tunggal bagi kiraan kitaran shift 12 hari.
+  // SEMUA fungsi yang perlu kira kitaran shift MESTI guna constant ini sahaja
+  // (elak define "new Date('2026-01-01')" berulang kali merata tempat).
+  const SHIFT_BASE_DATE = new Date("2026-01-01");
+  SHIFT_BASE_DATE.setHours(0, 0, 0, 0);
+
   function getShiftStatusForDate(techName, dateStr) {
-    const baseDate = new Date("2026-01-01");
-    baseDate.setHours(0,0,0,0);
+    const baseDate = SHIFT_BASE_DATE;
     const targetDate = new Date(dateStr);
     targetDate.setHours(0,0,0,0);
 
@@ -1025,9 +1188,8 @@
   ];
 
   function getDayInCycle(dateObj) {
-    const baseDate = new Date("2026-01-01"); baseDate.setHours(0, 0, 0, 0);
     const d = new Date(dateObj); d.setHours(0, 0, 0, 0);
-    const diffDays = Math.round((d - baseDate) / (1000 * 60 * 60 * 24));
+    const diffDays = Math.round((d - SHIFT_BASE_DATE) / (1000 * 60 * 60 * 24));
     return ((diffDays % 12) + 12) % 12;
   }
 
@@ -1241,6 +1403,32 @@
 
   document.getElementById("logoutLink").addEventListener("click", () => clearSession());
 
+  // ============================================================
+  // TUNJUK / SEMBUNYI KATA LALUAN
+  // ============================================================
+  document.getElementById("passToggleBtn").addEventListener("click", () => {
+    const input = document.getElementById("passInput");
+    const btn = document.getElementById("passToggleBtn");
+    const isHidden = input.type === "password";
+    input.type = isHidden ? "text" : "password";
+    btn.innerText = isHidden ? "🙈" : "👁️";
+  });
+
+  // ============================================================
+  // KAUNTER AKSARA - TEXTAREA PENGUMUMAN
+  // ============================================================
+  function updateAnnounceCharCounter() {
+    const textEl = document.getElementById("announcementText");
+    const counterEl = document.getElementById("announceCharCounter");
+    if (!textEl || !counterEl) return;
+    const max = parseInt(textEl.getAttribute("maxlength") || "1000", 10);
+    const len = textEl.value.length;
+    counterEl.innerText = `${len} / ${max}`;
+    counterEl.classList.toggle("char-counter-warn", len >= max * 0.85 && len < max);
+    counterEl.classList.toggle("char-counter-limit", len >= max);
+  }
+  document.getElementById("announcementText").addEventListener("input", updateAnnounceCharCounter);
+
   (function restoreSession() {
     const isAuthed = sessionStorage.getItem("qa_authenticated") === "true";
     const loginTime = parseInt(sessionStorage.getItem("qa_login_time") || "0", 10);
@@ -1316,7 +1504,7 @@
 
   window.promptAddPastLeave = function() {
     if (currentRole !== 'leader') {
-      alert("❌ Hanya Leader boleh mengakses kemasukan data cuti sekaligus.");
+      showToast("Hanya Leader boleh mengakses kemasukan data cuti sekaligus.", "error");
       return;
     }
 
@@ -1391,10 +1579,10 @@
           }
         }
 
-        alert("✅ Semua rekod cuti berjaya dikemaskini sekaligus!");
+        showToast("Semua rekod cuti berjaya dikemaskini sekaligus!", "success");
         document.getElementById("detailModal").classList.remove("active");
       } catch (err) {
-        alert("❌ Ralat: " + err.message);
+        showToast("Ralat: " + err.message, "error");
       }
     });
   };
@@ -1423,6 +1611,18 @@
       reader.onerror = reject;
       reader.readAsDataURL(file);
     });
+  }
+
+  // Escape lengkap untuk sebarang data ditulis user (pengumuman, sebab cuti, dll)
+  // sebelum dimasukkan ke dalam innerHTML. Meliputi < > & " ' — bukan sekadar < sahaja.
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
   }
 
   function getLocalDateStr(d = new Date()) {
@@ -1521,11 +1721,11 @@
     const reason = document.getElementById("leaveReason").value.trim();
 
     if (new Date(endDate) < new Date(startDate)) {
-      alert("❌ Tarikh Tamat tidak boleh sebelum Tarikh Mula!");
+      showToast("Tarikh Tamat tidak boleh sebelum Tarikh Mula!", "error");
       return;
     }
     if (durationOption !== "Full" && startDate !== endDate) {
-      alert("❌ Pilihan 1st Half / 2nd Half hanya sah untuk SATU hari sahaja. Sila padankan Tarikh Mula dan Tarikh Tamat.");
+      showToast("Pilihan 1st Half / 2nd Half hanya sah untuk SATU hari sahaja. Sila padankan Tarikh Mula dan Tarikh Tamat.", "error");
       return;
     }
 
@@ -1534,7 +1734,7 @@
     const selfClashes = findSelfOverlap(name, startDate, endDate);
     if (selfClashes.length) {
       const clashList = selfClashes.map(l => `• ${formatDateHuman(l.startDate)} — ${formatDateHuman(l.endDate)} (${l.type})`).join('\n');
-      alert(`❌ Anda sudah mempunyai rekod cuti pada tempoh ini. Permohonan tidak boleh dihantar.\n\nRekod sedia ada:\n${clashList}`);
+      showToast(`Anda sudah mempunyai rekod cuti pada tempoh ini. Permohonan tidak boleh dihantar.\n\nRekod sedia ada:\n${clashList}`, "error", 6000);
       return;
     }
 
@@ -1542,7 +1742,7 @@
     const isOverlap = overlapCount > 0;
 
     if (isOverlap) {
-      const proceed = confirm(`⚠️ Amaran Pertindihan!\n\n${overlapCount} juruteknik shift yang sama telah bercuti pada tempoh ini.\n\nTeruskan hantar permohonan?`);
+      const proceed = await showConfirm(`${overlapCount} juruteknik shift yang sama telah bercuti pada tempoh ini.\n\nTeruskan hantar permohonan?`, { danger: true, okText: "Ya, Hantar Juga" });
       if (!proceed) return;
     }
 
@@ -1559,11 +1759,11 @@
         isOverlap,
         isPastRecord: false
       });
-      alert("✅ Permohonan cuti berjaya dihantar!");
+      showToast("Permohonan cuti berjaya dihantar!", "success");
       e.target.reset();
       document.getElementById("dayCountBadge").innerText = "Jumlah Hari: 1 Hari";
     } catch (err) {
-      alert("❌ Ralat: " + err.message);
+      showToast("Ralat: " + err.message, "error");
     } finally {
       submitBtn.disabled = false;
       submitBtn.innerText = "✨ Hantar Permohonan Cuti";
@@ -1595,9 +1795,10 @@
       });
       e.target.reset();
       document.getElementById("supervisorAnnouncePanel").style.display = "none";
-      alert("✅ Pengumuman berjaya disiarkan!");
+      showToast("Pengumuman berjaya disiarkan!", "success");
+      updateAnnounceCharCounter();
     } catch (err) {
-      alert("❌ Ralat: " + err.message);
+      showToast("Ralat: " + err.message, "error");
     } finally {
       submitBtn.disabled = false;
       submitBtn.innerText = " Siarkan Pengumuman";
@@ -1606,11 +1807,12 @@
 
   window.deleteAnnouncement = async function(id) {
     if (currentRole !== 'leader') return;
-    if (!confirm("Padam pengumuman ini?")) return;
+    const proceed = await showConfirm("Padam pengumuman ini?", { danger: true, okText: "Ya, Padam" });
+    if (!proceed) return;
     try {
       await deleteDoc(doc(db, "announcements", id));
     } catch (err) {
-      alert("❌ Ralat: " + err.message);
+      showToast("Ralat: " + err.message, "error");
     }
   };
 
@@ -1626,7 +1828,7 @@
           <span class="announcement-author">📢 ${a.author || 'Leader'}</span>
           <span class="announcement-date">${new Date(a.timestamp).toLocaleString('ms-MY')}</span>
         </div>
-        <div class="announcement-content">${(a.text || '').replace(/</g, "&lt;")}</div>
+        <div class="announcement-content">${escapeHtml(a.text)}</div>
         ${a.image ? `<img src="${a.image}" class="announcement-img" alt="Lampiran" onclick="openImageLightbox('${a.image}')">` : ''}
         ${currentRole === 'leader' ? `
         <div style="text-align:right; margin-top:10px;">
@@ -1651,7 +1853,7 @@
       <div class="modal-row"><div class="modal-label">Jenis Cuti</div><div class="modal-val"><span class="badge badge-${log.type}">${log.type}</span></div></div>
       <div class="modal-row"><div class="modal-label">Tempoh</div><div class="modal-val">${formatDateHuman(log.startDate)} — ${formatDateHuman(log.endDate)} (${log.days} Hari${log.duration && log.duration !== 'Full' ? ', ' + log.duration : ''})</div></div>
       <div class="modal-row"><div class="modal-label">Shift Berkaitan</div><div class="modal-val">${shiftInfo.label}</div></div>
-      <div class="modal-row"><div class="modal-label">Sebab / Catatan</div><div class="modal-val">${(log.reason || '-').replace(/</g, "&lt;")}</div></div>
+      <div class="modal-row"><div class="modal-label">Sebab / Catatan</div><div class="modal-val">${log.reason ? escapeHtml(log.reason) : '-'}</div></div>
       ${log.isOverlap ? `<div class="modal-row"><span class="warning-badge">⚠️ Bertindih dengan cuti rakan</span></div>` : ''}
       ${currentRole === 'leader' ? `<button type="button" class="btn-delete" onclick="deleteLeaveRecord('${log.id}')">🗑️ Padam Rekod Ini</button>` : ''}
     `;
@@ -1660,12 +1862,13 @@
 
   window.deleteLeaveRecord = async function(id) {
     if (currentRole !== 'leader') return;
-    if (!confirm("Padam rekod cuti ini secara kekal?")) return;
+    const proceed = await showConfirm("Padam rekod cuti ini secara kekal?", { danger: true, okText: "Ya, Padam" });
+    if (!proceed) return;
     try {
       await deleteDoc(doc(db, "leaves", id));
       document.getElementById("detailModal").classList.remove("active");
     } catch (err) {
-      alert("❌ Ralat: " + err.message);
+      showToast("Ralat: " + err.message, "error");
     }
   };
 
@@ -1859,6 +2062,43 @@
     if (currentCalMonth > 11) { currentCalMonth = 0; currentCalYear++; }
     renderInteractiveCalendar();
   });
+
+  // ============================================================
+  // SWIPE GESTURE - TUKAR BULAN KALENDAR (mobile-friendly)
+  // ============================================================
+  (function setupCalendarSwipe() {
+    const gridEl = document.getElementById("calGridDaysContainer");
+    let touchStartX = 0, touchStartY = 0, touchActive = false;
+    const SWIPE_THRESHOLD = 45; // px minimum jarak lungsur mendatar
+
+    gridEl.addEventListener("touchstart", (e) => {
+      if (e.touches.length !== 1) return;
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      touchActive = true;
+    }, { passive: true });
+
+    gridEl.addEventListener("touchend", (e) => {
+      if (!touchActive) return;
+      touchActive = false;
+      const touch = e.changedTouches[0];
+      const dx = touch.clientX - touchStartX;
+      const dy = touch.clientY - touchStartY;
+      // Pastikan lungsur lebih mendatar daripada menegak supaya tak clash dengan scroll page
+      if (Math.abs(dx) < SWIPE_THRESHOLD || Math.abs(dx) < Math.abs(dy) * 1.3) return;
+
+      if (dx < 0) {
+        // lungsur ke kiri -> bulan seterusnya
+        currentCalMonth++;
+        if (currentCalMonth > 11) { currentCalMonth = 0; currentCalYear++; }
+      } else {
+        // lungsur ke kanan -> bulan sebelumnya
+        currentCalMonth--;
+        if (currentCalMonth < 0) { currentCalMonth = 11; currentCalYear--; }
+      }
+      renderInteractiveCalendar();
+    }, { passive: true });
+  })();
 
   // ============================================================
   // FIRESTORE LISTENERS (REAL-TIME)
