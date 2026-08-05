@@ -559,6 +559,8 @@
       transition: opacity 0.25s ease;
     }
     .modal-overlay.active { opacity: 1; pointer-events: auto; }
+    /* Modal confirm mesti sentiasa di atas modal lain (contoh: modal detail cuti) */
+    #confirmModalOverlay { z-index: 10500; }
     .modal-card { background: var(--card-solid); border: 1px solid var(--border); border-radius: 20px; width: 100%; max-width: 520px; padding: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.6); max-height: 90vh; overflow-y: auto; }
     .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 16px; }
     .modal-header h3 { font-size: 16px; margin: 0; color: var(--accent); font-weight: 900; }
@@ -648,6 +650,10 @@
       line-height: 1;
     }
     .pass-toggle-btn:hover { color: var(--accent); }
+    .pass-toggle-btn svg { width: 20px; height: 20px; display: block; }
+    .pass-toggle-btn .icon-eye-off { display: none; }
+    .pass-toggle-btn.showing .icon-eye { display: none; }
+    .pass-toggle-btn.showing .icon-eye-off { display: block; }
 
     /* ============ CHAR COUNTER ============ */
     .char-counter { text-align: right; font-size: 11px; color: var(--text-muted); font-weight: 700; margin-top: 4px; }
@@ -714,7 +720,10 @@
     <p>Sila masukkan Kata Laluan Portal QA (Shift C) untuk meneruskan.</p>
     <div class="login-input-wrap">
       <input type="password" id="passInput" class="login-input" placeholder="••••••••">
-      <button type="button" class="pass-toggle-btn" id="passToggleBtn" aria-label="Tunjuk kata laluan">👁️</button>
+      <button type="button" class="pass-toggle-btn" id="passToggleBtn" aria-label="Tunjuk kata laluan">
+        <svg class="icon-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+        <svg class="icon-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a19.68 19.68 0 0 1 4.22-5.94M9.9 4.24A10.6 10.6 0 0 1 12 4c7 0 11 8 11 8a19.64 19.64 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+      </button>
     </div>
     <button type="button" id="loginBtn" class="login-btn">👷 Masuk (Juruteknik)</button>
     <div class="login-divider">atau</div>
@@ -1411,7 +1420,8 @@
     const btn = document.getElementById("passToggleBtn");
     const isHidden = input.type === "password";
     input.type = isHidden ? "text" : "password";
-    btn.innerText = isHidden ? "🙈" : "👁️";
+    btn.classList.toggle("showing", isHidden);
+    btn.setAttribute("aria-label", isHidden ? "Sembunyi kata laluan" : "Tunjuk kata laluan");
   });
 
   // ============================================================
@@ -1696,6 +1706,43 @@
   }
 
   // ============================================================
+  // SEKATAN TARIKH PERMOHONAN CUTI (Offday/Restday & Cuti Umum)
+  // ============================================================
+  // Semak SETIAP tarikh dalam julat permohonan (startDate..endDate):
+  // 1) Tarikh yang jatuh pada Offday/Restday - tak boleh mohon cuti langsung
+  //    (juruteknik memang free/rehat pada hari tersebut).
+  // 2) Tarikh Cuti Umum (atau hari ganti OT carry-forward) - hanya jenis
+  //    cuti "PH" (Cuti Umum) dibenarkan; jenis cuti lain (AL/EL/MC/PL/UL)
+  //    disekat dan pengguna diarah guna pilihan Cuti Umum.
+  // Pulangkan null jika semua tarikh OK, atau { reason, dateStr, ... } jika disekat.
+  function checkLeaveDateRestrictions(startDate, endDate, type) {
+    const s = new Date(startDate + "T00:00:00");
+    const e = new Date(endDate + "T00:00:00");
+
+    for (let cursor = new Date(s); cursor <= e; cursor.setDate(cursor.getDate() + 1)) {
+      const dateStr = getLocalDateStr(cursor);
+      const shiftInfo = getShiftStatusForDate(null, dateStr);
+
+      if (shiftInfo.kind === 'offday' || shiftInfo.kind === 'restday') {
+        return { reason: 'offday-restday', dateStr, label: shiftInfo.label };
+      }
+
+      const holidayName = publicHolidaysKedah[dateStr];
+      const carryInfo = getCarryForwardInfoForDate(dateStr);
+      const isCarryTarget = carryInfo && carryInfo.role === 'target';
+
+      if ((holidayName || isCarryTarget) && type !== 'PH') {
+        return {
+          reason: 'public-holiday',
+          dateStr,
+          holidayName: holidayName || (carryInfo && carryInfo.holidayName)
+        };
+      }
+    }
+    return null;
+  }
+
+  // ============================================================
   // BORANG PERMOHONAN CUTI
   // ============================================================
 
@@ -1726,6 +1773,16 @@
     }
     if (durationOption !== "Full" && startDate !== endDate) {
       showToast("Pilihan 1st Half / 2nd Half hanya sah untuk SATU hari sahaja. Sila padankan Tarikh Mula dan Tarikh Tamat.", "error");
+      return;
+    }
+
+    const restriction = checkLeaveDateRestrictions(startDate, endDate, type);
+    if (restriction) {
+      if (restriction.reason === 'offday-restday') {
+        showToast(`Tarikh ${formatDateHuman(restriction.dateStr)} jatuh pada ${restriction.label}. Permohonan cuti tidak dibenarkan pada hari Offday/Restday.`, "error", 6000);
+      } else {
+        showToast(`Tarikh ${formatDateHuman(restriction.dateStr)} merupakan Cuti Umum (${restriction.holidayName}). Sila mohon menggunakan jenis cuti "Cuti Umum (Public Holiday)".`, "error", 6000);
+      }
       return;
     }
 
