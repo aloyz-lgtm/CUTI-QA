@@ -2310,9 +2310,19 @@
     const first = records[0];
     const origStart = first.originalStartDate || first.startDate;
     const origEnd = first.originalEndDate || first.endDate;
-    const skippedCount = first.skippedOffdayCount || 0;
     const hasOverlap = records.some(r => r.isOverlap);
-    const typeBadges = records.map(r => `<span class="badge badge-${r.type}">${r.type} ${r.days}H</span>`).join('');
+
+    // Gabungkan segmen jenis SAMA (cth 2 segmen AL terpisah sebab diselangi
+    // Offday/Restday) menjadi SATU badge dengan jumlah hari dicantum, supaya
+    // paparan listing tidak nampak berulang/mengelirukan. Susunan ikut
+    // urutan jenis pertama kali muncul.
+    const typeTotals = {};
+    const typeOrder = [];
+    records.forEach(r => {
+      if (!(r.type in typeTotals)) { typeTotals[r.type] = 0; typeOrder.push(r.type); }
+      typeTotals[r.type] += (r.days || 0);
+    });
+    const typeBadges = typeOrder.map(t => `<span class="badge badge-${t}">${t} ${typeTotals[t]}H</span>`).join('');
 
     return `
       <div class="compact-item animate-fade ${hasOverlap ? 'is-overlap' : ''}" style="animation-delay:${delay}s; opacity:0;" onclick="showLeaveGroupDetail('${first.groupId}')">
@@ -2320,7 +2330,6 @@
           <span class="compact-name">${first.name}</span>
           <span class="split-tag">🔀 Split</span>
           ${typeBadges}
-          ${skippedCount > 0 ? `<span class="shift-badge-free">🏠 ${skippedCount}H diabaikan</span>` : ''}
           ${hasOverlap ? `<span class="warning-badge">⚠️ Bertindih</span>` : ''}
         </div>
         <div class="compact-right">
