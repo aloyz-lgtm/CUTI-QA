@@ -368,6 +368,11 @@
       text-align: center;
       border: 1px dashed rgba(56, 189, 248, 0.35);
       margin-bottom: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
     }
 
     .btn-submit {
@@ -510,6 +515,29 @@
     .compact-name { font-size: 12px; font-weight: 800; color: var(--text); }
     .compact-right { display: flex; align-items: center; gap: 8px; }
     .compact-date { font-size: 11px; color: var(--text-muted); font-weight: 600; }
+
+    /* ===== Kad gabungan cuti auto-split (AL+PH / offday diabaikan) ===== */
+    .split-tag {
+      font-size: 10px;
+      font-weight: 900;
+      padding: 3px 9px;
+      border-radius: 10px;
+      background: rgba(168, 85, 247, 0.15);
+      color: var(--purple);
+      border: 1px solid rgba(168, 85, 247, 0.35);
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .split-segment-row {
+      background: rgba(3, 7, 18, 0.6);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+    .split-segment-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .split-segment-days { font-size: 12px; font-weight: 800; color: var(--accent); margin-left: auto; }
     
     .shift-badge-main,
     .shift-badge-siang, .shift-badge-malam, .shift-badge-free, .shift-badge-halfday {
@@ -1064,7 +1092,7 @@
       const iconEl = document.getElementById("confirmModalIcon");
 
       msgEl.innerText = message;
-      iconEl.innerText = options.danger ? "⚠️" : "❓";
+      iconEl.innerText = options.icon || (options.danger ? "⚠️" : "❓");
       okBtn.innerText = options.okText || "Ya, Teruskan";
       cancelBtn.innerText = options.cancelText || "Batal";
       okBtn.classList.toggle("danger", !!options.danger);
@@ -1734,6 +1762,10 @@
     return d.toLocaleDateString("ms-MY", { day: "2-digit", month: "short", year: "numeric" });
   }
 
+  // Kiraan RINGKAS jumlah hari kalendar dalam julat (tanpa ambil kira Offday/
+  // Restday/Cuti Umum). Sejak auto-split diperkenalkan, borang permohonan cuti
+  // guna buildLeaveSegments() untuk kiraan sebenar - fungsi ini dikekalkan
+  // sebagai utiliti umum sekiranya diperlukan di tempat lain kelak.
   function calcLeaveDays(startDate, endDate, durationOption) {
     if (!startDate || !endDate) return 0;
     const s = new Date(startDate + "T00:00:00");
@@ -1804,41 +1836,83 @@
   }
 
   // ============================================================
-  // SEKATAN TARIKH PERMOHONAN CUTI (Offday/Restday & Cuti Umum)
+  // LABEL JENIS CUTI (untuk paparan breakdown/split)
   // ============================================================
-  // Semak SETIAP tarikh dalam julat permohonan (startDate..endDate):
-  // 1) Tarikh yang jatuh pada Offday/Restday - tak boleh mohon cuti langsung
-  //    (juruteknik memang free/rehat pada hari tersebut).
-  // 2) Tarikh Cuti Umum (atau hari ganti OT carry-forward) - hanya jenis
-  //    cuti "PH" (Cuti Umum) dibenarkan; jenis cuti lain (AL/EL/MC/PL/UL)
-  //    disekat dan pengguna diarah guna pilihan Cuti Umum.
-  // Pulangkan null jika semua tarikh OK, atau { reason, dateStr, ... } jika disekat.
-  function checkLeaveDateRestrictions(startDate, endDate, type) {
+  const LEAVE_TYPE_LABELS = {
+    AL: 'Cuti Tahunan (AL)', EL: 'Cuti Kecemasan (EL)', MC: 'Sijil Sakit (MC)',
+    PL: 'Cuti Paternity (PL)', UL: 'Cuti Tanpa Gaji (UL)', PH: 'Cuti Umum (PH)'
+  };
+
+  // ============================================================
+  // PEMBAHAGIAN AUTOMATIK JULAT TARIKH CUTI (Auto-Split & Auto-Skip)
+  // ============================================================
+  // Menggantikan sekatan "block semua" yang lama. Sekarang setiap tarikh
+  // dalam julat permohonan (startDate..endDate) disemak SATU PERSATU:
+  // 1) Offday/Restday -> diabaikan terus (tidak direkod sebagai cuti apa-apa pun).
+  // 2) Cuti Umum (atau hari ganti OT carry-forward) -> direkod berasingan
+  //    sebagai jenis "PH", walau apa jenis cuti asal dipilih.
+  // 3) Hari bekerja biasa -> direkod ikut jenis cuti yang dipilih pengguna.
+  // Hari-hari berturutan dengan jenis sama digabung jadi SATU segmen supaya
+  // tidak mencipta rekod berasingan untuk setiap hari.
+  // Pulangkan { segments: [{type,startDate,endDate,dayCount,days,holidayNames}], skippedCount }
+  function buildLeaveSegments(startDate, endDate, chosenType, durationOption) {
     const s = new Date(startDate + "T00:00:00");
     const e = new Date(endDate + "T00:00:00");
+    const dayList = [];
 
     for (let cursor = new Date(s); cursor <= e; cursor.setDate(cursor.getDate() + 1)) {
       const dateStr = getLocalDateStr(cursor);
       const shiftInfo = getShiftStatusForDate(null, dateStr);
-
-      if (shiftInfo.kind === 'offday' || shiftInfo.kind === 'restday') {
-        return { reason: 'offday-restday', dateStr, label: shiftInfo.label };
-      }
-
       const holidayName = publicHolidaysKedah[dateStr];
       const carryInfo = getCarryForwardInfoForDate(dateStr);
       const isCarryTarget = carryInfo && carryInfo.role === 'target';
 
-      if ((holidayName || isCarryTarget) && type !== 'PH') {
-        return {
-          reason: 'public-holiday',
-          dateStr,
-          holidayName: holidayName || (carryInfo && carryInfo.holidayName)
-        };
+      let dayType;
+      let dayHolidayName = null;
+      if (shiftInfo.kind === 'offday' || shiftInfo.kind === 'restday') {
+        dayType = 'SKIP';
+      } else if (holidayName || isCarryTarget) {
+        dayType = 'PH';
+        dayHolidayName = holidayName || (isCarryTarget ? carryInfo.holidayName : null);
+      } else {
+        dayType = chosenType;
       }
+      dayList.push({ dateStr, dayType, dayHolidayName });
     }
-    return null;
+
+    const isSingleDayRequest = dayList.length === 1;
+    const segments = [];
+    let skippedCount = 0;
+    let cur = null;
+
+    dayList.forEach(d => {
+      if (d.dayType === 'SKIP') {
+        skippedCount++;
+        cur = null; // hari SKIP memutuskan sebarang segmen berturutan
+        return;
+      }
+      if (cur && cur.type === d.dayType) {
+        cur.endDate = d.dateStr;
+        cur.dayCount++;
+        if (d.dayHolidayName && !cur.holidayNames.includes(d.dayHolidayName)) cur.holidayNames.push(d.dayHolidayName);
+      } else {
+        cur = {
+          type: d.dayType, startDate: d.dateStr, endDate: d.dateStr, dayCount: 1,
+          holidayNames: d.dayHolidayName ? [d.dayHolidayName] : []
+        };
+        segments.push(cur);
+      }
+    });
+
+    segments.forEach(seg => {
+      // Setengah hari (1st/2nd Half) hanya sah bila SELURUH permohonan asal
+      // adalah 1 hari sahaja (disahkan semasa validation borang).
+      seg.days = (isSingleDayRequest && seg.dayCount === 1 && durationOption !== "Full") ? 0.5 : seg.dayCount;
+    });
+
+    return { segments, skippedCount };
   }
+
 
   // ============================================================
   // BORANG PERMOHONAN CUTI
@@ -1848,11 +1922,35 @@
     const startDate = document.getElementById("startDate").value;
     const endDate = document.getElementById("endDate").value;
     const durationOption = document.getElementById("durationOption").value;
+    const leaveType = document.getElementById("leaveType").value;
     const badge = document.getElementById("dayCountBadge");
-    const days = calcLeaveDays(startDate, endDate, durationOption);
-    badge.innerText = `Jumlah Hari: ${days} Hari`;
+
+    if (!startDate || !endDate || new Date(endDate + "T00:00:00") < new Date(startDate + "T00:00:00")) {
+      badge.innerHTML = `Jumlah Hari: -`;
+      return;
+    }
+
+    const { segments, skippedCount } = buildLeaveSegments(startDate, endDate, leaveType, durationOption);
+
+    if (!segments.length) {
+      badge.innerHTML = `⚠️ Kesemua tarikh ini Offday/Restday — tiada cuti akan direkod`;
+      return;
+    }
+
+    if (segments.length === 1 && skippedCount === 0) {
+      badge.innerHTML = `Jumlah Hari: ${segments[0].days} Hari`;
+      return;
+    }
+
+    // Lebih dari 1 segmen (auto-split AL/PH) dan/atau ada hari Offday/Restday
+    // diabaikan - papar breakdown ringkas secara live sebelum submit.
+    const badgesHtml = segments.map(seg => `<span class="badge badge-${seg.type}">${seg.type} ${seg.days}H</span>`).join('');
+    const skipHtml = skippedCount > 0
+      ? `<span class="shift-badge-free">🏠 ${skippedCount}H diabaikan</span>`
+      : '';
+    badge.innerHTML = `${badgesHtml}${skipHtml}`;
   }
-  ["startDate", "endDate", "durationOption"].forEach(id => {
+  ["startDate", "endDate", "durationOption", "leaveType"].forEach(id => {
     document.getElementById(id).addEventListener("change", updateDayCountBadge);
   });
 
@@ -1874,22 +1972,18 @@
       return;
     }
 
-    const restriction = checkLeaveDateRestrictions(startDate, endDate, type);
-    if (restriction) {
-      if (restriction.reason === 'offday-restday') {
-        showToast(`Tarikh ${formatDateHuman(restriction.dateStr)} jatuh pada ${restriction.label}. Permohonan cuti tidak dibenarkan pada hari Offday/Restday.`, "error", 6000);
-      } else {
-        showToast(`Tarikh ${formatDateHuman(restriction.dateStr)} merupakan Cuti Umum (${restriction.holidayName}). Sila mohon menggunakan jenis cuti "Cuti Umum (Public Holiday)".`, "error", 6000);
-      }
-      return;
-    }
-
-    const days = calcLeaveDays(startDate, endDate, durationOption);
-
     const selfClashes = findSelfOverlap(name, startDate, endDate);
     if (selfClashes.length) {
       const clashList = selfClashes.map(l => `• ${formatDateHuman(l.startDate)} — ${formatDateHuman(l.endDate)} (${l.type})`).join('\n');
       showToast(`Anda sudah mempunyai rekod cuti pada tempoh ini. Permohonan tidak boleh dihantar.\n\nRekod sedia ada:\n${clashList}`, "error", 6000);
+      return;
+    }
+
+    // Pecahkan julat tarikh secara automatik: hari Offday/Restday diabaikan,
+    // hari Cuti Umum direkod berasingan sebagai PH, baki ikut jenis dipilih.
+    const { segments, skippedCount } = buildLeaveSegments(startDate, endDate, type, durationOption);
+    if (!segments.length) {
+      showToast(`Kesemua tarikh dalam julat ${formatDateHuman(startDate)} — ${formatDateHuman(endDate)} adalah Offday/Restday. Tiada cuti untuk direkodkan.`, "error", 6000);
       return;
     }
 
@@ -1901,16 +1995,18 @@
       if (!proceed) return;
     }
 
-    // Had MC tahunan: 18 hari. Semak jumlah MC sedia ada + permohonan baharu ini.
+    // Had MC tahunan: 18 hari. Kira hanya segmen jenis MC (bukan segmen PH
+    // yang mungkin terhasil dari auto-split).
     const MC_ANNUAL_LIMIT = 18;
-    if (type === 'MC') {
+    const newMcDays = segments.filter(seg => seg.type === 'MC').reduce((sum, seg) => sum + seg.days, 0);
+    if (newMcDays > 0) {
       const existingMC = leaveLogs
         .filter(l => l.name === name && l.type === 'MC' && !l.isPastRecord)
         .reduce((sum, l) => sum + (l.days || 0), 0);
       const pastMC = leaveLogs
         .filter(l => l.name === name && l.type === 'MC' && l.isPastRecord)
         .reduce((sum, l) => sum + (l.days || 0), 0);
-      const projectedTotal = existingMC + pastMC + days;
+      const projectedTotal = existingMC + pastMC + newMcDays;
       if (projectedTotal > MC_ANNUAL_LIMIT) {
         const proceedMc = await showConfirm(
           `⚠️ Amaran: Jumlah MC ${name} akan menjadi ${projectedTotal} hari, melebihi had tahunan ${MC_ANNUAL_LIMIT} hari.\n\nTeruskan hantar permohonan?`,
@@ -1920,22 +2016,58 @@
       }
     }
 
+    // Pop-up MAKLUMAN (bukan amaran) - hanya dipaparkan jika permohonan
+    // sebenarnya di-split kepada >1 segmen dan/atau ada hari diabaikan, supaya
+    // pengguna nampak dengan jelas macam mana rekod akan dipecahkan sebelum
+    // benar-benar dihantar. Permohonan biasa (1 segmen, tiada skip) terus je.
+    const isSplit = segments.length > 1 || skippedCount > 0;
+    if (isSplit) {
+      const breakdownLines = segments.map(seg => {
+        const label = LEAVE_TYPE_LABELS[seg.type] || seg.type;
+        const dateRange = seg.startDate === seg.endDate ? formatDateHuman(seg.startDate) : `${formatDateHuman(seg.startDate)} - ${formatDateHuman(seg.endDate)}`;
+        const holidaySuffix = seg.holidayNames.length ? ` (${seg.holidayNames.join(' & ')})` : '';
+        return `• ${label}: ${seg.days} Hari — ${dateRange}${holidaySuffix}`;
+      }).join('\n');
+      const skipLine = skippedCount > 0 ? `\n• Offday/Restday (tidak dikira): ${skippedCount} Hari` : '';
+
+      const proceedSplit = await showConfirm(
+        `Permohonan ${formatDateHuman(startDate)} — ${formatDateHuman(endDate)} akan direkodkan seperti berikut:\n\n${breakdownLines}${skipLine}\n\nTeruskan hantar?`,
+        { icon: "ℹ️", okText: "Ya, Hantar" }
+      );
+      if (!proceedSplit) return;
+    }
+
     const submitBtn = e.target.querySelector('button[type="submit"]');
     submitBtn.disabled = true;
     submitBtn.innerText = "⏳ Menghantar...";
 
+    // ID kumpulan hanya diperlukan bila permohonan dipecah kepada >1 segmen,
+    // supaya rekod-rekod berkaitan boleh digabung semula dalam paparan listing.
+    const groupId = segments.length > 1 ? `grp_${Date.now()}_${Math.random().toString(36).slice(2, 8)}` : null;
+
     try {
-      await addDoc(collection(db, "leaves"), {
-        name, type, startDate, endDate,
-        duration: durationOption,
-        days, reason,
-        timestamp: Date.now(),
-        isOverlap,
-        isPastRecord: false
-      });
+      for (const seg of segments) {
+        const payload = {
+          name, type: seg.type, startDate: seg.startDate, endDate: seg.endDate,
+          duration: (segments.length === 1 && seg.dayCount === 1 && durationOption !== "Full") ? durationOption : "Full",
+          days: seg.days,
+          reason,
+          timestamp: Date.now(),
+          isOverlap,
+          isPastRecord: false
+        };
+        if (seg.holidayNames.length) payload.holidayName = seg.holidayNames.join(' & ');
+        if (groupId) {
+          payload.groupId = groupId;
+          payload.originalStartDate = startDate;
+          payload.originalEndDate = endDate;
+          payload.skippedOffdayCount = skippedCount;
+        }
+        await addDoc(collection(db, "leaves"), payload);
+      }
       showToast("Permohonan cuti berjaya dihantar!", "success");
       e.target.reset();
-      document.getElementById("dayCountBadge").innerText = "Jumlah Hari: 1 Hari";
+      document.getElementById("dayCountBadge").innerHTML = "Jumlah Hari: -";
       updateLeaveReasonCharCounter();
     } catch (err) {
       showToast("Ralat: " + err.message, "error");
@@ -2027,6 +2159,7 @@
       <div class="modal-row"><div class="modal-label">Nama Juruteknik</div><div class="modal-val">${log.name}</div></div>
       <div class="modal-row"><div class="modal-label">Jenis Cuti</div><div class="modal-val"><span class="badge badge-${log.type}">${log.type}</span></div></div>
       <div class="modal-row"><div class="modal-label">Tempoh</div><div class="modal-val">${formatDateHuman(log.startDate)} — ${formatDateHuman(log.endDate)} (${log.days} Hari${log.duration && log.duration !== 'Full' ? ', ' + log.duration : ''})</div></div>
+      ${log.holidayName ? `<div class="modal-row"><div class="modal-label">Cuti Umum</div><div class="modal-val">🎉 ${escapeHtml(log.holidayName)}</div></div>` : ''}
       <div class="modal-row"><div class="modal-label">Shift Berkaitan</div><div class="modal-val">${shiftInfo.label}</div></div>
       <div class="modal-row"><div class="modal-label">Sebab / Catatan</div><div class="modal-val">${log.reason ? escapeHtml(log.reason) : '-'}</div></div>
       ${log.isOverlap ? `<div class="modal-row"><span class="warning-badge">⚠️ Bertindih dengan cuti rakan</span></div>` : ''}
@@ -2047,47 +2180,101 @@
     }
   };
 
+  // ============================================================
+  // DETAIL KUMPULAN CUTI SPLIT (groupId) - segmen AL/PH/dll dari
+  // SATU permohonan asal yang dipecah automatik
+  // ============================================================
+  window.showLeaveGroupDetail = function(groupId) {
+    const records = leaveLogs.filter(l => l.groupId === groupId).sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+    if (!records.length) return;
+    const first = records[0];
+    const origStart = first.originalStartDate || first.startDate;
+    const origEnd = first.originalEndDate || first.endDate;
+    const skippedCount = first.skippedOffdayCount || 0;
+    const hasOverlap = records.some(r => r.isOverlap);
+
+    const segmentRows = records.map(log => `
+      <div class="split-segment-row">
+        <div class="split-segment-top">
+          <span class="badge badge-${log.type}">${log.type}</span>
+          <span class="modal-val">${formatDateHuman(log.startDate)}${log.startDate !== log.endDate ? ' — ' + formatDateHuman(log.endDate) : ''}</span>
+          <span class="split-segment-days">${log.days} Hari</span>
+        </div>
+        ${log.holidayName ? `<div class="sub-text" style="margin:4px 0 0;">🎉 ${escapeHtml(log.holidayName)}</div>` : ''}
+        ${currentRole === 'leader' ? `<button type="button" class="btn-delete" style="margin-top:8px;" onclick="deleteLeaveRecord('${log.id}')">🗑️ Padam Segmen Ini</button>` : ''}
+      </div>
+    `).join('');
+
+    document.getElementById("modalHeaderTitle").innerText = "🔀 Perincian Permohonan Cuti (Split)";
+    document.getElementById("modalBodyContent").innerHTML = `
+      <div class="modal-row"><div class="modal-label">Nama Juruteknik</div><div class="modal-val">${first.name}</div></div>
+      <div class="modal-row"><div class="modal-label">Tempoh Asal Dimohon</div><div class="modal-val">${formatDateHuman(origStart)} — ${formatDateHuman(origEnd)}</div></div>
+      ${skippedCount > 0 ? `<div class="modal-row"><div class="modal-label">Offday/Restday (Tidak Dikira)</div><div class="modal-val">🏠 ${skippedCount} Hari</div></div>` : ''}
+      <div class="modal-row"><div class="modal-label">Sebab / Catatan</div><div class="modal-val">${first.reason ? escapeHtml(first.reason) : '-'}</div></div>
+      ${hasOverlap ? `<div class="modal-row"><span class="warning-badge">⚠️ Bertindih dengan cuti rakan</span></div>` : ''}
+      <div class="modal-row"><div class="modal-label">Breakdown Segmen (${records.length})</div></div>
+      ${segmentRows}
+      ${currentRole === 'leader' ? `<button type="button" class="btn-delete" style="margin-top:8px;" onclick="deleteLeaveGroup('${groupId}')">🗑️ Padam Seluruh Kumpulan</button>` : ''}
+    `;
+    document.getElementById("detailModal").classList.add("active");
+  };
+
+  window.deleteLeaveGroup = async function(groupId) {
+    if (currentRole !== 'leader') return;
+    const proceed = await showConfirm("Padam SELURUH kumpulan permohonan cuti split ini (semua segmen) secara kekal?", { danger: true, okText: "Ya, Padam Semua" });
+    if (!proceed) return;
+    try {
+      const records = leaveLogs.filter(l => l.groupId === groupId);
+      for (const rec of records) {
+        await deleteDoc(doc(db, "leaves", rec.id));
+      }
+      document.getElementById("detailModal").classList.remove("active");
+      showToast("Kumpulan permohonan cuti berjaya dipadam.", "success");
+    } catch (err) {
+      showToast("Ralat: " + err.message, "error");
+    }
+  };
+
   function renderLeaveCards() {
     const container = document.getElementById("leaveCardsContainer");
-    const activeLogs = leaveLogs
-      .filter(l => !l.isPastRecord)
-      .sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+    const activeLogs = leaveLogs.filter(l => !l.isPastRecord);
 
     if (!activeLogs.length) {
       container.innerHTML = `<p class="sub-text" style="margin-top:0;">Tiada rekod cuti dijadualkan buat masa ini.</p>`;
       return;
     }
 
-    const groups = {};
+    // Kumpulkan rekod yang berkongsi groupId (hasil auto-split AL/PH) menjadi
+    // SATU entri paparan; rekod biasa (tanpa groupId) kekal sebagai entri tunggal.
+    const entries = [];
+    const seenGroups = new Set();
     activeLogs.forEach(log => {
-      const d = new Date(log.startDate + "T00:00:00");
+      if (log.groupId) {
+        if (seenGroups.has(log.groupId)) return;
+        seenGroups.add(log.groupId);
+        const groupRecords = activeLogs.filter(l => l.groupId === log.groupId);
+        entries.push({ isGroup: true, records: groupRecords, sortDate: groupRecords[0].originalStartDate || groupRecords[0].startDate });
+      } else {
+        entries.push({ isGroup: false, records: [log], sortDate: log.startDate });
+      }
+    });
+    entries.sort((a, b) => new Date(a.sortDate) - new Date(b.sortDate));
+
+    const groups = {};
+    entries.forEach(entry => {
+      const d = new Date(entry.sortDate + "T00:00:00");
       const key = `${d.getFullYear()}-${String(d.getMonth()).padStart(2, '0')}`;
       if (!groups[key]) groups[key] = [];
-      groups[key].push(log);
+      groups[key].push(entry);
     });
 
     let globalIndex = 0;
     container.innerHTML = Object.keys(groups).sort().map(key => {
       const [year, monthIdx] = key.split('-').map(Number);
-      const rows = groups[key].map(log => {
-        const shiftInfo = getShiftStatusForDate(log.name, log.startDate);
-        const shiftBadgeClass = shiftInfo.type === 'siang' ? 'shift-badge-siang' : shiftInfo.type === 'malam' ? 'shift-badge-malam' : 'shift-badge-free';
+      const rows = groups[key].map(entry => {
         const delay = Math.min(globalIndex * 0.04, 0.6);
         globalIndex++;
-        return `
-          <div class="compact-item animate-fade ${log.isOverlap ? 'is-overlap' : ''}" style="animation-delay:${delay}s; opacity:0;" onclick="showLeaveDetail('${log.id}')">
-            <div class="compact-name-wrap">
-              <span class="compact-name">${log.name}</span>
-              <span class="badge badge-${log.type}">${log.type}</span>
-              <span class="${shiftBadgeClass}">${shiftInfo.label}</span>
-              ${log.duration && log.duration !== 'Full' ? `<span class="shift-badge-halfday">${log.duration}</span>` : ''}
-              ${log.isOverlap ? `<span class="warning-badge">⚠️ Bertindih</span>` : ''}
-            </div>
-            <div class="compact-right">
-              <span class="compact-date">${formatDateHuman(log.startDate)}${log.startDate !== log.endDate ? ' - ' + formatDateHuman(log.endDate) : ''}</span>
-            </div>
-          </div>
-        `;
+        return entry.isGroup ? renderGroupedLeaveRow(entry.records, delay) : renderSingleLeaveRow(entry.records[0], delay);
       }).join('');
 
       return `
@@ -2097,6 +2284,50 @@
         </div>
       `;
     }).join('');
+  }
+
+  function renderSingleLeaveRow(log, delay) {
+    const shiftInfo = getShiftStatusForDate(log.name, log.startDate);
+    const shiftBadgeClass = shiftInfo.type === 'siang' ? 'shift-badge-siang' : shiftInfo.type === 'malam' ? 'shift-badge-malam' : 'shift-badge-free';
+    return `
+      <div class="compact-item animate-fade ${log.isOverlap ? 'is-overlap' : ''}" style="animation-delay:${delay}s; opacity:0;" onclick="showLeaveDetail('${log.id}')">
+        <div class="compact-name-wrap">
+          <span class="compact-name">${log.name}</span>
+          <span class="badge badge-${log.type}">${log.type}</span>
+          <span class="${shiftBadgeClass}">${shiftInfo.label}</span>
+          ${log.duration && log.duration !== 'Full' ? `<span class="shift-badge-halfday">${log.duration}</span>` : ''}
+          ${log.isOverlap ? `<span class="warning-badge">⚠️ Bertindih</span>` : ''}
+        </div>
+        <div class="compact-right">
+          <span class="compact-date">${formatDateHuman(log.startDate)}${log.startDate !== log.endDate ? ' - ' + formatDateHuman(log.endDate) : ''}</span>
+        </div>
+      </div>
+    `;
+  }
+
+  // Kad gabungan untuk permohonan yang di-split automatik (AL+PH / offday diabaikan)
+  function renderGroupedLeaveRow(records, delay) {
+    const first = records[0];
+    const origStart = first.originalStartDate || first.startDate;
+    const origEnd = first.originalEndDate || first.endDate;
+    const skippedCount = first.skippedOffdayCount || 0;
+    const hasOverlap = records.some(r => r.isOverlap);
+    const typeBadges = records.map(r => `<span class="badge badge-${r.type}">${r.type} ${r.days}H</span>`).join('');
+
+    return `
+      <div class="compact-item animate-fade ${hasOverlap ? 'is-overlap' : ''}" style="animation-delay:${delay}s; opacity:0;" onclick="showLeaveGroupDetail('${first.groupId}')">
+        <div class="compact-name-wrap">
+          <span class="compact-name">${first.name}</span>
+          <span class="split-tag">🔀 Split</span>
+          ${typeBadges}
+          ${skippedCount > 0 ? `<span class="shift-badge-free">🏠 ${skippedCount}H diabaikan</span>` : ''}
+          ${hasOverlap ? `<span class="warning-badge">⚠️ Bertindih</span>` : ''}
+        </div>
+        <div class="compact-right">
+          <span class="compact-date">${formatDateHuman(origStart)}${origStart !== origEnd ? ' - ' + formatDateHuman(origEnd) : ''}</span>
+        </div>
+      </div>
+    `;
   }
 
   // ============================================================
