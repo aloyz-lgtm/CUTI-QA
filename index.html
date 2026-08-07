@@ -211,7 +211,11 @@
     }
 
     .sub-page { display: none; }
-    .sub-page.active { display: block; }
+    .sub-page.active { display: block; animation: subPageIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    @keyframes subPageIn {
+      from { opacity: 0; transform: translateX(8px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
 
     .card {
       background: var(--card);
@@ -452,6 +456,11 @@
     .cal-day-cell.shift-malam { border-bottom: 3px solid var(--shift-malam); background: rgba(20, 184, 166, 0.06); }
     .cal-day-cell.shift-free { border-bottom: 3px solid var(--shift-free); background: rgba(100, 116, 139, 0.08); }
     .cal-day-cell.has-carry-ot { box-shadow: inset 0 0 0 2px var(--orange); }
+    .cal-day-cell.is-today { animation: calTodayPulse 2.4s ease-in-out infinite; }
+    @keyframes calTodayPulse {
+      0%, 100% { box-shadow: 0 0 0 2px var(--accent); }
+      50% { box-shadow: 0 0 0 4px var(--accent-glow); }
+    }
 
     .cal-legend { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; font-size: 11px; justify-content: center; border-top: 1px solid var(--border); padding-top: 14px; color: var(--text-muted); font-weight: 700; }
     .legend-item { display: flex; align-items: center; gap: 6px; }
@@ -681,9 +690,21 @@
     .today-shift-eyebrow { font-size: 10px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
     .today-shift-label { font-size: 22px; font-weight: 900; color: var(--text); margin-bottom: 4px; letter-spacing: -0.3px; }
     .today-shift-sub { font-size: 12px; color: var(--accent); font-weight: 700; }
+    .today-shift-progress-ring {
+      flex-shrink: 0;
+      width: 76px; height: 76px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 5px;
+      background: conic-gradient(var(--accent) 0%, rgba(148,163,184,0.15) 0%);
+      transition: background 0.6s ease;
+      z-index: 1;
+    }
     .today-shift-ring {
       flex-shrink: 0;
-      width: 64px; height: 64px;
+      width: 100%; height: 100%;
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -693,7 +714,6 @@
       border: 2px solid var(--accent);
       box-shadow: 0 0 25px var(--accent-glow);
       animation: ringPulse 2.4s ease-in-out infinite;
-      z-index: 1;
     }
     .today-shift-ring.ring-siang { border-color: var(--shift-siang); background: rgba(245, 158, 11, 0.12); box-shadow: 0 0 25px rgba(245, 158, 11, 0.25); }
     .today-shift-ring.ring-malam { border-color: var(--shift-malam); background: rgba(20, 184, 166, 0.12); box-shadow: 0 0 25px rgba(20, 184, 166, 0.25); }
@@ -757,8 +777,10 @@
         <div class="today-shift-label" id="todayShiftLabel">-</div>
         <div class="today-shift-sub" id="todayShiftSub">Memuatkan...</div>
       </div>
-      <div class="today-shift-ring" id="todayShiftRing">
-        <span id="todayShiftEmoji">⏳</span>
+      <div class="today-shift-progress-ring" id="todayShiftProgressRing">
+        <div class="today-shift-ring" id="todayShiftRing">
+          <span id="todayShiftEmoji">⏳</span>
+        </div>
       </div>
     </div>
 
@@ -842,7 +864,8 @@
 
           <div class="form-group">
             <label>Sebab / Catatan:</label>
-            <input type="text" id="leaveReason" placeholder="Contoh: Demam / Urusan Keluarga" required>
+            <input type="text" id="leaveReason" maxlength="200" placeholder="Contoh: Demam / Urusan Keluarga" required>
+            <div class="char-counter" id="leaveReasonCharCounter">0 / 200</div>
           </div>
 
           <button type="submit" class="btn-submit">✨ Hantar Permohonan Cuti</button>
@@ -1012,6 +1035,11 @@
   function showToast(message, type = 'info', duration = 4000) {
     const stack = document.getElementById("toastStack");
     if (!stack) { console.log(message); return; }
+    // Maklum balas getaran ringan untuk toast error di peranti mobile yang
+    // menyokong Vibration API (senyap/no-op pada peranti/browser yang tak sokong).
+    if (type === 'error' && navigator.vibrate) {
+      try { navigator.vibrate([40, 60, 40]); } catch (e) { /* diabaikan */ }
+    }
     const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
     const el = document.createElement("div");
     el.className = `toast-item toast-${type}`;
@@ -1165,7 +1193,12 @@
 
   function getShiftStatusForDate(techName, dateStr) {
     const baseDate = SHIFT_BASE_DATE;
-    const targetDate = new Date(dateStr);
+    // PENTING: sentiasa tambah "T00:00:00" supaya dateStr ditafsir sebagai waktu
+    // TEMPATAN (local time), sama seperti semua fungsi tarikh lain dalam sistem
+    // ini (calcLeaveDays, checkLeaveDateRestrictions, dll). Tanpa ini, dateStr
+    // ditafsir sebagai UTC midnight - kebetulan masih betul untuk UTC+8 (Malaysia)
+    // tapi akan tersilap 1 hari jika dibuka dari zon waktu offset negatif.
+    const targetDate = new Date(dateStr + "T00:00:00");
     targetDate.setHours(0,0,0,0);
 
     const diffDays = Math.round((targetDate - baseDate) / (1000 * 60 * 60 * 24));
@@ -1306,6 +1339,28 @@
     const ring = document.getElementById("todayShiftRing");
     ring.classList.remove('ring-siang', 'ring-malam', 'ring-free');
     ring.classList.add(`ring-${seg.type}`);
+
+    // Kira & papar peratus hari yang telah berlalu dalam blok shift semasa
+    // (contoh: hari ke-2 daripada 4 hari Shift Siang = 25% lengkap) sebagai
+    // progress ring visual di sekeliling emoji shift.
+    const blockStartDate = new Date(effectiveDate);
+    blockStartDate.setDate(blockStartDate.getDate() - (dayInCycle - seg.start));
+    const startInstant = new Date(blockStartDate);
+    startInstant.setHours(7, 0, 0, 0);
+
+    const totalBlockMs = transitionAt - startInstant;
+    const elapsedMs = now - startInstant;
+    const progressPct = totalBlockMs > 0
+      ? Math.min(100, Math.max(0, (elapsedMs / totalBlockMs) * 100))
+      : 0;
+
+    const progressColorMap = { siang: 'var(--shift-siang)', malam: 'var(--shift-malam)', free: 'var(--shift-free)' };
+    const progressColor = progressColorMap[seg.type] || 'var(--accent)';
+    const progressRing = document.getElementById("todayShiftProgressRing");
+    if (progressRing) {
+      progressRing.style.background = `conic-gradient(${progressColor} ${progressPct}%, rgba(148,163,184,0.15) ${progressPct}%)`;
+      progressRing.setAttribute("aria-label", `${Math.round(progressPct)}% blok shift semasa telah berlalu`);
+    }
   }
 
   window.switchSubPage = function(pageId, btnElement) {
@@ -1439,6 +1494,18 @@
   }
   document.getElementById("announcementText").addEventListener("input", updateAnnounceCharCounter);
 
+  function updateLeaveReasonCharCounter() {
+    const el = document.getElementById("leaveReason");
+    const counterEl = document.getElementById("leaveReasonCharCounter");
+    if (!el || !counterEl) return;
+    const max = parseInt(el.getAttribute("maxlength") || "200", 10);
+    const len = el.value.length;
+    counterEl.innerText = `${len} / ${max}`;
+    counterEl.classList.toggle("char-counter-warn", len >= max * 0.85 && len < max);
+    counterEl.classList.toggle("char-counter-limit", len >= max);
+  }
+  document.getElementById("leaveReason").addEventListener("input", updateLeaveReasonCharCounter);
+
   (function restoreSession() {
     const isAuthed = sessionStorage.getItem("qa_authenticated") === "true";
     const loginTime = parseInt(sessionStorage.getItem("qa_login_time") || "0", 10);
@@ -1568,6 +1635,16 @@
       const inputs = document.querySelectorAll('.bulk-input');
       const todayStr = getLocalDateStr();
 
+      // Operasi ini PADAM semua rekod cuti lepas (isPastRecord) sedia ada untuk
+      // SEMUA staff, kemudian bina semula dari input semasa. Ini boleh
+      // memusnahkan data lama tanpa sengaja jika borang belum sempat termuat
+      // sepenuhnya - jadi wajib minta pengesahan Leader dahulu.
+      const proceed = await showConfirm(
+        "Tindakan ini akan MENGGANTIKAN semua rekod cuti lepas/tahunan sedia ada bagi SETIAP staff dengan nilai dalam jadual ini.\n\nRekod lama yang tidak dimasukkan semula akan hilang. Teruskan?",
+        { danger: true, okText: "Ya, Simpan & Gantikan" }
+      );
+      if (!proceed) return;
+
       try {
         const oldPastRecords = leaveLogs.filter(l => l.isPastRecord);
         for (let oldRec of oldPastRecords) {
@@ -1601,8 +1678,17 @@
   // UTILITI UMUM
   // ============================================================
 
+  const MAX_ANNOUNCEMENT_IMAGE_MB = 10;
+
   function compressImageToBase64(file, maxWidth = 900, quality = 0.7) {
     return new Promise((resolve, reject) => {
+      // Sekat saiz fail ASAL sebelum dibaca ke memori/canvas, supaya telefon
+      // rendah spec tak lag/hang bila cuba proses gambar yang terlalu besar
+      // (contoh gambar 20-30MB terus dari kamera resolusi tinggi).
+      if (file.size > MAX_ANNOUNCEMENT_IMAGE_MB * 1024 * 1024) {
+        reject(new Error(`Saiz gambar melebihi had ${MAX_ANNOUNCEMENT_IMAGE_MB}MB. Sila pilih gambar yang lebih kecil.`));
+        return;
+      }
       const reader = new FileReader();
       reader.onload = (ev) => {
         const img = new Image();
@@ -1658,7 +1744,10 @@
     return diffDays;
   }
 
-  // Semak jika seorang juruteknik lain (shift sama) sudah bercuti pada tarikh yang bertindih
+  // Semak jika seorang juruteknik lain (shift sama) sudah bercuti pada tarikh yang bertindih.
+  // NOTA: dibandingkan HARI-DEMI-HARI dalam julat bertindih (bukan setakat tarikh
+  // mula sahaja), supaya cuti panjang yang merentasi peralihan shift (siang→malam)
+  // tetap dikesan dengan tepat pada hari-hari yang sebenarnya sama shift.
   function findOverlapCount(name, startDate, endDate, excludeId = null) {
     const s = new Date(startDate + "T00:00:00");
     const e = new Date(endDate + "T00:00:00");
@@ -1674,12 +1763,21 @@
       const hasDateOverlap = ls <= e && le >= s;
       if (!hasDateOverlap) continue;
 
-      // Bandingkan jenis shift pada tarikh mula masing-masing
-      const shiftA = getShiftStatusForDate(name, startDate).type;
-      const shiftB = getShiftStatusForDate(log.name, log.startDate).type;
-      if (shiftA !== 'free' && shiftA === shiftB) {
-        overlapNames.add(log.name);
+      // Julat tarikh yang benar-benar bertindih antara kedua-dua permohonan
+      const overlapStart = ls > s ? ls : s;
+      const overlapEnd = le < e ? le : e;
+
+      let sameShiftFound = false;
+      for (let cursor = new Date(overlapStart); cursor <= overlapEnd; cursor.setDate(cursor.getDate() + 1)) {
+        const cursorStr = getLocalDateStr(cursor);
+        const shiftA = getShiftStatusForDate(name, cursorStr).type;
+        const shiftB = getShiftStatusForDate(log.name, cursorStr).type;
+        if (shiftA !== 'free' && shiftA === shiftB) {
+          sameShiftFound = true;
+          break;
+        }
       }
+      if (sameShiftFound) overlapNames.add(log.name);
     }
     return overlapNames.size;
   }
@@ -1803,6 +1901,25 @@
       if (!proceed) return;
     }
 
+    // Had MC tahunan: 18 hari. Semak jumlah MC sedia ada + permohonan baharu ini.
+    const MC_ANNUAL_LIMIT = 18;
+    if (type === 'MC') {
+      const existingMC = leaveLogs
+        .filter(l => l.name === name && l.type === 'MC' && !l.isPastRecord)
+        .reduce((sum, l) => sum + (l.days || 0), 0);
+      const pastMC = leaveLogs
+        .filter(l => l.name === name && l.type === 'MC' && l.isPastRecord)
+        .reduce((sum, l) => sum + (l.days || 0), 0);
+      const projectedTotal = existingMC + pastMC + days;
+      if (projectedTotal > MC_ANNUAL_LIMIT) {
+        const proceedMc = await showConfirm(
+          `⚠️ Amaran: Jumlah MC ${name} akan menjadi ${projectedTotal} hari, melebihi had tahunan ${MC_ANNUAL_LIMIT} hari.\n\nTeruskan hantar permohonan?`,
+          { danger: true, okText: "Ya, Hantar Juga" }
+        );
+        if (!proceedMc) return;
+      }
+    }
+
     const submitBtn = e.target.querySelector('button[type="submit"]');
     submitBtn.disabled = true;
     submitBtn.innerText = "⏳ Menghantar...";
@@ -1819,6 +1936,7 @@
       showToast("Permohonan cuti berjaya dihantar!", "success");
       e.target.reset();
       document.getElementById("dayCountBadge").innerText = "Jumlah Hari: 1 Hari";
+      updateLeaveReasonCharCounter();
     } catch (err) {
       showToast("Ralat: " + err.message, "error");
     } finally {
@@ -1995,16 +2113,26 @@
 
     const ranked = Object.entries(totals).sort((a, b) => b[1] - a[1]);
     const maxVal = Math.max(1, ranked[0] ? ranked[0][1] : 1);
+    const MC_ANNUAL_LIMIT = 18;
 
-    container.innerHTML = ranked.map(([name, total], i) => `
+    container.innerHTML = ranked.map(([name, total], i) => {
+      // Warna bar ikut kedekatan dengan had tahunan 18 hari - amaran visual awal
+      // sebelum staff benar-benar terlebih MC.
+      let barColor = 'var(--green)';
+      if (total >= MC_ANNUAL_LIMIT) barColor = 'var(--red)';
+      else if (total >= MC_ANNUAL_LIMIT * 0.7) barColor = 'var(--orange)';
+      else if (total >= MC_ANNUAL_LIMIT * 0.4) barColor = 'var(--yellow)';
+
+      return `
       <div class="rank-item">
         <div class="rank-top-row">
           <div class="rank-num-name">#${i + 1} ${name}</div>
-          <div class="rank-val">${total} Hari</div>
+          <div class="rank-val">${total} / ${MC_ANNUAL_LIMIT} Hari</div>
         </div>
-        <div class="rank-bar-bg"><div class="rank-bar-fill" style="width:${(total / maxVal) * 100}%"></div></div>
+        <div class="rank-bar-bg"><div class="rank-bar-fill" style="width:${(total / maxVal) * 100}%; background:${barColor};"></div></div>
       </div>
-    `).join('');
+      `;
+    }).join('');
   }
 
   function renderStats() {
@@ -2101,7 +2229,7 @@
       if (carryInfo) dots += `<div style="width:6px;height:6px;border-radius:50%;background:var(--orange);"></div>`;
 
       return `
-        <div class="cal-day-cell shift-${shiftInfo.type} ${carryInfo && carryInfo.role === 'target' ? 'has-carry-ot' : ''}" style="${isToday ? 'box-shadow: 0 0 0 2px var(--accent);' : ''}" onclick="showDayDetail('${dateStr}', ${holidayName ? `'${holidayName.replace(/'/g, "\\'")}'` : 'null'})">
+        <div class="cal-day-cell shift-${shiftInfo.type} ${carryInfo && carryInfo.role === 'target' ? 'has-carry-ot' : ''} ${isToday ? 'is-today' : ''}" onclick="showDayDetail('${dateStr}', ${holidayName ? `'${holidayName.replace(/'/g, "\\'")}'` : 'null'})">
           <span class="cal-day-num">${cell.day}</span>
           <div style="display:flex; gap:3px;">${dots}</div>
         </div>
