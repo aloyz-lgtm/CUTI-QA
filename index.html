@@ -758,6 +758,24 @@
     .badge-PL { background: rgba(168,85,247,0.15); color: var(--purple); border: 1px solid rgba(168,85,247,0.3); }
     .badge-UL { background: rgba(148,163,184,0.15); color: var(--text-muted); border: 1px solid rgba(148,163,184,0.3); }
     .badge-PH { background: rgba(236,72,153,0.15); color: var(--pink); border: 1px solid rgba(236,72,153,0.3); }
+
+    /* ============ TOGGLE SWITCH (Papar Cuti Lampau) ============ */
+    .toggle-switch-wrap { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; color: var(--text-muted); cursor: pointer; user-select: none; }
+    .toggle-switch { position: relative; display: inline-block; width: 36px; height: 20px; flex-shrink: 0; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider { position: absolute; inset: 0; background: rgba(148,163,184,0.25); border-radius: 20px; transition: background 0.25s; }
+    .toggle-slider::before { content: ""; position: absolute; width: 14px; height: 14px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: transform 0.25s; }
+    .toggle-switch input:checked + .toggle-slider { background: var(--accent); }
+    .toggle-switch input:checked + .toggle-slider::before { transform: translateX(16px); }
+
+    /* ============ RESPONSIVE (DESKTOP/TABLET) ============ */
+    /* Tiada breakpoint sebelum ini - semua grid kekal 1 lajur walau di
+       skrin lebar (container max-width:1100px), buang banyak ruang kosong.
+       Pada >=820px, seksyen borang cuti + ranking/stat jadi 2 lajur. */
+    .grid-responsive { display: grid; grid-template-columns: 1fr; gap: 20px; }
+    @media (min-width: 820px) {
+      .grid-responsive { grid-template-columns: 1fr 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -841,7 +859,7 @@
       </div>
     </div>
 
-    <div style="display: grid; grid-template-columns: 1fr; gap: 20px;">
+    <div class="grid-responsive">
       
       <div class="card">
         <h2> Borang Permohonan Cuti 
@@ -888,7 +906,7 @@
             </select>
           </div>
 
-          <div class="day-count-badge" id="dayCountBadge">Jumlah Hari: 1 Hari</div>
+          <div class="day-count-badge" id="dayCountBadge">Jumlah Hari: -</div>
 
           <div class="form-group">
             <label>Sebab / Catatan:</label>
@@ -900,7 +918,7 @@
         </form>
       </div>
 
-      <div style="display: grid; grid-template-columns: 1fr; gap: 20px;">
+      <div class="grid-responsive">
         <div class="card">
           <h2> 🏆 Carta Ranking MC (Shift C) 🏆</h2>
           <p class="sub-text">Jumlah hari cuti sakit terkumpul </p>
@@ -927,8 +945,17 @@
     </div>
 
     <div class="card" style="margin-top: 20px;">
-      <h2> Senarai Plan Cuti Shift C</h2>
-      <p class="sub-text">Tekan pada mana-mana senarai cuti untuk perincian atau pengurusan oleh Leader.</p>
+      <h2>
+        <span> Senarai Plan Cuti Shift C</span>
+        <label class="toggle-switch-wrap" for="showPastLeavesToggle">
+          <span>Papar Cuti Lampau</span>
+          <span class="toggle-switch">
+            <input type="checkbox" id="showPastLeavesToggle">
+            <span class="toggle-slider"></span>
+          </span>
+        </label>
+      </h2>
+      <p class="sub-text">Tekan pada mana-mana senarai cuti untuk perincian atau pengurusan oleh Leader. Cuti lampau disembunyikan secara lalai (data tetap kekal, boleh papar semula guna togol di atas).</p>
       <div id="leaveCardsContainer">
         <div class="skeleton-box"><div class="skeleton-shimmer skeleton-line" style="width:55%;"></div><div class="skeleton-shimmer skeleton-line" style="width:35%;"></div></div>
         <div class="skeleton-box"><div class="skeleton-shimmer skeleton-line" style="width:45%;"></div><div class="skeleton-shimmer skeleton-line" style="width:30%;"></div></div>
@@ -996,7 +1023,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+  import { getFirestore, collection, addDoc, doc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
   import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
 
   const firebaseConfig = {
@@ -1083,8 +1110,15 @@
   }
   window.showToast = showToast;
 
+  // GUARD PANGGILAN SERENTAK: hanya SATU confirm modal boleh aktif pada
+  // satu-satu masa. Setiap panggilan showConfirm() baharu masuk dalam satu
+  // "queue" (confirmQueue) dan hanya dibuka selepas confirm sebelumnya
+  // ditutup (OK/Batal). Ini elak listener bertindih pada butang OK/Batal
+  // yang sama jika 2 aksi confirm dicetuskan pantas berturutan.
+  let confirmQueue = Promise.resolve();
+
   function showConfirm(message, options = {}) {
-    return new Promise((resolve) => {
+    const openModal = () => new Promise((resolve) => {
       const overlay = document.getElementById("confirmModalOverlay");
       const msgEl = document.getElementById("confirmModalMsg");
       const okBtn = document.getElementById("confirmModalOkBtn");
@@ -1109,6 +1143,11 @@
       okBtn.addEventListener("click", onOk);
       cancelBtn.addEventListener("click", onCancel);
     });
+
+    // Sambung ke queue sedia ada supaya confirm baharu tunggu yang lama tutup dulu.
+    const result = confirmQueue.then(openModal);
+    confirmQueue = result.catch(() => {});
+    return result;
   }
   window.showConfirm = showConfirm;
 
@@ -1762,20 +1801,6 @@
     return d.toLocaleDateString("ms-MY", { day: "2-digit", month: "short", year: "numeric" });
   }
 
-  // Kiraan RINGKAS jumlah hari kalendar dalam julat (tanpa ambil kira Offday/
-  // Restday/Cuti Umum). Sejak auto-split diperkenalkan, borang permohonan cuti
-  // guna buildLeaveSegments() untuk kiraan sebenar - fungsi ini dikekalkan
-  // sebagai utiliti umum sekiranya diperlukan di tempat lain kelak.
-  function calcLeaveDays(startDate, endDate, durationOption) {
-    if (!startDate || !endDate) return 0;
-    const s = new Date(startDate + "T00:00:00");
-    const e = new Date(endDate + "T00:00:00");
-    const diffDays = Math.round((e - s) / (1000 * 60 * 60 * 24)) + 1;
-    if (diffDays <= 0) return 0;
-    if (diffDays === 1 && durationOption !== "Full") return 0.5;
-    return diffDays;
-  }
-
   // Semak jika seorang juruteknik lain (shift sama) sudah bercuti pada tarikh yang bertindih.
   // NOTA: dibandingkan HARI-DEMI-HARI dalam julat bertindih (bukan setakat tarikh
   // mula sahaja), supaya cuti panjang yang merentasi peralihan shift (siang→malam)
@@ -1953,6 +1978,21 @@
   ["startDate", "endDate", "durationOption", "leaveType"].forEach(id => {
     document.getElementById(id).addEventListener("change", updateDayCountBadge);
   });
+
+  // ============================================================
+  // PERINGATAN TARIKH LAMPAU (bukan sekatan - Leader kadang perlu
+  // masukkan rekod cuti lama secara manual, jadi hanya beri amaran
+  // pop-up, tidak menghalang penghantaran borang).
+  // ============================================================
+  function checkPastDateWarning() {
+    const startDate = document.getElementById("startDate").value;
+    if (!startDate) return;
+    const todayStr = getLocalDateStr();
+    if (startDate < todayStr) {
+      showToast("⚠️ Tarikh Mula yang dipilih sudah berlalu. Sila pastikan ini disengajakan.", "error", 5000);
+    }
+  }
+  document.getElementById("startDate").addEventListener("change", checkPastDateWarning);
 
   document.getElementById("leaveForm").addEventListener("submit", async function(e) {
     e.preventDefault();
@@ -2240,12 +2280,29 @@
     }
   };
 
+  // Togol "Papar Cuti Lampau" - default OFF (senarai utama hanya papar cuti
+  // semasa/akan datang). Data TIDAK dipadam dari Firestore - hanya
+  // disembunyikan dari paparan senarai ini untuk elak list jadi terlalu
+  // panjang. Kalendar (showDayDetail/renderInteractiveCalendar) TIDAK
+  // terjejas oleh togol ini - ia sentiasa papar rekod cuti pada tarikh yang
+  // diklik, tanpa mengira lampau atau tidak.
+  let showPastLeaves = false;
+  document.getElementById("showPastLeavesToggle").addEventListener("change", (e) => {
+    showPastLeaves = e.target.checked;
+    renderLeaveCards();
+  });
+
   function renderLeaveCards() {
     const container = document.getElementById("leaveCardsContainer");
-    const activeLogs = leaveLogs.filter(l => !l.isPastRecord);
+    let activeLogs = leaveLogs.filter(l => !l.isPastRecord);
+
+    if (!showPastLeaves) {
+      const todayStr = getLocalDateStr();
+      activeLogs = activeLogs.filter(l => l.endDate >= todayStr);
+    }
 
     if (!activeLogs.length) {
-      container.innerHTML = `<p class="sub-text" style="margin-top:0;">Tiada rekod cuti dijadualkan buat masa ini.</p>`;
+      container.innerHTML = `<p class="sub-text" style="margin-top:0;">${showPastLeaves ? 'Tiada rekod cuti dijadualkan buat masa ini.' : 'Tiada cuti semasa/akan datang. Hidupkan togol "Papar Cuti Lampau" untuk lihat sejarah cuti.'}</p>`;
       return;
     }
 
