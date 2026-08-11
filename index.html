@@ -2219,4 +2219,40 @@
   };
 
   function renderAnnouncements() {
-    const container = document.getE
+    const container = document.getElementById("announcementContainer");
+    if (!announcementsList.length) {
+      container.innerHTML = `<p class="sub-text" style="margin-top:0;">Tiada pengumuman buat masa ini.</p>`;
+      return;
+    }
+    container.innerHTML = announcementsList.map(a => `
+      <div class="announcement-box">
+        <div class="announcement-header">
+          <span class="announcement-author">📢 ${a.author || 'Leader'}</span>
+          <span class="announcement-date">${new Date(a.timestamp).toLocaleString('ms-MY')}</span>
+        </div>
+        <div class="announcement-content">${escapeHtml(a.text)}</div>
+        ${a.image ? `<img src="${a.image}" class="announcement-img" alt="Lampiran" onclick="openImageLightbox('${a.image}')">` : ''}
+        ${currentRole === 'leader' ? `
+        <div style="text-align:right; margin-top:10px;">
+          <button type="button" class="btn-toggle-supervisor" onclick="deleteAnnouncement('${a.id}')">🗑️ Padam</button>
+        </div>` : ''}
+      </div>
+    `).join('');
+  }
+
+  // ============================================================
+  // SENARAI CUTI MENGIKUT BULAN
+  // ============================================================
+
+  window.showLeaveDetail = function(id) {
+    const log = leaveLogs.find(l => l.id === id);
+    if (!log) return;
+    const shiftInfo = getShiftStatusForDate(log.name, log.startDate);
+
+    document.getElementById("modalHeaderTitle").innerText = "ℹ️ Perincian Permohonan Cuti";
+    document.getElementById("modalBodyContent").innerHTML = `
+      <div class="modal-row"><div class="modal-label">Nama Juruteknik</div><div class="modal-val">${log.name}</div></div>
+      <div class="modal-row"><div class="modal-label">Jenis Cuti</div><div class="modal-val"><span class="badge badge-${log.type}">${log.type}</span></div></div>
+      <div class="modal-row"><div class="modal-label">Tempoh</div><div class="modal-val">${formatDateHuman(log.startDate)} — ${formatDateHuman(log.endDate)} (${log.days} Hari${log.duration && log.duration !== 'Full' ? ', ' + log.duration : ''})</div></div>
+      ${log.holidayName ? `<div class="modal-row"><div class="modal-label">Cuti Umum</div><div class="modal-val">🎉 ${escapeHtml(log.holidayName)}</div></div>` : ''}
+    …
